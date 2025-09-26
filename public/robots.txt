@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /.env
+Disallow: /config/
+
+Sitemap: https://admin.bbbrasil.com/sitemap.xml
+
+# Performance
+Crawl-delay: 1

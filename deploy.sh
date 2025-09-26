@@ -103,13 +103,13 @@ echo -e "${GREEN}→ Criando 10 shortlinks de teste...${NC}\n"
 
 # Links Amazon
 echo "1. Echo Dot 4ª Geração:"
-create_shortlink "https://www.amazon.com.br/dp/B08MQZXN1X?tag=buscabr-20" "Echo Dot 4ª Geração" "amazon"
+create_shortlink "https://www.amazon.com.br/dp/B08MQZXN1X?tag=buscabusca0f-20" "Echo Dot 4ª Geração" "amazon"
 
 echo "2. Kindle Paperwhite:"
-create_shortlink "https://www.amazon.com.br/dp/B08N3TCP2J?tag=buscabr-20" "Kindle Paperwhite" "amazon"
+create_shortlink "https://www.amazon.com.br/dp/B08N3TCP2J?tag=buscabusca0f-20" "Kindle Paperwhite" "amazon"
 
 echo "3. Fire TV Stick:"
-create_shortlink "https://www.amazon.com.br/dp/B08C1K6LB2?tag=buscabr-20" "Fire TV Stick" "amazon"
+create_shortlink "https://www.amazon.com.br/dp/B08C1K6LB2?tag=buscabusca0f-20" "Fire TV Stick" "amazon"
 
 # Links Mercado Livre
 echo "4. iPhone 13:"

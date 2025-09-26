@@ -470,7 +470,11 @@ const DashboardView = memo(({ user }) => {
 
 // Links View Premium
 const LinksView = memo(() => {
-  const [links, setLinks] = useState([]);
+  const [links, setLinks] = useState(() => {
+    // Carregar links salvos do localStorage
+    const saved = localStorage.getItem('bbb_links');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newLink, setNewLink] = useState({ url: '', title: '' });
   const [creating, setCreating] = useState(false);

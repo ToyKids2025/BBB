@@ -42,6 +42,11 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Skip external API requests to avoid CORS issues
+  if (!url.origin.includes(self.location.origin)) {
+    return;
+  }
+
   // API requests - Network First
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
@@ -56,7 +61,9 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(() => {
-          return caches.match(request);
+          return caches.match(request) || new Response('{}', {
+            headers: { 'Content-Type': 'application/json' }
+          });
         })
     );
     return;

@@ -71,35 +71,34 @@ export function addAffiliateTag(url, platform) {
   }
 }
 
-// FUNÇÃO PARA CRIAR SHORTLINK (API)
+// FUNÇÃO PARA CRIAR SHORTLINK (LOCAL)
 export async function createShortlink(destinationUrl) {
   const platform = detectPlatform(destinationUrl);
   const urlWithTag = addAffiliateTag(destinationUrl, platform);
 
   try {
-    const response = await fetch(`${API_CONFIG.BASE_URL}/redirects`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${API_CONFIG.API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        dest: urlWithTag,
-        platform: platform,
-        owner: 'ALEXANDRE',
-        add_to_cart: platform === 'amazon',
-        deep_link: true,
-        active: true
-      })
+    // Gerar ID único para o link
+    const linkId = Math.random().toString(36).substring(2, 8);
+
+    // Criar shortlink local (sem API por enquanto)
+    const shortUrl = `${window.location.origin}/r/${linkId}`;
+
+    // Salvar no localStorage
+    const links = JSON.parse(localStorage.getItem('bbb_links') || '[]');
+    links.push({
+      key: linkId,
+      short_url: shortUrl,
+      dest: urlWithTag,
+      platform: platform,
+      created: new Date().toISOString(),
+      clicks: 0
     });
+    localStorage.setItem('bbb_links', JSON.stringify(links));
 
-    if (!response.ok) throw new Error('Erro criando shortlink');
-
-    const data = await response.json();
     return {
       success: true,
-      shortUrl: data.short_url,
-      key: data.key
+      shortUrl: shortUrl,
+      key: linkId
     };
   } catch (error) {
     console.error('Erro:', error);

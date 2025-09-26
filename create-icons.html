@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate PWA Icons</title>
+</head>
+<body>
+    <h1>PWA Icons Generator</h1>
+    <canvas id="canvas"></canvas>
+    <script>
+        const sizes = [96, 152, 167, 180, 192, 512];
+
+        sizes.forEach(size => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Background
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, size, size);
+
+            // Circle
+            ctx.fillStyle = '#6366f1';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Text
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${size/5}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('BBB', size/2, size/2);
+
+            // Download
+            canvas.toBlob((blob) => {
+                const a = document.createElement('a');
+                a.download = `icon-${size}.png`;
+                a.href = URL.createObjectURL(blob);
+                document.body.appendChild(a);
+                a.textContent = `Download icon-${size}.png`;
+                document.body.appendChild(document.createElement('br'));
+            });
+        });
+    </script>
+</body>
+</html>

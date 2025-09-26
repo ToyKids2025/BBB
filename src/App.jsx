@@ -1,23 +1,19 @@
-import React, { useState, useEffect, useCallback, lazy, Suspense, memo } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import './App-Premium.css';
 import {
-  FiLink, FiPlus, FiCopy, FiExternalLink, FiDownload,
-  FiTrendingUp, FiUsers, FiDollarSign, FiActivity,
-  FiSettings, FiLogOut, FiSearch, FiFilter, FiCalendar,
-  FiSmartphone, FiMonitor, FiGlobe, FiShoppingCart,
-  FiMenu, FiX, FiMoon, FiSun, FiAccessibility,
+  FiLink, FiPlus, FiCopy, FiExternalLink,
+  FiTrendingUp, FiDollarSign, FiActivity,
+  FiSettings, FiLogOut, FiSearch,
+  FiMenu, FiX, FiMoon, FiSun,
   FiZap, FiShield, FiAward, FiBarChart2
 } from 'react-icons/fi';
 import { checkAuth, logout, AUTH_CONFIG } from './auth-config';
 import { AFFILIATE_TAGS, createShortlink, detectPlatform } from './config';
 
-// Lazy load dos gráficos para melhor performance
-const Charts = lazy(() => import('recharts').then(module => ({
-  default: module
-})));
 
 // Componente Principal com Performance Otimizada
 const App = memo(() => {
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState(() =>
@@ -25,6 +21,9 @@ const App = memo(() => {
   );
 
   useEffect(() => {
+    // Aplicar tema salvo
+    document.documentElement.setAttribute('data-theme', theme);
+
     // Verificar autenticação
     const token = localStorage.getItem('bb_token');
     const savedUser = localStorage.getItem('bb_user');
@@ -199,7 +198,7 @@ const LoginScreen = memo(({ onLogin }) => {
 const Dashboard = memo(({ user, onLogout, theme, toggleTheme }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications] = useState([]);
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: FiActivity, badge: null },
@@ -337,12 +336,10 @@ const Dashboard = memo(({ user, onLogout, theme, toggleTheme }) => {
         </header>
 
         <div className="content">
-          <Suspense fallback={<LoadingScreen />}>
-            {activeTab === 'dashboard' && <DashboardView user={user} />}
-            {activeTab === 'links' && <LinksView />}
-            {activeTab === 'analytics' && <AnalyticsView />}
-            {activeTab === 'settings' && <SettingsView user={user} />}
-          </Suspense>
+          {activeTab === 'dashboard' && <DashboardView user={user} />}
+          {activeTab === 'links' && <LinksView />}
+          {activeTab === 'analytics' && <AnalyticsView />}
+          {activeTab === 'settings' && <SettingsView user={user} />}
         </div>
       </main>
     </div>
@@ -351,14 +348,14 @@ const Dashboard = memo(({ user, onLogout, theme, toggleTheme }) => {
 
 // Dashboard View Premium
 const DashboardView = memo(({ user }) => {
-  const [metrics, setMetrics] = useState({
+  const metrics = {
     totalClicks: 0,
     totalConversions: 0,
     conversionRate: 0,
     revenue: 0,
     activeLinks: 0,
     clicksToday: 0
-  });
+  };
 
   const stats = [
     {
@@ -371,21 +368,21 @@ const DashboardView = memo(({ user }) => {
     {
       title: 'Clicks Hoje',
       value: metrics.clicksToday,
-      change: '+12%',
+      change: null,
       icon: FiTrendingUp,
       color: 'success'
     },
     {
       title: 'Taxa de Conversão',
       value: `${metrics.conversionRate}%`,
-      change: '+2.5%',
+      change: null,
       icon: FiAward,
       color: 'warning'
     },
     {
       title: 'Receita Total',
       value: `R$ ${metrics.revenue.toFixed(2)}`,
-      change: '+15%',
+      change: null,
       icon: FiDollarSign,
       color: 'info'
     }
@@ -428,21 +425,21 @@ const DashboardView = memo(({ user }) => {
             <div className="metric-item">
               <FiZap className="metric-icon" />
               <div>
-                <div className="metric-value">35ms</div>
+                <div className="metric-value">-</div>
                 <div className="metric-label">Redirect Speed</div>
               </div>
             </div>
             <div className="metric-item">
               <FiShield className="metric-icon" />
               <div>
-                <div className="metric-value">99.9%</div>
+                <div className="metric-value">-</div>
                 <div className="metric-label">Uptime</div>
               </div>
             </div>
             <div className="metric-item">
               <FiActivity className="metric-icon" />
               <div>
-                <div className="metric-value">85%</div>
+                <div className="metric-value">-</div>
                 <div className="metric-label">Cookie Persistence</div>
               </div>
             </div>
@@ -621,7 +618,7 @@ const LinksView = memo(() => {
               <div className="link-url">{link.short_url}</div>
               <div className="link-stats">
                 <span><FiTrendingUp /> {link.clicks} clicks</span>
-                <span><FiDollarSign /> R$ 0,00</span>
+                <span><FiDollarSign /> -</span>
               </div>
               <div className="link-actions">
                 <button
@@ -661,30 +658,30 @@ const AnalyticsView = memo(() => (
         <div className="analytics-grid">
           <div className="analytic-item">
             <div className="analytic-label">Redirect Speed</div>
-            <div className="analytic-value">35ms</div>
+            <div className="analytic-value">-</div>
             <div className="progress-bar">
-              <div className="progress-fill" style={{width: '95%'}}></div>
+              <div className="progress-fill" style={{width: '0%'}}></div>
             </div>
           </div>
           <div className="analytic-item">
             <div className="analytic-label">Cookie Persistence</div>
-            <div className="analytic-value">85%</div>
+            <div className="analytic-value">-</div>
             <div className="progress-bar">
-              <div className="progress-fill" style={{width: '85%'}}></div>
+              <div className="progress-fill" style={{width: '0%'}}></div>
             </div>
           </div>
           <div className="analytic-item">
             <div className="analytic-label">Add-to-Cart Success</div>
-            <div className="analytic-value">42%</div>
+            <div className="analytic-value">-</div>
             <div className="progress-bar">
-              <div className="progress-fill" style={{width: '42%'}}></div>
+              <div className="progress-fill" style={{width: '0%'}}></div>
             </div>
           </div>
           <div className="analytic-item">
             <div className="analytic-label">Deep Link Success</div>
-            <div className="analytic-value">67%</div>
+            <div className="analytic-value">-</div>
             <div className="progress-bar">
-              <div className="progress-fill" style={{width: '67%'}}></div>
+              <div className="progress-fill" style={{width: '0%'}}></div>
             </div>
           </div>
         </div>
@@ -694,7 +691,9 @@ const AnalyticsView = memo(() => (
 ));
 
 // Settings View
-const SettingsView = memo(({ user }) => (
+const SettingsView = memo(({ user }) => {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return (
   <div className="settings-view">
     <div className="view-header">
       <h1>Configurações</h1>
@@ -728,21 +727,24 @@ const SettingsView = memo(({ user }) => (
         </div>
         <div className="settings-content">
           <label className="switch-container">
-            <input type="checkbox" defaultChecked />
+            <input type="checkbox" defaultChecked aria-describedby="contrast-desc" />
             <span className="switch-label">Alto Contraste</span>
+            <span id="contrast-desc" className="sr-only">Aumenta o contraste das cores para melhor legibilidade</span>
           </label>
           <label className="switch-container">
-            <input type="checkbox" defaultChecked />
+            <input type="checkbox" defaultChecked={prefersReducedMotion} aria-describedby="motion-desc" />
             <span className="switch-label">Animações Reduzidas</span>
+            <span id="motion-desc" className="sr-only">Reduz animações e transições para evitar desconforto</span>
           </label>
           <label className="switch-container">
-            <input type="checkbox" defaultChecked />
+            <input type="checkbox" defaultChecked aria-describedby="keyboard-desc" />
             <span className="switch-label">Atalhos de Teclado</span>
+            <span id="keyboard-desc" className="sr-only">Ativa atalhos de teclado para navegação rápida</span>
           </label>
         </div>
       </div>
     </div>
   </div>
-));
+)});
 
 export default App;

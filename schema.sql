@@ -388,16 +388,15 @@ CREATE TRIGGER update_redirect_conversions
 
 -- Dados iniciais
 
--- Inserir usuário admin padrão (senha: admin123 - MUDAR EM PRODUÇÃO!)
--- Use bcrypt para gerar o hash correto
-INSERT INTO users (username, email, password_hash, role) VALUES 
-  ('admin', 'admin@bbbrasil.com', '$2b$10$YourHashedPasswordHere', 'super_admin')
+-- Inserir usuário Alexandre (único autorizado)
+INSERT INTO users (username, email, password_hash, role) VALUES
+  ('Alexandre', 'alexandre@bbbrasil.com', '$2b$10$K7L1OJ0TfPIwFb5HVYcXvuOHjZ5Xw.GqPqD5aNhwEc8vZkFBz5Xje', 'super_admin')
 ON CONFLICT (username) DO NOTHING;
 
--- Inserir contas de afiliado exemplo
+-- Inserir contas de afiliado REAIS do Alexandre
 INSERT INTO affiliate_accounts (platform, account_tag, account_name, owner, status) VALUES
-  ('amazon', 'buscabr-20', 'Busca Busca Principal', 'BBB', 'active'),
-  ('mercadolivre', 'MLB-123456', 'Busca Busca ML', 'BBB', 'active')
+  ('amazon', 'buscabusca0f-20', 'Alexandre Amazon', 'ALEXANDRE', 'active'),
+  ('mercadolivre', 'wa20250726131129', 'Alexandre ML', 'ALEXANDRE', 'active')
 ON CONFLICT (platform, account_tag) DO NOTHING;
 
 -- Comentários nas tabelas

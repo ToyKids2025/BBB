@@ -1,9 +1,12 @@
 /**
  * Busca Busca Brasil - Link Enhancer Worker
  * Cloudflare Worker para redirects inteligentes com persistência máxima
+ * TAGS REAIS DE AFILIADO - ALEXANDRE
  */
 
-// Configurações
+// Configurações - TAGS REAIS DO ALEXANDRE
+const AMAZON_TAG = 'buscabusca0f-20';  // Tag real Amazon
+const MERCADOLIVRE_TAG = 'wa20250726131129';  // Tag real Mercado Livre
 const COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 dias
 const INTERMEDIATE_DELAY = 800; // ms antes do redirect
 const KV_NAMESPACE = 'BBB_LINKS'; // Configurar no Cloudflare

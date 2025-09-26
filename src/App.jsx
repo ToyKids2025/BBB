@@ -618,11 +618,10 @@ const LinksView = memo(() => {
                   {new Date(link.created).toLocaleDateString()}
                 </span>
               </div>
-              <h3 className="link-title">{link.title}</h3>
-              <div className="link-url">{link.short_url}</div>
+              <h3 className="link-title">{link.title || 'Link de afiliado'}</h3>
+              <div className="link-url" style={{fontSize: '12px', wordBreak: 'break-all'}}>{link.short_url}</div>
               <div className="link-stats">
                 <span><FiTrendingUp /> {link.clicks} clicks</span>
-                <span><FiDollarSign /> -</span>
               </div>
               <div className="link-actions">
                 <button

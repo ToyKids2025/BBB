@@ -44,13 +44,18 @@ export const SYSTEM_CONFIG = {
 
 // FUNÇÃO PARA DETECTAR PLATAFORMA
 export function detectPlatform(url) {
-  if (url.includes('amazon.com')) return 'amazon';
-  if (url.includes('mercadolivre.com') || url.includes('mercadolibre.com')) return 'mercadolivre';
-  if (url.includes('magazineluiza.com') || url.includes('magalu.com')) return 'magalu';
-  if (url.includes('americanas.com')) return 'americanas';
-  if (url.includes('casasbahia.com')) return 'casasbahia';
-  if (url.includes('shopee.com')) return 'shopee';
-  if (url.includes('aliexpress.com')) return 'aliexpress';
+  const urlLower = url.toLowerCase();
+
+  if (urlLower.includes('amazon.com')) return 'amazon';
+  if (urlLower.includes('mercadolivre.com') ||
+      urlLower.includes('mercadolibre.com') ||
+      urlLower.includes('mercadolivre.com.br') ||
+      urlLower.includes('/sec/')) return 'mercadolivre';
+  if (urlLower.includes('magazineluiza.com') || urlLower.includes('magalu.com')) return 'magalu';
+  if (urlLower.includes('americanas.com')) return 'americanas';
+  if (urlLower.includes('casasbahia.com')) return 'casasbahia';
+  if (urlLower.includes('shopee.com')) return 'shopee';
+  if (urlLower.includes('aliexpress.com')) return 'aliexpress';
   return 'other';
 }
 
@@ -71,7 +76,7 @@ export function addAffiliateTag(url, platform) {
   }
 }
 
-// FUNÇÃO PARA CRIAR SHORTLINK (LOCAL)
+// FUNÇÃO PARA CRIAR LINK COM TAG DE AFILIADO
 export async function createShortlink(destinationUrl) {
   const platform = detectPlatform(destinationUrl);
   const urlWithTag = addAffiliateTag(destinationUrl, platform);
@@ -80,15 +85,16 @@ export async function createShortlink(destinationUrl) {
     // Gerar ID único para o link
     const linkId = Math.random().toString(36).substring(2, 8);
 
-    // Criar shortlink local (sem API por enquanto)
-    const shortUrl = `${window.location.origin}/r/${linkId}`;
+    // RETORNAR O LINK DIRETO COM A TAG DE AFILIADO
+    // Não criar shortlink interno, usar o link direto com a tag
 
-    // Salvar no localStorage
+    // Salvar no localStorage para histórico
     const links = JSON.parse(localStorage.getItem('bbb_links') || '[]');
     links.push({
       key: linkId,
-      short_url: shortUrl,
+      short_url: urlWithTag, // Link direto com tag de afiliado
       dest: urlWithTag,
+      original_url: destinationUrl, // URL original sem tag
       platform: platform,
       created: new Date().toISOString(),
       clicks: 0
@@ -97,7 +103,7 @@ export async function createShortlink(destinationUrl) {
 
     return {
       success: true,
-      shortUrl: shortUrl,
+      shortUrl: urlWithTag, // Retornar o link direto com a tag
       key: linkId
     };
   } catch (error) {

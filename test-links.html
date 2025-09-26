@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste de Links</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .original { color: #666; }
+        .generated { color: green; font-weight: bold; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Geração de Links</h1>
+
+    <div class="test">
+        <h2>Teste Mercado Livre</h2>
+        <p class="original">Original: https://mercadolivre.com/sec/337D4sw</p>
+        <p class="generated" id="ml-result"></p>
+    </div>
+
+    <div class="test">
+        <h2>Teste Amazon</h2>
+        <p class="original">Original: https://www.amazon.com.br/dp/B08N5WRWNW</p>
+        <p class="generated" id="amz-result"></p>
+    </div>
+
+    <button onclick="testLinks()">Testar Geração de Links</button>
+
+    <script>
+        // Tags de afiliado
+        const AFFILIATE_TAGS = {
+            AMAZON: 'buscabusca0f-20',
+            MERCADOLIVRE: 'wa20250726131129'
+        };
+
+        function detectPlatform(url) {
+            const urlLower = url.toLowerCase();
+
+            if (urlLower.includes('amazon.com')) return 'amazon';
+            if (urlLower.includes('mercadolivre.com') ||
+                urlLower.includes('mercadolibre.com') ||
+                urlLower.includes('mercadolivre.com.br') ||
+                urlLower.includes('/sec/')) return 'mercadolivre';
+            return 'other';
+        }
+
+        function addAffiliateTag(url, platform) {
+            // Remove tags existentes
+            let cleanUrl = url.split('?')[0];
+
+            switch(platform) {
+                case 'amazon':
+                    return `${cleanUrl}?tag=${AFFILIATE_TAGS.AMAZON}`;
+
+                case 'mercadolivre':
+                    return `${cleanUrl}?matt_tool=${AFFILIATE_TAGS.MERCADOLIVRE}&matt_word=DEFAULT`;
+
+                default:
+                    return url;
+            }
+        }
+
+        function testLinks() {
+            // Teste Mercado Livre
+            const mlUrl = 'https://mercadolivre.com/sec/337D4sw';
+            const mlPlatform = detectPlatform(mlUrl);
+            const mlResult = addAffiliateTag(mlUrl, mlPlatform);
+            document.getElementById('ml-result').textContent = `Gerado: ${mlResult}`;
+
+            // Teste Amazon
+            const amzUrl = 'https://www.amazon.com.br/dp/B08N5WRWNW';
+            const amzPlatform = detectPlatform(amzUrl);
+            const amzResult = addAffiliateTag(amzUrl, amzPlatform);
+            document.getElementById('amz-result').textContent = `Gerado: ${amzResult}`;
+
+            console.log('ML Platform:', mlPlatform);
+            console.log('ML Result:', mlResult);
+            console.log('AMZ Platform:', amzPlatform);
+            console.log('AMZ Result:', amzResult);
+        }
+    </script>
+</body>
+</html>

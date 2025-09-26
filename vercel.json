@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "name": "bbb-link-enhancer",
   "buildCommand": "CI=false npm run build",
   "outputDirectory": "build",
   "installCommand": "npm install --legacy-peer-deps",
@@ -9,5 +10,16 @@
     "GENERATE_SOURCEMAP": "false",
     "REACT_APP_API_URL": "https://bbbrasil.com/api",
     "REACT_APP_DOMAIN": "https://bbbrasil.com"
-  }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ],
+  "headers": [
+    {
+      "source": "/service-worker.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
+  ]
 }

@@ -1,0 +1,105 @@
+{
+  "test_links": [
+    {
+      "id": 1,
+      "title": "Echo Dot 4ª Geração com Alexa",
+      "platform": "amazon",
+      "dest": "https://www.amazon.com.br/dp/B08MQZXN1X?tag=buscabr-20",
+      "price": "R$ 299,00",
+      "commission_rate": "4%",
+      "expected_commission": "R$ 11,96"
+    },
+    {
+      "id": 2,
+      "title": "Kindle Paperwhite 11ª Geração",
+      "platform": "amazon",
+      "dest": "https://www.amazon.com.br/dp/B08N3TCP2J?tag=buscabr-20",
+      "price": "R$ 599,00",
+      "commission_rate": "4%",
+      "expected_commission": "R$ 23,96"
+    },
+    {
+      "id": 3,
+      "title": "Fire TV Stick 4K Max",
+      "platform": "amazon",
+      "dest": "https://www.amazon.com.br/dp/B08MQZXN1X?tag=buscabr-20",
+      "price": "R$ 379,00",
+      "commission_rate": "4%",
+      "expected_commission": "R$ 15,16"
+    },
+    {
+      "id": 4,
+      "title": "iPhone 13 128GB - Meia Noite",
+      "platform": "mercadolivre",
+      "dest": "https://www.mercadolivre.com.br/apple-iphone-13-128-gb-meia-noite/p/MLB18908823?matt_tool=123456&matt_word=BBB",
+      "price": "R$ 4.199,00",
+      "commission_rate": "3.5%",
+      "expected_commission": "R$ 146,96"
+    },
+    {
+      "id": 5,
+      "title": "PlayStation 5 Digital Edition",
+      "platform": "mercadolivre",
+      "dest": "https://www.mercadolivre.com.br/sony-playstation-5-825gb-digital/p/MLB16171888?matt_tool=123456&matt_word=BBB",
+      "price": "R$ 3.899,00",
+      "commission_rate": "3.5%",
+      "expected_commission": "R$ 136,46"
+    },
+    {
+      "id": 6,
+      "title": "Samsung Galaxy S23 5G 256GB",
+      "platform": "mercadolivre",
+      "dest": "https://www.mercadolivre.com.br/samsung-galaxy-s23-5g-256-gb/p/MLB21543542?matt_tool=123456&matt_word=BBB",
+      "price": "R$ 3.599,00",
+      "commission_rate": "3.5%",
+      "expected_commission": "R$ 125,96"
+    },
+    {
+      "id": 7,
+      "title": "Notebook Dell Inspiron 15 i5",
+      "platform": "magalu",
+      "dest": "https://www.magazineluiza.com.br/notebook-dell-inspiron-15-3000-intel-core-i5-8gb-256gb-ssd/p/234567890/in/ntdl/?seller_id=magazineluiza&utm_source=BBB&utm_medium=affiliates",
+      "price": "R$ 2.999,00",
+      "commission_rate": "2.5%",
+      "expected_commission": "R$ 74,97"
+    },
+    {
+      "id": 8,
+      "title": "Smart TV LG 55\" 4K OLED",
+      "platform": "magalu",
+      "dest": "https://www.magazineluiza.com.br/smart-tv-55-4k-oled-lg/p/345678901/et/oled/?seller_id=magazineluiza&utm_source=BBB&utm_medium=affiliates",
+      "price": "R$ 4.499,00",
+      "commission_rate": "2.5%",
+      "expected_commission": "R$ 112,47"
+    },
+    {
+      "id": 9,
+      "title": "AirPods Pro 2ª Geração",
+      "platform": "americanas",
+      "dest": "https://www.americanas.com.br/produto/airpods-pro-2-geracao-apple/456789012?chave=afiliados_BBB",
+      "price": "R$ 1.899,00",
+      "commission_rate": "3%",
+      "expected_commission": "R$ 56,97"
+    },
+    {
+      "id": 10,
+      "title": "JBL Charge 5 Caixa de Som Bluetooth",
+      "platform": "americanas",
+      "dest": "https://www.americanas.com.br/produto/caixa-de-som-bluetooth-jbl-charge-5/567890123?chave=afiliados_BBB",
+      "price": "R$ 899,00",
+      "commission_rate": "3%",
+      "expected_commission": "R$ 26,97"
+    }
+  ],
+  "total_potential_commission": "R$ 830,86",
+  "avg_commission_rate": "3.25%",
+  "test_scenarios": [
+    "Instagram in-app browser (iOS)",
+    "Safari iPhone com cookies bloqueados",
+    "Chrome Android modo incógnito",
+    "Amazon app deep link",
+    "MercadoLivre app redirect",
+    "Desktop Chrome com AdBlock",
+    "Firefox com proteção contra rastreamento"
+  ]
+}

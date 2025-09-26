@@ -1,0 +1,404 @@
+montar um mapa completo, pragmático e pronto pra execução, cobrindo arquitetura, componentes, DB, endpoints, dashboard (UI/UX), admin, segurança, deploys “custo zero” (uso de free tiers), táticas de persistência máxima realista e um roadmap com entregáveis. No fim eu já te deixo a frase melhorada que você pediu para entrar no roadmap.
+
+Vou direto ao ponto, sem enrolação.
+
+Mapa completo — objetivo
+
+Criar um “Link Enhancer & Dashboard” privado para o Busca Busca Brasil que:
+
+Recebe links de afiliado (Amazon, Mercado Livre etc.) gerados nas plataformas de origem;
+
+Gera short-links próprios (bbbrasil.com/r/abc123) que:
+
+gravam first-party cookie + localStorage/service-worker (PWA) no dispositivo,
+
+tentam add-to-cart / deep-link quando aplicável,
+
+redirecionam ao destino com seu aff_id já presente;
+
+Mantém logs e métricas para auditoria (click → possible conversion);
+
+Tem painel admin para criar/gerir links, ver performance, reconciliar vendas;
+
+Oferece uma “UI bonita e inútil” para usuário público (se quiser), e um admin area com usuário/senha;
+
+Otimizado para custo mínimo (usar free tiers) e máxima resiliência dentro das limitações de iOS/Safari.
+
+Resumo das escolhas tecnológicas (baixo custo / alta resiliência)
+
+Prioridade: zero custo enquanto protótipo + fácil deploy. Recomendo pilha:
+
+Frontend & Admin UI: React (create-react-app / Next.js App Router) — deploy em Vercel / Netlify / Cloudflare Pages (free tier).
+
+Edge redirect + storage: Cloudflare Workers + KV (ou Vercel Edge Functions). Workers permite redirecionamento rápido na borda (menor latência) e KV para shortlinks + metadata com free tier.
+
+DB leve para logs/relatórios: SQLite (para protótipo) ou Supabase free Postgres para quando quiser escalar.
+
+Autenticação Admin: JWT + password hashing (bcrypt). Para 2FA usar TOTP (Google Authenticator) mais tarde.
+
+Jobs / Reconciliação: GitHub Actions / Cron Workers para rodar jobs que reconciliam vendas manualmente.
+
+Hosting do domínio: apontar bbbrasil.com para Cloudflare + Workers.
+
+Storage de logs/exports: salvar CSV/Parquet no GitHub (actions) ou no bucket gratuito do Supabase/Storage.
+
+(Vantagem: Cloudflare Workers + KV tornam o redirect robusto e com baixa latência. Free tiers suportam protótipo real.)
+
+Arquitetura geral (fluxo)
+
+Você cria link de afiliado em Amazon/ML (contendo tag=/aff_id=).
+
+Painel privado → Create shortlink (envia dest já com tag). O sistema cria key e salva dest, platform, owner, created_at.
+
+Usuário clica em bbbrasil.com/r/<key>:
+
+Edge Worker responde instant com uma intermediate page (ou um redirect com JS).
+
+Worker grava/atualiza first-party cookie (30 dias) e registra click no KV/DB com click_id, timestamp, UA, referer.
+
+Página intermediária grava localStorage, tenta deep link (app), faz redirect final para dest. Pode tentar add-to-cart quando dest for Amazon (link especial).
+
+Logs → painel admin, reconciliação manual com relatórios do painel de afiliado.
+
+Se o usuário voltar ao domínio (outro anúncio), sistema detecta cookie/localStorage e pode reativar fluxo (reatribution attempt).
+
+Modelagem de dados (tabelas mínimas)
+
+SQL-style (Postgres / Supabase):
+
+-- users (admins)
+CREATE TABLE users (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  username text UNIQUE NOT NULL,
+  password_hash text NOT NULL,
+  email text,
+  role text DEFAULT 'admin',
+  created_at timestamptz DEFAULT now()
+);
+
+-- affiliate_accounts (onde guardamos IDs da Amazon/ML)
+CREATE TABLE affiliate_accounts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  platform text NOT NULL, -- 'amazon'|'meli' etc.
+  account_tag text NOT NULL, -- p.ex.: 'seuTagAmazon' or 'aff_id'
+  owner text, -- nome
+  created_at timestamptz DEFAULT now()
+);
+
+-- redirects / shortlinks
+CREATE TABLE redirects (
+  key text PRIMARY KEY, -- ex: abc123
+  dest text NOT NULL, -- url final com aff tag
+  platform text,
+  owner text, -- criador (ALEX123)
+  title text,
+  created_at timestamptz DEFAULT now(),
+  expires_at timestamptz NULL,
+  active boolean DEFAULT true
+);
+
+-- clicks (cada visita que passa pelo shortlink)
+CREATE TABLE clicks (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  key text REFERENCES redirects(key),
+  click_id text,
+  ua text,
+  ip text,
+  referrer text,
+  device text,
+  persisted boolean DEFAULT false, -- se gravou cookie/localStorage
+  ts timestamptz DEFAULT now()
+);
+
+-- conversions (quando você reconciliar/confirmar venda)
+CREATE TABLE conversions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  click_id text,
+  affiliate_platform text,
+  affiliate_tx_id text,
+  amount numeric,
+  status text, -- 'pending','confirmed','rejected'
+  reported_at timestamptz,
+  created_at timestamptz DEFAULT now()
+);
+
+API Endpoints (contrato mínimo)
+
+(Assuma backend edge + API)
+
+POST /api/auth/login → {username,password} => {token}
+
+POST /api/redirects (admin) → {dest, platform, owner, title, expires_at} => {key, short}
+
+GET /api/redirects (admin list) => paginated list
+
+GET /r/:key (edge public) → worker: sets cookie, logs click, serves intermediate HTML then redirect
+
+GET /api/clicks?key=abc => list clicks + filters
+
+POST /api/conversions (admin/manual reconcile) → {click_id, affiliate_tx_id, amount, platform} => saves conversion
+
+GET /api/metrics => KPIs (CTR, clicks last 7/30, conversions, conversion rate)
+
+Worker / Redirect logic (pseudocódigo — ideal para Cloudflare Workers)
+addEventListener('fetch', event => {
+  event.respondWith(handle(event.request));
+});
+
+async function handle(req) {
+  const url = new URL(req.url);
+  if (url.pathname.startsWith('/r/')) {
+    const key = url.pathname.split('/r/')[1];
+    const entry = await KV.get('redirect:'+key, 'json');
+    if (!entry) return new Response('Not found', {status:404});
+
+    // create click_id
+    const clickId = crypto.randomUUID();
+    // log minimal click in KV (or send to queue)
+    await KV.put(`click:${clickId}`, JSON.stringify({
+      key, ua: req.headers.get('user-agent'), ip: req.headers.get('cf-connecting-ip'), ts: Date.now()
+    }));
+
+    // set first-party cookie
+    const cookie = `bb_ref=${entry.platform}:${entry.owner}; Max-Age=${30*24*3600}; Path=/; Secure; SameSite=Lax`;
+    // intermediate HTML saves localStorage + redirect
+    const html = generateIntermediateHtml(entry.dest, clickId, entry.platform, entry.owner);
+    return new Response(html, { headers: { 'content-type':'text/html;charset=UTF-8', 'set-cookie': cookie } });
+  }
+
+  return fetch(req);
+}
+
+
+O HTML intermediário grava localStorage e redireciona:
+
+<script>
+ try {
+   localStorage.setItem('bb_ref', 'amazon:ALEX123');
+   localStorage.setItem('bb_click', 'CLICK_ID');
+ } catch(e) {}
+ setTimeout(()=> window.location.replace('DEST_URL'), 600);
+</script>
+
+Dashboard — UX / Layout (admin & user)
+Admin (lindo, objetivo e prático)
+
+Topbar: logo BBB, search, user menu (admin logout)
+
+Left Nav:
+
+Dashboard (KPIs)
+
+Shortlinks (list, create, edit, deactivate)
+
+Clicks (filter by key, date, UA)
+
+Conversions (manual reconcile + import CSV)
+
+Affiliates (lista de contas Amazon/ML + testar link)
+
+Settings (Admins, API keys, domain)
+
+Exports
+
+Dashboard tiles (top):
+
+Clicks (last 7d / 30d)
+
+Conversions (last 30d)
+
+Conversion rate (conversions / clicks)
+
+Avg time to conversion (if measurable)
+
+Top performing shortlinks (rank)
+
+Shortlinks page:
+
+Button: + Create shortlink (modal)
+
+Table: key | title | platform | owner | clicks | conversions | active | actions (copy short, open, analytics)
+
+Clicks page:
+
+Search by key / ip / ua
+
+Table with sample UA icons (mobile/desktop), persisted flag, timestamp
+
+Click detail modal with full headers, possible match to conversion
+
+Conversions:
+
+Import CSV from affiliate panel (columns: date, tx_id, amount, tag). UI allows match by click_id or fallback match by approximate time and owner.
+
+Manual confirm / reject / add note
+
+Auth:
+
+Admin login page with strong password enforcement
+
+Option to enable TOTP
+
+“Usuário lindo e maravilhoso porém sem utilidade”
+
+Minimal public page if you ever expose something:
+
+Big hero with product card (image, price, selo “Ajude o Busca Busca Brasil!”)
+
+Big “Comprar” button that points to bbbrasil.com/r/...
+
+Cosmetic animations, badges — visual só (não necessário pro core)
+This satisfies “visual bonito” sem impacto técnico.
+
+Regras operacionais e “como usar” (workflow do dia a dia)
+
+Você entra no Admin → Create shortlink → cola link do produto (com seu aff_id).
+
+Painel retorna bbbrasil.com/r/abc123 → coloque esse link no Instagram/ads.
+
+Quando tiver clicks, veja o painel → se tiver vendas no painel da Amazon/ML, faça import (CSV) e reconcilie com clicks.
+
+Se low conversion, use:
+
+add-to-cart links na Amazon;
+
+Landing page com “Comprar na Amazon / Comprar no MercadoLivre” para captar intenção;
+
+pequenos testes A/B: CTA, imagem, preço, horário, público.
+
+Táticas para persistência máxima (realistas)
+
+First-party cookie no seu domínio (30 dias). Resiliente vs cookies de terceiros.
+
+localStorage — persistência no browser mesmo com ITP; usado como fallback quando cookie removido.
+
+PWA / Service Worker: se o usuário instalar seu PWA, você pode ter armazenamento mais resiliente (e reengajar via push). Instalar PWA aumenta muito a persistência.
+
+Deep Links / Universal Links: para app opens (ML app/Amazon app) passar parâmetros que o app aceita. Testar caso a caso.
+
+Add-to-cart links (Amazon): quando aplicável, adiciona o produto ao carrinho estendendo atribuição. Use em campanhas de produto único.
+
+Retargeting / Audiences: usar Meta/Google Ads com seu pixel (seguir ATT). Reengajar quem clicou.
+
+Edge redirects (Workers) garantem 1) latência baixa 2) logging consistente.
+
+Limite realista: com add-to-cart + cookie first-party + PWA, você aumenta chance de atribuição de 10–30× versus link cru em campanhas onde usuários compram, mas nunca 100% garantia pelo ecossistema (Amazon cookie policy, ITP, app behavior).
+
+Segurança & Compliance
+
+Nunca cloake: sempre deixe destino claro e faça disclosure de afiliado.
+
+Proteja admin com HTTPS, rate limiting e IP allowlist (se desejar).
+
+Hash de senhas com bcrypt, tokens JWT expiring.
+
+Logs de auditoria (criação/edição/deleção de redirects).
+
+LGPD: aviso no painel e política de privacidade simples.
+
+Monitorar anomalias: spikes de clicks sem conversão podem indicar fraude de clique (usar captchas no create ou rate-limit links).
+
+Métricas e KPIs a acompanhar (Dashboard)
+
+Clicks (dia/semana/mês)
+
+Clicks por link (top 10)
+
+Conversion rate (confirmed conversions / clicks)
+
+Avg revenue per conversion
+
+Cost per click (if using ads)
+
+Time between click → conversion
+
+Clicks mobile vs desktop
+
+Persisted cookie rate (clicks where bb_ref persisted)
+
+Testes e QA (essencial)
+
+Teste em: Instagram in-app browser (iOS), Safari (iPhone), Chrome Android, Amazon app open, MercadoLivre app open.
+
+Test 3 scenarios: normal redirect, deep-link to app, add-to-cart link.
+
+Automate smoke tests with Playwright to validate redirect path and cookie/localStorage writing.
+
+Deploy mínimo viável (MVP) — passos para entregar rápido
+
+Registrar domínio e apontar para Cloudflare.
+
+Criar Cloudflare Worker + KV namespace redirects, clicks.
+
+Deploy React admin + host em Cloudflare Pages / Vercel (free).
+
+Implementar endpoints para /api/create (protected) — inicialmente Basic Auth.
+
+Lançar: criar 10 shortlinks dos seus principais produtos e rodar teste no Instagram (um post).
+
+Tempo estimado realista (MVP): 2–5 dias de dev se você tiver um dev; mas não te dou estimativa porque você pediu pra eu já entregar — então segue blueprint completo acima que você pode passar direto pro dev ou eu posso já gerar código básico (worker + frontend) se quiser.
+
+Checklist de “não esquecer”
+
+ Colocar dest sempre com tag/aff_id correto.
+
+ Habilitar HTTPS e Secure cookies.
+
+ Testar add-to-cart para Amazon (ASIN flow).
+
+ Testar deep-link em app do MercadoLivre/Amazon.
+
+ Configurar export CSV de clicks.
+
+ Garantir que adm conta esteja protegida (senha + TOTP).
+
+ Política de privacidade + disclosure no painel.
+
+Backlog (prioridades)
+
+Worker + KV redirect + logging (core).
+
+Admin: criar shortlink + listar + copiar link.
+
+HTML intermediate com localStorage + redirect + add-to-cart attempt.
+
+Clicks list + export CSV.
+
+Conversions manual import + reconcile.
+
+KPIs e dashboard.
+
+PWA + service-worker (persistence boost).
+
+Deep link tuning por plataforma.
+
+2FA e audit logs.
+
+Otimizações: AB testing, retargeting integration.
+
+Exemplos rápidos (snippets já prontos)
+
+add-to-cart Amazon example:
+
+https://www.amazon.com/gp/aws/cart/add.html?ASIN.1=ASIN_DO_PRODUTO&Quantity.1=1&tag=SEU_TAG
+
+
+Shortlink example to post: https://bbbrasil.com/r/abc123
+
+Frase melhorada para entrar no roadmap
+
+Você pediu que essa frase seja melhorada e faça parte do roadmap. Aqui vão 3 versões — escolha a que encaixa melhor:
+
+Concisa/profissional:
+
+“Desenvolver um sistema de ‘link enhancer’ privado que maximize a atribuição de afiliados por meio de redirects de borda, gravação de first-party storage, deep linking e add-to-cart — visando persistência prática, auditoria completa e recuperação de comissões perdidas.”
+
+Direta / de impacto (para apresentação interna):
+
+“Criar um sistema inteligente que transforme cliques em oportunidades reais: redirecionamento de borda + armazenamento first-party + add-to-cart/deep links, para recuperar comissões que hoje se perdem e gerar métricas confiáveis para otimizar campanhas.”
+
+Colloquial (se preferir o tom que você usou):
+
+“Construir uma solução privada que pegue os links de afiliado, melhore e proteja eles com redirects inteligentes, cookies/localStorage e add-to-cart — para recuperar as comissões que hoje sumiram dos nossos 90 cliques sem vendas.”
+
+Use a que preferir no roadmap. Eu ajusto o tom se quiser algo mais “manual” ou mais “executivo”.

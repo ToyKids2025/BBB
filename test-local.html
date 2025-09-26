@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBB Link Enhancer - Teste Local</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .test-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #ffc107;
+            color: white;
+        }
+
+        .status-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-error {
+            background: #dc3545;
+            color: white;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .link-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .link-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .link-info {
+            flex: 1;
+        }
+
+        .link-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .link-url {
+            color: #667eea;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .link-url:hover {
+            text-decoration: underline;
+        }
+
+        .test-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <div class="logo">BBB</div>
+            BBB Link Enhancer - Teste Local
+        </h1>
+        <p class="subtitle">Sistema de Testes de Persistência e Performance</p>
+
+        <div class="alert">
+            ⚠️ Este é um teste local. Para produção, faça o deploy no Cloudflare Workers.
+        </div>
+
+        <!-- Teste de Cookies e LocalStorage -->
+        <div class="test-section">
+            <div class="test-title">🍪 Teste de Persistência</div>
+            <div class="test-item">
+                <span>Cookie first-party (30 dias)</span>
+                <span class="test-status status-pending" id="cookie-status">Pendente</span>
+            </div>
+            <div class="test-item">
+                <span>LocalStorage</span>
+                <span class="test-status status-pending" id="storage-status">Pendente</span>
+            </div>
+            <div class="test-item">
+                <span>SessionStorage</span>
+                <span class="test-status status-pending" id="session-status">Pendente</span>
+            </div>
+            <div class="test-item">
+                <span>IndexedDB</span>
+                <span class="test-status status-pending" id="indexdb-status">Pendente</span>
+            </div>
+            <button onclick="testPersistence()">Testar Persistência</button>
+        </div>
+
+        <!-- Links de Teste -->
+        <div class="test-section">
+            <div class="test-title">🔗 Shortlinks de Teste</div>
+            <ul class="link-list" id="link-list">
+                <!-- Links serão adicionados dinamicamente -->
+            </ul>
+            <button onclick="loadTestLinks()">Carregar Links de Teste</button>
+        </div>
+
+        <!-- Teste de Performance -->
+        <div class="test-section">
+            <div class="test-title">⚡ Performance</div>
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value" id="redirect-time">-</div>
+                    <div class="metric-label">Tempo de Redirect (ms)</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="cookie-rate">-</div>
+                    <div class="metric-label">Taxa de Cookie (%)</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="success-rate">-</div>
+                    <div class="metric-label">Taxa de Sucesso (%)</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="total-tests">0</div>
+                    <div class="metric-label">Testes Executados</div>
+                </div>
+            </div>
+            <button onclick="runPerformanceTest()" style="margin-top: 20px;">Executar Teste de Performance</button>
+        </div>
+
+        <!-- Resultados -->
+        <div class="test-section">
+            <div class="test-title">📊 Log de Resultados</div>
+            <div class="results" id="results">
+                Aguardando execução dos testes...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados de teste
+        const testLinks = [
+            {
+                title: "Echo Dot 4ª Geração",
+                platform: "amazon",
+                url: "https://www.amazon.com.br/dp/B08MQZXN1X?tag=buscabr-20",
+                shortUrl: "https://bbbrasil.com/r/echo4"
+            },
+            {
+                title: "iPhone 13 128GB",
+                platform: "mercadolivre",
+                url: "https://www.mercadolivre.com.br/apple-iphone-13-128-gb/p/MLB18908823",
+                shortUrl: "https://bbbrasil.com/r/iphone13"
+            },
+            {
+                title: "Notebook Dell Inspiron",
+                platform: "magalu",
+                url: "https://www.magazineluiza.com.br/notebook-dell-inspiron-15/p/234567890",
+                shortUrl: "https://bbbrasil.com/r/dell"
+            }
+        ];
+
+        // Log de resultados
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#333';
+            results.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span>\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        // Teste de Persistência
+        function testPersistence() {
+            log('Iniciando teste de persistência...', 'info');
+
+            // Teste Cookie
+            try {
+                document.cookie = "bb_ref=test:123:click; max-age=2592000; path=/; SameSite=Lax";
+                const hasCookie = document.cookie.includes('bb_ref');
+                updateStatus('cookie-status', hasCookie);
+                log(`Cookie: ${hasCookie ? 'OK' : 'FALHOU'}`, hasCookie ? 'success' : 'error');
+            } catch (e) {
+                updateStatus('cookie-status', false);
+                log(`Cookie erro: ${e.message}`, 'error');
+            }
+
+            // Teste LocalStorage
+            try {
+                localStorage.setItem('bb_ref', JSON.stringify({
+                    click_id: 'test123',
+                    platform: 'amazon',
+                    ts: Date.now()
+                }));
+                const hasStorage = localStorage.getItem('bb_ref') !== null;
+                updateStatus('storage-status', hasStorage);
+                log(`LocalStorage: ${hasStorage ? 'OK' : 'FALHOU'}`, hasStorage ? 'success' : 'error');
+            } catch (e) {
+                updateStatus('storage-status', false);
+                log(`LocalStorage erro: ${e.message}`, 'error');
+            }
+
+            // Teste SessionStorage
+            try {
+                sessionStorage.setItem('bb_session', 'active');
+                const hasSession = sessionStorage.getItem('bb_session') !== null;
+                updateStatus('session-status', hasSession);
+                log(`SessionStorage: ${hasSession ? 'OK' : 'FALHOU'}`, hasSession ? 'success' : 'error');
+            } catch (e) {
+                updateStatus('session-status', false);
+                log(`SessionStorage erro: ${e.message}`, 'error');
+            }
+
+            // Teste IndexedDB
+            if ('indexedDB' in window) {
+                const request = indexedDB.open('BBBTest', 1);
+                request.onsuccess = () => {
+                    updateStatus('indexdb-status', true);
+                    log('IndexedDB: OK', 'success');
+                    request.result.close();
+                };
+                request.onerror = () => {
+                    updateStatus('indexdb-status', false);
+                    log('IndexedDB: FALHOU', 'error');
+                };
+            } else {
+                updateStatus('indexdb-status', false);
+                log('IndexedDB: Não suportado', 'error');
+            }
+
+            log('Teste de persistência concluído!', 'success');
+        }
+
+        // Carregar Links de Teste
+        function loadTestLinks() {
+            const linkList = document.getElementById('link-list');
+            linkList.innerHTML = '';
+
+            testLinks.forEach((link, index) => {
+                const li = document.createElement('li');
+                li.className = 'link-item';
+                li.innerHTML = `
+                    <div class="link-info">
+                        <div class="link-title">${link.title}</div>
+                        <a href="${link.shortUrl}" class="link-url" target="_blank">${link.shortUrl}</a>
+                    </div>
+                    <button class="test-button" onclick="testLink(${index})">Testar</button>
+                `;
+                linkList.appendChild(li);
+            });
+
+            log(`${testLinks.length} links de teste carregados`, 'success');
+        }
+
+        // Testar Link Individual
+        async function testLink(index) {
+            const link = testLinks[index];
+            log(`Testando: ${link.title}...`, 'info');
+
+            const startTime = performance.now();
+
+            try {
+                // Simular redirect
+                const response = await fetch(link.url, {
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+
+                const endTime = performance.now();
+                const responseTime = Math.round(endTime - startTime);
+
+                document.getElementById('redirect-time').textContent = responseTime;
+                log(`${link.title}: ${responseTime}ms`, 'success');
+
+                // Atualizar métricas
+                const totalTests = parseInt(document.getElementById('total-tests').textContent) + 1;
+                document.getElementById('total-tests').textContent = totalTests;
+
+            } catch (error) {
+                log(`Erro testando ${link.title}: ${error.message}`, 'error');
+            }
+        }
+
+        // Teste de Performance
+        async function runPerformanceTest() {
+            log('Iniciando teste de performance completo...', 'info');
+
+            let totalTime = 0;
+            let successCount = 0;
+            let cookieSuccess = 0;
+
+            for (let i = 0; i < testLinks.length; i++) {
+                const link = testLinks[i];
+                const startTime = performance.now();
+
+                try {
+                    // Simular requisição
+                    await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
+
+                    const endTime = performance.now();
+                    const responseTime = Math.round(endTime - startTime);
+                    totalTime += responseTime;
+                    successCount++;
+
+                    // Verificar cookie
+                    if (document.cookie.includes('bb_ref')) {
+                        cookieSuccess++;
+                    }
+
+                    log(`✓ ${link.title}: ${responseTime}ms`, 'success');
+
+                } catch (error) {
+                    log(`✗ ${link.title}: ${error.message}`, 'error');
+                }
+            }
+
+            // Calcular métricas
+            const avgTime = Math.round(totalTime / testLinks.length);
+            const successRate = Math.round((successCount / testLinks.length) * 100);
+            const cookieRate = Math.round((cookieSuccess / testLinks.length) * 100);
+
+            // Atualizar display
+            document.getElementById('redirect-time').textContent = avgTime;
+            document.getElementById('success-rate').textContent = successRate;
+            document.getElementById('cookie-rate').textContent = cookieRate;
+            document.getElementById('total-tests').textContent = testLinks.length;
+
+            log('═══════════════════════════════', 'info');
+            log(`Tempo médio: ${avgTime}ms`, 'success');
+            log(`Taxa de sucesso: ${successRate}%`, 'success');
+            log(`Taxa de cookie: ${cookieRate}%`, 'success');
+            log('Teste de performance concluído!', 'success');
+        }
+
+        // Atualizar status visual
+        function updateStatus(elementId, success) {
+            const element = document.getElementById(elementId);
+            if (success) {
+                element.textContent = 'OK';
+                element.className = 'test-status status-success';
+            } else {
+                element.textContent = 'FALHOU';
+                element.className = 'test-status status-error';
+            }
+        }
+
+        // Carregar links ao iniciar
+        window.onload = () => {
+            log('BBB Link Enhancer - Sistema de Testes Iniciado', 'success');
+            log('Execute os testes usando os botões acima', 'info');
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+# Wrangler Configuration - BBB Link Enhancer
+# Copie este arquivo para wrangler.toml e configure com seus valores
+
+name = "bbb-link-enhancer"
+main = "index.js"
+compatibility_date = "2024-01-01"
+workers_dev = false
+
+# Account ID do Cloudflare (encontre em dashboard.cloudflare.com)
+account_id = "YOUR_ACCOUNT_ID_HERE"
+
+# KV Namespaces - Execute os comandos abaixo para criar:
+# wrangler kv:namespace create "BBB_LINKS"
+# wrangler kv:namespace create "BBB_CLICKS" 
+# wrangler kv:namespace create "BBB_STATS"
+
+[[kv_namespaces]]
+binding = "BBB_LINKS"
+id = "YOUR_KV_NAMESPACE_ID_1"
+preview_id = "YOUR_PREVIEW_KV_ID_1"
+
+[[kv_namespaces]]
+binding = "BBB_CLICKS"
+id = "YOUR_KV_NAMESPACE_ID_2"
+preview_id = "YOUR_PREVIEW_KV_ID_2"
+
+[[kv_namespaces]]
+binding = "BBB_STATS"
+id = "YOUR_KV_NAMESPACE_ID_3"
+preview_id = "YOUR_PREVIEW_KV_ID_3"
+
+# Variáveis de ambiente
+[vars]
+ENVIRONMENT = "production"
+API_KEY = "sk_live_YOUR_SECRET_API_KEY"
+JWT_SECRET = "YOUR_JWT_SECRET_KEY"
+DOMAIN = "https://bbbrasil.com"
+
+# Rotas customizadas
+[[routes]]
+pattern = "bbbrasil.com/r/*"
+zone_name = "bbbrasil.com"
+
+[[routes]]
+pattern = "bbbrasil.com/api/*"
+zone_name = "bbbrasil.com"
+
+# Configurações de desenvolvimento
+[env.development]
+name = "bbb-link-enhancer-dev"
+vars = { ENVIRONMENT = "development" }
+
+[[env.development.routes]]
+pattern = "dev.bbbrasil.com/*"
+zone_name = "bbbrasil.com"
+
+# Configurações de staging
+[env.staging]
+name = "bbb-link-enhancer-staging"
+vars = { ENVIRONMENT = "staging" }
+
+[[env.staging.routes]]
+pattern = "staging.bbbrasil.com/*"
+zone_name = "bbbrasil.com"
+
+# Configurações de produção
+[env.production]
+name = "bbb-link-enhancer"
+vars = { ENVIRONMENT = "production" }
+
+[[env.production.routes]]
+pattern = "bbbrasil.com/r/*"
+zone_name = "bbbrasil.com"
+
+[[env.production.routes]]
+pattern = "bbbrasil.com/api/*"
+zone_name = "bbbrasil.com"
+
+# Limites e configurações
+[limits]
+cpu_ms = 50
+
+[build]
+command = ""
+watch_paths = ["index.js"]
+
+# Triggers (Cron jobs opcionais)
+# [[triggers]]
+# crons = ["0 0 * * *"]  # Diariamente à meia-noite para limpeza
+
+# Configurações de compatibilidade
+[compatibility_flags]
+# Flags de compatibilidade se necessário
+
+# Observability (opcional)
+[observability]
+enabled = true
+
+# Tail Workers (opcional para logging)
+# [[tail_consumers]]
+# service = "logger-worker"
+
+# Service bindings (se usar outros workers)
+# [[services]]
+# binding = "AUTH"
+# service = "auth-worker"
+
+# R2 buckets (se usar para armazenamento)
+# [[r2_buckets]]
+# binding = "STORAGE"
+# bucket_name = "bbb-storage"
+
+# Durable Objects (se usar para estado)
+# [[durable_objects.bindings]]
+# name = "COUNTER"
+# class_name = "Counter"
+# script_name = "counter-worker"
+
+# Analytics Engine (opcional)
+# [[analytics_engine_datasets]]
+# binding = "ANALYTICS"
+# dataset = "bbb_analytics"
+
+# Logpush (opcional para logs avançados)
+# [logpush]
+# enabled = true

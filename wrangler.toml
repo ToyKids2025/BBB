@@ -1,0 +1,22 @@
+name = "bbb-link-enhancer"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "BBB_LINKS"
+id = "PENDING_KV_ID"
+preview_id = "PENDING_PREVIEW_KV_ID"
+
+[env.production]
+vars = {
+  ENVIRONMENT = "production",
+  API_KEY = "sk_live_bbb_2024_secure_key",
+  DOMAIN = "https://bbbrasil.com"
+}
+
+[route]
+pattern = "bbbrasil.com/*"
+zone_name = "bbbrasil.com"
+
+[triggers]
+crons = []

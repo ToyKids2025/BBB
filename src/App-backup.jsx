@@ -5,21 +5,15 @@ import {
   FiTrendingUp, FiDollarSign, FiActivity,
   FiSettings, FiLogOut, FiSearch,
   FiMenu, FiX, FiMoon, FiSun,
-  FiZap, FiShield, FiAward, FiBarChart2,
-  FiDownload, FiUpload, FiBell
+  FiZap, FiShield, FiAward, FiBarChart2
 } from 'react-icons/fi';
-import { AUTH_SERVICE } from './auth-service';
-import { AFFILIATE_TAGS, detectPlatform, addAffiliateTag } from './config';
-import {
-  saveLink,
-  getLinks,
-  updateLinkClick,
-  getAnalyticsData,
-  sendTelegramNotification
-} from './firebase';
+import { checkAuth, logout, AUTH_CONFIG } from './auth-config';
+import { AFFILIATE_TAGS, createShortlink, detectPlatform } from './config';
 
-// Componente Principal com Firebase
+
+// Componente Principal com Performance Otimizada
 const App = memo(() => {
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState(() =>
@@ -27,24 +21,25 @@ const App = memo(() => {
   );
 
   useEffect(() => {
-    // Aplicar tema
+    // Aplicar tema salvo
     document.documentElement.setAttribute('data-theme', theme);
 
-    // Monitor de autenticação Firebase
-    const unsubscribe = AUTH_SERVICE.onAuthStateChange((firebaseUser) => {
-      if (firebaseUser) {
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName || 'Alexandre'
-        });
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
+    // Verificar autenticação
+    const token = localStorage.getItem('bb_token');
+    const savedUser = localStorage.getItem('bb_user');
 
-    return () => unsubscribe();
+    if (token && savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        if (userData.cpf === AUTH_CONFIG.VALID_CPF) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error('Erro ao validar usuário:', error);
+      }
+    }
+
+    setLoading(false);
   }, []);
 
   // Toggle tema
@@ -55,7 +50,7 @@ const App = memo(() => {
     document.documentElement.setAttribute('data-theme', newTheme);
   }, [theme]);
 
-  // Loading
+  // Loading Premium
   if (loading) {
     return <LoadingScreen />;
   }
@@ -65,21 +60,14 @@ const App = memo(() => {
     return <LoginScreen onLogin={setUser} />;
   }
 
-  // Dashboard
-  return (
-    <Dashboard
-      user={user}
-      onLogout={async () => {
-        await AUTH_SERVICE.logout();
-        setUser(null);
-      }}
-      theme={theme}
-      toggleTheme={toggleTheme}
-    />
-  );
+  // Dashboard Principal
+  return <Dashboard user={user} onLogout={() => {
+    logout();
+    setUser(null);
+  }} theme={theme} toggleTheme={toggleTheme} />;
 });
 
-// Tela de Loading
+// Tela de Loading Premium
 const LoadingScreen = memo(() => (
   <div className="loading-container">
     <div className="loading-content">
@@ -87,14 +75,14 @@ const LoadingScreen = memo(() => (
         <FiZap className="spin" size={48} />
       </div>
       <h2>BBB Link Enhancer</h2>
-      <p>Sistema Premium com Firebase</p>
+      <p>Carregando sistema premium...</p>
     </div>
   </div>
 ));
 
-// Tela de Login com Firebase
+// Tela de Login Premium
 const LoginScreen = memo(({ onLogin }) => {
-  const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -104,12 +92,16 @@ const LoginScreen = memo(({ onLogin }) => {
     setError('');
     setLoading(true);
 
-    const result = await AUTH_SERVICE.login(credentials.email, credentials.password);
+    // Validação
+    const result = checkAuth(credentials.username, credentials.password);
 
     if (result.success) {
+      localStorage.setItem('bb_token', result.token);
+      localStorage.setItem('bb_user', JSON.stringify(result.user));
       onLogin(result.user);
     } else {
       setError(result.error);
+      // Vibração para feedback tátil (mobile)
       if ('vibrate' in navigator) {
         navigator.vibrate(200);
       }
@@ -124,21 +116,28 @@ const LoginScreen = memo(({ onLogin }) => {
         <div className="login-logo">
           <div className="logo-circle">BBB</div>
           <h1>Busca Busca Brasil</h1>
-          <p>Sistema Premium com Firebase + Telegram</p>
+          <p>Sistema Premium de Links</p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
-            <label htmlFor="email" className="sr-only">Email</label>
+            <label htmlFor="cpf" className="sr-only">CPF</label>
             <input
-              id="email"
-              type="email"
-              placeholder="Email"
-              value={credentials.email}
-              onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+              id="cpf"
+              type="text"
+              placeholder="CPF (apenas números)"
+              value={credentials.username}
+              onChange={(e) => setCredentials({
+                ...credentials,
+                username: e.target.value.replace(/\D/g, '')
+              })}
               required
+              maxLength="11"
               autoComplete="username"
-              aria-label="Email"
+              pattern="[0-9]{11}"
+              title="Digite seu CPF com 11 dígitos"
+              aria-label="CPF"
+              aria-required="true"
               autoFocus
             />
           </div>
@@ -154,6 +153,7 @@ const LoginScreen = memo(({ onLogin }) => {
               required
               autoComplete="current-password"
               aria-label="Senha"
+              aria-required="true"
             />
             <button
               type="button"
@@ -166,7 +166,7 @@ const LoginScreen = memo(({ onLogin }) => {
           </div>
 
           {error && (
-            <div className="error-message" role="alert">
+            <div className="error-message" role="alert" aria-live="polite">
               {error}
             </div>
           )}
@@ -175,32 +175,39 @@ const LoginScreen = memo(({ onLogin }) => {
             type="submit"
             disabled={loading}
             className="btn btn-primary"
+            aria-busy={loading}
           >
-            {loading ? 'Entrando...' : 'Entrar'}
+            {loading ? (
+              <>
+                <span className="spinner" aria-hidden="true"></span>
+                Entrando...
+              </>
+            ) : 'Entrar'}
           </button>
         </form>
 
         <div className="login-footer">
-          <small>🔒 Autenticação Firebase • 🤖 Notificações Telegram</small>
+          <small>Sistema protegido • Acesso exclusivo</small>
         </div>
       </div>
     </div>
   );
 });
 
-// Dashboard Principal
+// Dashboard Principal Premium
 const Dashboard = memo(({ user, onLogout, theme, toggleTheme }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications] = useState([]);
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: FiActivity, badge: null },
-    { id: 'links', label: 'Shortlinks', icon: FiLink, badge: 'Firebase' },
-    { id: 'analytics', label: 'Analytics Real', icon: FiBarChart2, badge: 'Live' },
+    { id: 'links', label: 'Shortlinks', icon: FiLink, badge: 'novo' },
+    { id: 'analytics', label: 'Analytics', icon: FiBarChart2, badge: null },
     { id: 'settings', label: 'Configurações', icon: FiSettings, badge: null }
   ];
 
+  // Fechar sidebar no mobile ao clicar em item
   const handleMenuClick = useCallback((tabId) => {
     setActiveTab(tabId);
     if (window.innerWidth <= 768) {
@@ -208,26 +215,52 @@ const Dashboard = memo(({ user, onLogout, theme, toggleTheme }) => {
     }
   }, []);
 
+  // Atalhos de teclado
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      // Ctrl/Cmd + K para busca
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        document.querySelector('.search-bar input')?.focus();
+      }
+      // Ctrl/Cmd + N para novo link
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        setActiveTab('links');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
+
   return (
     <div className="dashboard-container" data-theme={theme}>
+      {/* Overlay para mobile */}
       {sidebarOpen && window.innerWidth <= 768 && (
-        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
       )}
 
+      {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="logo-circle">BBB</div>
-          {sidebarOpen && <span className="logo-text">Link Pro</span>}
+          {sidebarOpen && <span className="logo-text">Link Enhancer</span>}
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" role="navigation">
           {menuItems.map(item => (
             <button
               key={item.id}
               className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
               onClick={() => handleMenuClick(item.id)}
+              aria-current={activeTab === item.id ? 'page' : undefined}
             >
-              <item.icon />
+              <item.icon aria-hidden="true" />
               {sidebarOpen && (
                 <>
                   <span>{item.label}</span>
@@ -241,40 +274,63 @@ const Dashboard = memo(({ user, onLogout, theme, toggleTheme }) => {
         </nav>
 
         <div className="sidebar-footer">
-          <button className="nav-item" onClick={toggleTheme}>
+          <button
+            className="nav-item"
+            onClick={toggleTheme}
+            aria-label={`Mudar para tema ${theme === 'light' ? 'escuro' : 'claro'}`}
+          >
             {theme === 'light' ? <FiMoon /> : <FiSun />}
             {sidebarOpen && <span>Tema</span>}
           </button>
-          <button className="nav-item" onClick={onLogout}>
+          <button
+            className="nav-item"
+            onClick={onLogout}
+            aria-label="Sair do sistema"
+          >
             <FiLogOut />
             {sidebarOpen && <span>Sair</span>}
           </button>
         </div>
       </aside>
 
-      <main className="main-content">
+      {/* Main Content */}
+      <main className="main-content" role="main">
         <header className="top-bar">
           <button
             className="sidebar-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={sidebarOpen}
           >
             {sidebarOpen ? <FiX /> : <FiMenu />}
           </button>
 
           <div className="search-bar">
-            <FiSearch />
-            <input type="search" placeholder="Buscar..." />
+            <FiSearch aria-hidden="true" />
+            <input
+              type="search"
+              placeholder="Buscar links, analytics... (Ctrl+K)"
+              aria-label="Buscar no sistema"
+            />
           </div>
 
           <div className="user-menu">
-            <button className="btn-icon notification-btn">
-              <FiBell />
+            <button
+              className="btn-icon notification-btn"
+              aria-label={`${notifications.length} notificações`}
+            >
+              <FiActivity />
               {notifications.length > 0 && (
                 <span className="notification-badge">{notifications.length}</span>
               )}
             </button>
-            <div className="user-avatar">
-              {user.email[0].toUpperCase()}
+            <div
+              className="user-avatar"
+              title={user.fullName}
+              role="img"
+              aria-label={`Avatar de ${user.fullName}`}
+            >
+              {user.username[0].toUpperCase()}
             </div>
           </div>
         </header>
@@ -290,65 +346,53 @@ const Dashboard = memo(({ user, onLogout, theme, toggleTheme }) => {
   );
 });
 
-// Dashboard View com Firebase Analytics
+// Dashboard View Premium
 const DashboardView = memo(({ user }) => {
-  const [metrics, setMetrics] = useState({
-    totalLinks: 0,
+  const metrics = {
     totalClicks: 0,
     totalConversions: 0,
-    totalRevenue: 0,
-    conversionRate: 0
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadAnalytics();
-  }, []);
-
-  const loadAnalytics = async () => {
-    const result = await getAnalyticsData();
-    if (result.success) {
-      setMetrics(result.data);
-    }
-    setLoading(false);
+    conversionRate: 0,
+    revenue: 0,
+    activeLinks: 0,
+    clicksToday: 0
   };
 
   const stats = [
     {
       title: 'Links Ativos',
-      value: metrics.totalLinks,
+      value: metrics.activeLinks,
+      change: null,
       icon: FiLink,
       color: 'primary'
     },
     {
-      title: 'Clicks Total',
-      value: metrics.totalClicks,
+      title: 'Clicks Hoje',
+      value: metrics.clicksToday,
+      change: null,
       icon: FiTrendingUp,
       color: 'success'
     },
     {
       title: 'Taxa de Conversão',
       value: `${metrics.conversionRate}%`,
+      change: null,
       icon: FiAward,
       color: 'warning'
     },
     {
       title: 'Receita Total',
-      value: `R$ ${metrics.totalRevenue.toFixed(2)}`,
+      value: `R$ ${metrics.revenue.toFixed(2)}`,
+      change: null,
       icon: FiDollarSign,
       color: 'info'
     }
   ];
 
-  if (loading) {
-    return <div className="loading">Carregando analytics...</div>;
-  }
-
   return (
     <div className="dashboard-view">
       <div className="view-header">
-        <h1>Dashboard Firebase</h1>
-        <p className="subtitle">Métricas em tempo real</p>
+        <h1>Bem-vindo, {user.username}!</h1>
+        <p className="subtitle">Sistema funcionando perfeitamente</p>
       </div>
 
       <div className="stats-grid">
@@ -363,6 +407,11 @@ const DashboardView = memo(({ user }) => {
             </div>
             <div className="stat-value">{stat.value}</div>
             <div className="stat-label">{stat.title}</div>
+            {stat.change && (
+              <div className={`stat-change ${stat.change.startsWith('+') ? 'positive' : 'negative'}`}>
+                {stat.change}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -370,28 +419,28 @@ const DashboardView = memo(({ user }) => {
       <div className="dashboard-grid">
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Sistema Ativo</h2>
+            <h2 className="card-title">Performance</h2>
           </div>
           <div className="performance-metrics">
             <div className="metric-item">
               <FiZap className="metric-icon" />
               <div>
-                <div className="metric-value">✅</div>
-                <div className="metric-label">Firebase</div>
-              </div>
-            </div>
-            <div className="metric-item">
-              <FiBell className="metric-icon" />
-              <div>
-                <div className="metric-value">✅</div>
-                <div className="metric-label">Telegram Bot</div>
+                <div className="metric-value">-</div>
+                <div className="metric-label">Redirect Speed</div>
               </div>
             </div>
             <div className="metric-item">
               <FiShield className="metric-icon" />
               <div>
-                <div className="metric-value">✅</div>
-                <div className="metric-label">Auth Seguro</div>
+                <div className="metric-value">-</div>
+                <div className="metric-label">Uptime</div>
+              </div>
+            </div>
+            <div className="metric-item">
+              <FiActivity className="metric-icon" />
+              <div>
+                <div className="metric-value">-</div>
+                <div className="metric-label">Cookie Persistence</div>
               </div>
             </div>
           </div>
@@ -399,18 +448,18 @@ const DashboardView = memo(({ user }) => {
 
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Tags Configuradas</h2>
+            <h2 className="card-title">Tags de Afiliado</h2>
           </div>
           <div className="tags-list">
             <div className="tag-item">
               <span className="tag-platform">Amazon</span>
               <span className="tag-value">{AFFILIATE_TAGS.AMAZON}</span>
-              <span className="badge badge-success">✅</span>
+              <span className="badge badge-success">Ativa</span>
             </div>
             <div className="tag-item">
               <span className="tag-platform">Mercado Livre</span>
               <span className="tag-value">{AFFILIATE_TAGS.MERCADOLIVRE}</span>
-              <span className="badge badge-success">✅</span>
+              <span className="badge badge-success">Ativa</span>
             </div>
           </div>
         </div>
@@ -419,116 +468,95 @@ const DashboardView = memo(({ user }) => {
   );
 });
 
-// Links View com Firebase
+// Links View Premium
 const LinksView = memo(() => {
-  const [links, setLinks] = useState([]);
+  const [links, setLinks] = useState(() => {
+    // Carregar links salvos do localStorage
+    const saved = localStorage.getItem('bbb_links');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newLink, setNewLink] = useState({ url: '', title: '' });
   const [creating, setCreating] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadLinks();
-  }, []);
-
-  const loadLinks = async () => {
-    const result = await getLinks();
-    if (result.success) {
-      setLinks(result.links);
-    }
-    setLoading(false);
-  };
 
   const handleCreateLink = async () => {
     if (!newLink.url) return;
 
     setCreating(true);
     const platform = detectPlatform(newLink.url);
-    const urlWithTag = addAffiliateTag(newLink.url, platform);
-
-    const linkData = {
-      url: urlWithTag,
-      originalUrl: newLink.url,
-      title: newLink.title || `Link ${platform}`,
-      platform,
-      clicks: 0
-    };
-
-    const result = await saveLink(linkData);
+    const result = await createShortlink(newLink.url);
 
     if (result.success) {
-      await loadLinks(); // Recarregar lista
+      const linkData = {
+        key: result.key,
+        short_url: result.shortUrl,
+        dest: newLink.url,
+        title: newLink.title || 'Sem título',
+        platform,
+        clicks: 0,
+        created: new Date().toISOString()
+      };
+
+      setLinks([linkData, ...links]);
       setNewLink({ url: '', title: '' });
       setShowCreateModal(false);
 
       // Copiar para clipboard
-      navigator.clipboard.writeText(urlWithTag);
+      navigator.clipboard.writeText(result.shortUrl);
 
-      // Notificar sucesso
-      await sendTelegramNotification(
-        `✅ <b>Link criado com sucesso!</b>\n` +
-        `📌 Título: ${linkData.title}\n` +
-        `🔗 URL: ${urlWithTag}\n` +
-        `📋 Copiado para área de transferência`
-      );
+      // Notificação de sucesso
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Link criado!', {
+          body: 'Link copiado para a área de transferência',
+          icon: '/icon-192.png'
+        });
+      }
     }
 
     setCreating(false);
   };
 
-  const handleExportLinks = () => {
-    const dataStr = JSON.stringify(links, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-
-    const exportFileDefaultName = `bbb-links-${new Date().toISOString().split('T')[0]}.json`;
-
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-  };
-
   const copyLink = useCallback((url, e) => {
     navigator.clipboard.writeText(url);
-    const btn = e.currentTarget;
+    // Feedback visual
+    const btn = e.target;
     btn.classList.add('copied');
     setTimeout(() => btn.classList.remove('copied'), 2000);
   }, []);
-
-  if (loading) {
-    return <div className="loading">Carregando links...</div>;
-  }
 
   return (
     <div className="links-view">
       <div className="view-header">
         <div>
-          <h1>Shortlinks Firebase</h1>
-          <p className="subtitle">Links salvos na nuvem</p>
+          <h1>Shortlinks</h1>
+          <p className="subtitle">Gerencie seus links turbinados</p>
         </div>
-        <div className="header-actions">
-          <button className="btn btn-secondary" onClick={handleExportLinks}>
-            <FiDownload /> Exportar
-          </button>
-          <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
-            <FiPlus /> Novo Link
-          </button>
-        </div>
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowCreateModal(true)}
+        >
+          <FiPlus /> Novo Link
+        </button>
       </div>
 
       {showCreateModal && (
         <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Criar Link com Tag de Afiliado</h2>
-              <button className="btn-icon" onClick={() => setShowCreateModal(false)}>
+              <h2>Criar Shortlink</h2>
+              <button
+                className="btn-icon"
+                onClick={() => setShowCreateModal(false)}
+                aria-label="Fechar modal"
+              >
                 <FiX />
               </button>
             </div>
             <div className="modal-body">
               <div className="form-group">
-                <label>URL do Produto</label>
+                <label htmlFor="link-url">URL do Produto (com sua tag)</label>
                 <input
+                  id="link-url"
                   type="url"
                   placeholder="https://www.amazon.com.br/dp/..."
                   value={newLink.url}
@@ -537,8 +565,9 @@ const LinksView = memo(() => {
                 />
               </div>
               <div className="form-group">
-                <label>Título (opcional)</label>
+                <label htmlFor="link-title">Título (opcional)</label>
                 <input
+                  id="link-title"
                   type="text"
                   placeholder="Nome do produto"
                   value={newLink.title}
@@ -547,7 +576,10 @@ const LinksView = memo(() => {
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowCreateModal(false)}
+              >
                 Cancelar
               </button>
               <button
@@ -567,39 +599,40 @@ const LinksView = memo(() => {
           <div className="empty-state">
             <FiLink size={48} />
             <h3>Nenhum link ainda</h3>
-            <p>Links salvos no Firebase Firestore</p>
-            <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+            <p>Crie seu primeiro shortlink turbinado</p>
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowCreateModal(true)}
+            >
               <FiPlus /> Criar Primeiro Link
             </button>
           </div>
         ) : (
           links.map((link) => (
-            <div key={link.id} className="link-card">
+            <div key={link.key} className="link-card">
               <div className="link-header">
                 <span className={`platform-badge ${link.platform}`}>
                   {link.platform}
                 </span>
                 <span className="link-date">
-                  {new Date(link.createdAt).toLocaleDateString('pt-BR')}
+                  {new Date(link.created).toLocaleDateString()}
                 </span>
               </div>
-              <h3 className="link-title">{link.title}</h3>
-              <div className="link-url" style={{fontSize: '12px', wordBreak: 'break-all'}}>
-                {link.url}
-              </div>
+              <h3 className="link-title">{link.title || 'Link de afiliado'}</h3>
+              <div className="link-url" style={{fontSize: '12px', wordBreak: 'break-all'}}>{link.short_url}</div>
               <div className="link-stats">
-                <span><FiTrendingUp /> {link.clicks || 0} clicks</span>
+                <span><FiTrendingUp /> {link.clicks} clicks</span>
               </div>
               <div className="link-actions">
-                <button className="btn btn-secondary" onClick={(e) => copyLink(link.url, e)}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={(e) => copyLink(link.short_url, e)}
+                >
                   <FiCopy /> Copiar
                 </button>
                 <button
                   className="btn btn-secondary"
-                  onClick={async () => {
-                    await updateLinkClick(link.id);
-                    window.open(link.url, '_blank');
-                  }}
+                  onClick={() => window.open(link.short_url, '_blank')}
                 >
                   <FiExternalLink /> Abrir
                 </button>
@@ -613,124 +646,108 @@ const LinksView = memo(() => {
 });
 
 // Analytics View
-const AnalyticsView = memo(() => {
-  const [analytics, setAnalytics] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadAnalytics();
-  }, []);
-
-  const loadAnalytics = async () => {
-    const result = await getAnalyticsData();
-    if (result.success) {
-      setAnalytics(result.data);
-    }
-    setLoading(false);
-  };
-
-  if (loading) {
-    return <div className="loading">Carregando analytics...</div>;
-  }
-
-  return (
-    <div className="analytics-view">
-      <div className="view-header">
-        <h1>Analytics Firebase</h1>
-        <p className="subtitle">Dados reais do Firestore</p>
-      </div>
-
-      <div className="analytics-content">
-        <div className="card">
-          <div className="card-header">
-            <h2 className="card-title">Performance Geral</h2>
-          </div>
-          <div className="analytics-grid">
-            <div className="analytic-item">
-              <div className="analytic-label">Total de Links</div>
-              <div className="analytic-value">{analytics?.totalLinks || 0}</div>
-            </div>
-            <div className="analytic-item">
-              <div className="analytic-label">Total de Clicks</div>
-              <div className="analytic-value">{analytics?.totalClicks || 0}</div>
-            </div>
-            <div className="analytic-item">
-              <div className="analytic-label">Conversões</div>
-              <div className="analytic-value">{analytics?.totalConversions || 0}</div>
-            </div>
-            <div className="analytic-item">
-              <div className="analytic-label">Taxa de Conversão</div>
-              <div className="analytic-value">{analytics?.conversionRate || 0}%</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="card-header">
-            <h2 className="card-title">Receita</h2>
-          </div>
-          <div className="revenue-display">
-            <div className="revenue-value">
-              R$ {analytics?.totalRevenue?.toFixed(2) || '0.00'}
-            </div>
-            <div className="revenue-label">Total Acumulado</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-// Settings View
-const SettingsView = memo(({ user }) => (
-  <div className="settings-view">
+const AnalyticsView = memo(() => (
+  <div className="analytics-view">
     <div className="view-header">
-      <h1>Configurações</h1>
-      <p className="subtitle">Sistema integrado</p>
+      <h1>Analytics</h1>
+      <p className="subtitle">Métricas detalhadas em tempo real</p>
     </div>
 
-    <div className="settings-grid">
+    <div className="analytics-content">
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Conta Firebase</h2>
+          <h2 className="card-title">Performance do Sistema</h2>
         </div>
-        <div className="settings-content">
-          <div className="setting-item">
-            <label>Email</label>
-            <input type="text" value={user.email} readOnly />
+        <div className="analytics-grid">
+          <div className="analytic-item">
+            <div className="analytic-label">Redirect Speed</div>
+            <div className="analytic-value">-</div>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{width: '0%'}}></div>
+            </div>
           </div>
-          <div className="setting-item">
-            <label>UID</label>
-            <input type="text" value={user.uid} readOnly />
+          <div className="analytic-item">
+            <div className="analytic-label">Cookie Persistence</div>
+            <div className="analytic-value">-</div>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{width: '0%'}}></div>
+            </div>
           </div>
-          <div className="setting-item">
-            <label>Nome</label>
-            <input type="text" value={user.displayName || 'Alexandre'} readOnly />
+          <div className="analytic-item">
+            <div className="analytic-label">Add-to-Cart Success</div>
+            <div className="analytic-value">-</div>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{width: '0%'}}></div>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div className="card">
-        <div className="card-header">
-          <h2 className="card-title">Integrações</h2>
-        </div>
-        <div className="settings-content">
-          <div className="integration-status">
-            <span>🔥 Firebase</span>
-            <span className="badge badge-success">Conectado</span>
-          </div>
-          <div className="integration-status">
-            <span>🤖 Telegram Bot</span>
-            <span className="badge badge-success">Ativo</span>
-          </div>
-          <div className="integration-status">
-            <span>📊 Analytics</span>
-            <span className="badge badge-success">Rodando</span>
+          <div className="analytic-item">
+            <div className="analytic-label">Deep Link Success</div>
+            <div className="analytic-value">-</div>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{width: '0%'}}></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 ));
+
+// Settings View
+const SettingsView = memo(({ user }) => {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return (
+  <div className="settings-view">
+    <div className="view-header">
+      <h1>Configurações</h1>
+      <p className="subtitle">Personalize seu sistema</p>
+    </div>
+
+    <div className="settings-grid">
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">Perfil</h2>
+        </div>
+        <div className="settings-content">
+          <div className="setting-item">
+            <label>Nome</label>
+            <input type="text" value={user.fullName} readOnly />
+          </div>
+          <div className="setting-item">
+            <label>CPF</label>
+            <input type="text" value={user.cpf} readOnly />
+          </div>
+          <div className="setting-item">
+            <label>Email</label>
+            <input type="email" value={user.email} readOnly />
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">Acessibilidade</h2>
+        </div>
+        <div className="settings-content">
+          <label className="switch-container">
+            <input type="checkbox" defaultChecked aria-describedby="contrast-desc" />
+            <span className="switch-label">Alto Contraste</span>
+            <span id="contrast-desc" className="sr-only">Aumenta o contraste das cores para melhor legibilidade</span>
+          </label>
+          <label className="switch-container">
+            <input type="checkbox" defaultChecked={prefersReducedMotion} aria-describedby="motion-desc" />
+            <span className="switch-label">Animações Reduzidas</span>
+            <span id="motion-desc" className="sr-only">Reduz animações e transições para evitar desconforto</span>
+          </label>
+          <label className="switch-container">
+            <input type="checkbox" defaultChecked aria-describedby="keyboard-desc" />
+            <span className="switch-label">Atalhos de Teclado</span>
+            <span id="keyboard-desc" className="sr-only">Ativa atalhos de teclado para navegação rápida</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+)});
 
 export default App;

@@ -57,6 +57,13 @@ temp/
 *.cert
 private/
 secrets/
+src/auth-config.js
+CREDENCIAIS-ALEXANDRE.md
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
 
 # OS files
 Thumbs.db

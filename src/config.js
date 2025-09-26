@@ -6,8 +6,8 @@
 
 // TAGS DE AFILIADO CONFIRMADAS - ALEXANDRE
 export const AFFILIATE_TAGS = {
-  AMAZON: 'buscabusca0f-20',       // Tag real Amazon
-  MERCADOLIVRE: 'wa20250726131129'  // Tag real Mercado Livre
+  AMAZON: process.env.REACT_APP_AMAZON_TAG || 'buscabusca0f-20',       // Tag real Amazon
+  MERCADOLIVRE: process.env.REACT_APP_ML_AFFILIATE_ID || 'WA20250726131129'  // Tag real Mercado Livre
 };
 
 // CONFIGURAÇÃO DA API

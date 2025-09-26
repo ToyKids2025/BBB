@@ -17,46 +17,33 @@ const DOMAIN = 'https://bbbrasil.com';
 
 // Componente Principal
 function App() {
-  // MODO DESENVOLVIMENTO - Auto-login (REMOVER EM PRODUÇÃO!)
-  const [user, setUser] = useState({
-    username: 'admin',
-    role: 'super_admin',
-    email: 'admin@bbbrasil.com'
-  });
-  const [loading, setLoading] = useState(false);
-
-  // MODO PRODUÇÃO - Descomentar estas linhas:
-  // const [user, setUser] = useState(null);
-  // const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // MODO PRODUÇÃO - Descomentar este bloco:
-    /*
+    // Verificar autenticação
     const token = localStorage.getItem('bb_token');
     if (token) {
       validateToken(token);
     } else {
       setLoading(false);
     }
-    */
   }, []);
   
   const validateToken = async (token) => {
     try {
-      const response = await fetch(`${API_BASE}/auth/validate`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
+      // Validação local do token (sem API por enquanto)
+      const savedUser = localStorage.getItem('bb_user');
+      if (savedUser && token === 'valid_token_alex_2025') {
+        setUser(JSON.parse(savedUser));
       } else {
         localStorage.removeItem('bb_token');
+        localStorage.removeItem('bb_user');
       }
     } catch (error) {
       console.error('Erro validando token:', error);
+      localStorage.removeItem('bb_token');
+      localStorage.removeItem('bb_user');
     } finally {
       setLoading(false);
     }
@@ -81,29 +68,37 @@ function LoginScreen({ onLogin }) {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
+
+    // Credenciais do Alexandre
+    const VALID_CPF = '07917165973';
+    const VALID_PASSWORD = 'Alex.2025@';
+
     try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        localStorage.setItem('bb_token', data.token);
-        onLogin(data.user);
+      // Validação local (sem API backend por enquanto)
+      if (credentials.username === VALID_CPF && credentials.password === VALID_PASSWORD) {
+        const userData = {
+          username: 'Alexandre',
+          cpf: VALID_CPF,
+          email: 'alexandre@bbbrasil.com',
+          role: 'super_admin',
+          fullName: 'Alexandre - BBB Link Enhancer Admin'
+        };
+
+        // Salvar no localStorage
+        localStorage.setItem('bb_token', 'valid_token_alex_2025');
+        localStorage.setItem('bb_user', JSON.stringify(userData));
+
+        onLogin(userData);
       } else {
-        setError(data.error || 'Erro no login');
+        setError('CPF ou senha incorretos!');
       }
     } catch (error) {
-      setError('Erro de conexão');
+      setError('Erro ao fazer login');
     } finally {
       setLoading(false);
     }
@@ -122,14 +117,17 @@ function LoginScreen({ onLogin }) {
           <div className="form-group">
             <input
               type="text"
-              placeholder="Usuário"
+              placeholder="CPF (apenas números)"
               value={credentials.username}
-              onChange={(e) => setCredentials({...credentials, username: e.target.value})}
+              onChange={(e) => setCredentials({...credentials, username: e.target.value.replace(/\D/g, '')})}
               required
+              maxLength="11"
               autoComplete="username"
+              pattern="[0-9]{11}"
+              title="Digite seu CPF com 11 dígitos"
             />
           </div>
-          
+
           <div className="form-group">
             <input
               type="password"

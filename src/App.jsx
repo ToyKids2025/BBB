@@ -515,10 +515,10 @@ const LinksView = memo(() => {
     setCreating(false);
   };
 
-  const copyLink = useCallback((url) => {
+  const copyLink = useCallback((url, e) => {
     navigator.clipboard.writeText(url);
     // Feedback visual
-    const btn = event.target;
+    const btn = e.target;
     btn.classList.add('copied');
     setTimeout(() => btn.classList.remove('copied'), 2000);
   }, []);
@@ -626,7 +626,7 @@ const LinksView = memo(() => {
               <div className="link-actions">
                 <button
                   className="btn btn-secondary"
-                  onClick={() => copyLink(link.short_url)}
+                  onClick={(e) => copyLink(link.short_url, e)}
                 >
                   <FiCopy /> Copiar
                 </button>

@@ -1,12 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "CI=false npm run build",
   "outputDirectory": "build",
+  "installCommand": "npm install --legacy-peer-deps",
   "framework": "create-react-app",
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "https://bbbrasil.com/api/$1"
-    }
-  ]
+  "env": {
+    "CI": "false",
+    "GENERATE_SOURCEMAP": "false",
+    "REACT_APP_API_URL": "https://bbbrasil.com/api",
+    "REACT_APP_DOMAIN": "https://bbbrasil.com"
+  }
 }

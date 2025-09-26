@@ -61,15 +61,21 @@ export function detectPlatform(url) {
 
 // FUNÇÃO PARA ADICIONAR TAG DE AFILIADO
 export function addAffiliateTag(url, platform) {
-  // Remove tags existentes
-  let cleanUrl = url.split('?')[0];
+  // Para Mercado Livre, manter URL original e adicionar parâmetros
+  // Para Amazon, limpar e adicionar tag
 
   switch(platform) {
     case 'amazon':
+      // Amazon - limpar URL e adicionar tag
+      let cleanUrl = url.split('?')[0];
       return `${cleanUrl}?tag=${AFFILIATE_TAGS.AMAZON}`;
 
     case 'mercadolivre':
-      return `${cleanUrl}?matt_tool=${AFFILIATE_TAGS.MERCADOLIVRE}&matt_word=DEFAULT`;
+      // Mercado Livre - adicionar parâmetros corretos
+      // matt_word = ID do afiliado
+      // matt_tool = ID da ferramenta
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}matt_word=${AFFILIATE_TAGS.MERCADOLIVRE}&matt_tool=88344921`;
 
     default:
       return url;

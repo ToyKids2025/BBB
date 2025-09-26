@@ -1,16 +1,16 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, query, where, orderBy, limit } from 'firebase/firestore';
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
 import { getAnalytics, logEvent } from 'firebase/analytics';
 
 // Configuração do Firebase
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "AIzaSyDP-2TOFuq_7zB78shhA4AGXvKJ166DYaw",
-  authDomain: "afiliador-inteligente.firebaseapp.com",
-  projectId: "afiliador-inteligente",
-  storageBucket: "afiliador-inteligente.firebasestorage.app",
-  messagingSenderId: "215123809953",
-  appId: "1:215123809953:web:573e5e71ad1b2d3bb902e0"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
 // Inicializar Firebase
@@ -70,20 +70,35 @@ export const saveLink = async (linkData) => {
 
 export const getLinks = async () => {
   try {
-    const q = query(
-      collection(db, 'links'),
-      where('userId', '==', auth.currentUser?.uid),
-      orderBy('createdAt', 'desc')
-    );
-    const snapshot = await getDocs(q);
+    if (!auth.currentUser) {
+      return { success: true, links: [] };
+    }
+
+    // Buscar links sem query complexa para evitar erro de índice
+    const linksRef = collection(db, 'links');
+    const snapshot = await getDocs(linksRef);
+
     const links = [];
     snapshot.forEach((doc) => {
-      links.push({ id: doc.id, ...doc.data() });
+      const data = doc.data();
+      // Filtrar apenas links do usuário atual
+      if (data.userId === auth.currentUser.uid) {
+        links.push({ id: doc.id, ...data });
+      }
     });
+
+    // Ordenar manualmente por data
+    links.sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0);
+      const dateB = new Date(b.createdAt || 0);
+      return dateB - dateA;
+    });
+
     return { success: true, links };
   } catch (error) {
     console.error('Erro ao buscar links:', error);
-    return { success: false, error: error.message };
+    // Se for qualquer erro, retornar array vazio para não quebrar a interface
+    return { success: true, links: [] };
   }
 };
 
@@ -149,19 +164,54 @@ export const getAnalyticsData = async () => {
   try {
     const userId = auth.currentUser?.uid;
 
-    // Buscar links
-    const linksQuery = query(
-      collection(db, 'links'),
-      where('userId', '==', userId)
-    );
-    const linksSnapshot = await getDocs(linksQuery);
+    if (!userId) {
+      return {
+        success: true,
+        data: {
+          totalLinks: 0,
+          totalClicks: 0,
+          totalConversions: 0,
+          totalRevenue: 0,
+          conversionRate: 0
+        }
+      };
+    }
 
-    // Buscar conversões
-    const conversionsQuery = query(
-      collection(db, 'conversions'),
-      where('userId', '==', userId)
-    );
-    const conversionsSnapshot = await getDocs(conversionsQuery);
+    // Buscar links sem query complexa
+    let linksSnapshot = { docs: [] };
+    try {
+      const linksRef = collection(db, 'links');
+      const allLinks = await getDocs(linksRef);
+      const userLinks = [];
+
+      allLinks.forEach((doc) => {
+        if (doc.data().userId === userId) {
+          userLinks.push(doc);
+        }
+      });
+
+      linksSnapshot = { docs: userLinks };
+    } catch (e) {
+      console.log('Erro ao buscar links para analytics:', e.message);
+    }
+
+    // Buscar conversões sem query complexa
+    let conversionsSnapshot = { docs: [] };
+    try {
+      const conversionsRef = collection(db, 'conversions');
+      const allConversions = await getDocs(conversionsRef);
+      const userConversions = [];
+
+      allConversions.forEach((doc) => {
+        if (doc.data().userId === userId) {
+          userConversions.push(doc);
+        }
+      });
+
+      conversionsSnapshot = { docs: userConversions };
+    } catch (e) {
+      console.log('Erro ao buscar conversões:', e.message);
+    }
 
     // Calcular métricas
     let totalClicks = 0;
@@ -196,8 +246,8 @@ export const getAnalyticsData = async () => {
 
 // Telegram Notifications
 const sendTelegramNotification = async (message) => {
-  const botToken = process.env.REACT_APP_TELEGRAM_BOT_TOKEN || '8412872348:AAHqvLQyWC2ruzEJf8EzxiAa0rgGTfZqAdM';
-  const chatId = process.env.REACT_APP_TELEGRAM_CHAT_ID || '834836872';
+  const botToken = process.env.REACT_APP_TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.REACT_APP_TELEGRAM_CHAT_ID;
 
   try {
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {

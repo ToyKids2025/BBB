@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Add-to-Cart - Echo Dot Amazon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .product-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .product-image {
+            width: 120px;
+            height: 120px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+
+        .product-details h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .product-details p {
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .price {
+            font-size: 28px;
+            color: #B12704;
+            font-weight: bold;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+        }
+
+        .test-section h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .url-display {
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            word-break: break-all;
+            margin-bottom: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #FF9900;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #FF7700;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5567d8;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #48BB78;
+            color: white;
+        }
+
+        .status-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .status-box.success {
+            background: #C6F6D5;
+            color: #22543D;
+            border: 1px solid #9AE6B4;
+            display: block;
+        }
+
+        .status-box.error {
+            background: #FED7D7;
+            color: #742A2A;
+            border: 1px solid #FC8181;
+            display: block;
+        }
+
+        .status-box.info {
+            background: #BEE3F8;
+            color: #2C5282;
+            border: 1px solid #90CDF4;
+            display: block;
+        }
+
+        .test-results {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .test-results h4 {
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .result-icon {
+            font-size: 24px;
+            margin-right: 12px;
+        }
+
+        .result-text {
+            flex: 1;
+        }
+
+        .cookie-display {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Teste Add-to-Cart Amazon</h1>
+            <p>Sistema BBB Link Enhancer - Teste de Funcionalidade</p>
+        </div>
+
+        <div class="test-card">
+            <div class="product-info">
+                <div class="product-image">🔊</div>
+                <div class="product-details">
+                    <h2>Echo Dot (5ª geração, 2022)</h2>
+                    <p>Com Alexa | Smart Speaker | Música, informação e Casa Inteligente</p>
+                    <p>ASIN: B09B8V1LZ3</p>
+                    <div class="price">R$ 299,00</div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>1️⃣ Link Padrão (só tag de afiliado)</h3>
+                <div class="url-display" id="standardUrl">
+                    https://www.amazon.com.br/dp/B09B8V1LZ3?tag=buscabusca0f-20
+                </div>
+                <div class="button-group">
+                    <a href="#" class="btn btn-primary" onclick="openStandardLink(event)">
+                        🔗 Abrir Link Padrão
+                    </a>
+                    <button class="btn btn-secondary" onclick="copyToClipboard('standardUrl')">
+                        📋 Copiar URL
+                    </button>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>2️⃣ Link Add-to-Cart Automático</h3>
+                <div class="url-display" id="addToCartUrl">
+                    https://www.amazon.com.br/gp/aws/cart/add.html?AssociateTag=buscabusca0f-20&ASIN.1=B09B8V1LZ3&Quantity.1=1&add=add
+                </div>
+                <div class="button-group">
+                    <a href="#" class="btn btn-success" onclick="openAddToCartLink(event)">
+                        🛒 Testar Add-to-Cart
+                    </a>
+                    <button class="btn btn-secondary" onclick="copyToClipboard('addToCartUrl')">
+                        📋 Copiar URL
+                    </button>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>3️⃣ Link com Redirect Intermediário</h3>
+                <div class="url-display" id="redirectUrl">
+                    http://localhost:3000/r/echo-dot-test
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="testRedirectLink()">
+                        ⚡ Testar Redirect Local
+                    </button>
+                    <button class="btn btn-secondary" onclick="testCookiePersistence()">
+                        🍪 Testar Cookies
+                    </button>
+                </div>
+            </div>
+
+            <div id="statusBox" class="status-box"></div>
+
+            <div class="test-results">
+                <h4>📊 Resultados dos Testes</h4>
+
+                <div class="result-item">
+                    <span class="result-icon" id="cookieIcon">⏳</span>
+                    <div class="result-text">
+                        <strong>Cookies Seguros:</strong>
+                        <span id="cookieStatus">Aguardando teste...</span>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <span class="result-icon" id="storageIcon">⏳</span>
+                    <div class="result-text">
+                        <strong>Persistência Local:</strong>
+                        <span id="storageStatus">Aguardando teste...</span>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <span class="result-icon" id="latencyIcon">⏳</span>
+                    <div class="result-text">
+                        <strong>Latência:</strong>
+                        <span id="latencyStatus">Aguardando teste...</span>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <span class="result-icon" id="browserIcon">⏳</span>
+                    <div class="result-text">
+                        <strong>Browser:</strong>
+                        <span id="browserStatus">Detectando...</span>
+                    </div>
+                </div>
+
+                <div class="cookie-display" id="cookieDisplay">
+                    Cookies atuais aparecerão aqui...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configurações
+        const AMAZON_TAG = 'buscabusca0f-20';
+        const ECHO_DOT_ASIN = 'B09B8V1LZ3';
+
+        // Detectar browser
+        function detectBrowser() {
+            const ua = navigator.userAgent;
+            let browser = 'Desconhecido';
+            let icon = '❓';
+
+            if (/iPhone|iPad|iPod/.test(ua) && /Safari/.test(ua)) {
+                browser = 'Safari iOS';
+                icon = '📱';
+                if (/CriOS/.test(ua)) {
+                    browser = 'Chrome iOS';
+                    icon = '📱';
+                }
+            } else if (/Instagram/.test(ua)) {
+                browser = 'Instagram Browser';
+                icon = '📸';
+            } else if (/FB|FBAN/.test(ua)) {
+                browser = 'Facebook Browser';
+                icon = '👤';
+            } else if (/Chrome/.test(ua)) {
+                browser = 'Chrome';
+                icon = '🌐';
+            } else if (/Safari/.test(ua)) {
+                browser = 'Safari';
+                icon = '🧭';
+            } else if (/Firefox/.test(ua)) {
+                browser = 'Firefox';
+                icon = '🦊';
+            }
+
+            document.getElementById('browserStatus').textContent = `${browser} ${icon}`;
+            document.getElementById('browserIcon').textContent = icon;
+
+            return browser;
+        }
+
+        // Abrir link padrão
+        function openStandardLink(e) {
+            e.preventDefault();
+            const url = document.getElementById('standardUrl').textContent.trim();
+
+            // Salvar timestamp
+            localStorage.setItem('bbb_test_standard', Date.now());
+
+            // Abrir em nova aba
+            window.open(url, '_blank');
+
+            showStatus('info', '✅ Link padrão aberto em nova aba. Verifique se a tag de afiliado está presente na URL.');
+        }
+
+        // Abrir link add-to-cart
+        function openAddToCartLink(e) {
+            e.preventDefault();
+            const url = document.getElementById('addToCartUrl').textContent.trim();
+
+            // Salvar timestamp
+            localStorage.setItem('bbb_test_addtocart', Date.now());
+
+            // Configurar cookie de teste
+            document.cookie = `bbb_addtocart_test=${Date.now()}; max-age=86400; path=/; SameSite=Lax`;
+
+            // Abrir em nova aba
+            window.open(url, '_blank');
+
+            showStatus('success', '🛒 Link Add-to-Cart aberto! O produto deve ser adicionado automaticamente ao carrinho.');
+        }
+
+        // Testar redirect local
+        function testRedirectLink() {
+            const startTime = performance.now();
+
+            // Simular redirect
+            fetch('http://localhost:3000/r/echo-dot-test')
+                .then(response => {
+                    const latency = performance.now() - startTime;
+                    updateLatency(latency);
+
+                    if (response.ok) {
+                        showStatus('success', `✅ Redirect funcionando! Latência: ${latency.toFixed(2)}ms`);
+                    } else {
+                        throw new Error(`Status: ${response.status}`);
+                    }
+                })
+                .catch(error => {
+                    const latency = performance.now() - startTime;
+                    updateLatency(latency);
+                    showStatus('error', `⚠️ Servidor local não está rodando. Execute: npm start`);
+                });
+        }
+
+        // Testar persistência de cookies
+        function testCookiePersistence() {
+            // Configurar múltiplos cookies com diferentes configurações
+            const testTime = Date.now();
+
+            // Cookie seguro (melhor prática)
+            document.cookie = `bbb_secure=${testTime}; max-age=2592000; path=/; SameSite=Lax`;
+
+            // Cookie com Secure flag (só HTTPS)
+            if (window.location.protocol === 'https:') {
+                document.cookie = `bbb_https=${testTime}; max-age=2592000; path=/; Secure; SameSite=Lax`;
+            }
+
+            // localStorage
+            localStorage.setItem('bbb_persistence', testTime);
+
+            // sessionStorage
+            sessionStorage.setItem('bbb_session', testTime);
+
+            // IndexedDB (para Safari iOS)
+            if ('indexedDB' in window) {
+                const request = indexedDB.open('BBBTest', 1);
+                request.onsuccess = () => {
+                    updateStorageStatus(true);
+                };
+                request.onerror = () => {
+                    updateStorageStatus(false);
+                };
+            }
+
+            // Verificar cookies
+            const cookies = document.cookie;
+            updateCookieStatus(cookies.includes('bbb_'));
+            updateCookieDisplay(cookies);
+
+            showStatus('success', '✅ Cookies e armazenamento configurados! Verifique a persistência.');
+        }
+
+        // Copiar para clipboard
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).textContent.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                showStatus('info', '📋 URL copiada para a área de transferência!');
+            });
+        }
+
+        // Mostrar status
+        function showStatus(type, message) {
+            const box = document.getElementById('statusBox');
+            box.className = `status-box ${type}`;
+            box.textContent = message;
+            box.style.display = 'block';
+
+            setTimeout(() => {
+                box.style.display = 'none';
+            }, 5000);
+        }
+
+        // Atualizar status dos testes
+        function updateCookieStatus(success) {
+            document.getElementById('cookieIcon').textContent = success ? '✅' : '❌';
+            document.getElementById('cookieStatus').textContent = success ?
+                'Configurados (Secure + SameSite=Lax)' : 'Não configurados';
+        }
+
+        function updateStorageStatus(success) {
+            document.getElementById('storageIcon').textContent = success ? '✅' : '⚠️';
+            document.getElementById('storageStatus').textContent = success ?
+                'localStorage + IndexedDB funcionando' : 'Limitado';
+        }
+
+        function updateLatency(latency) {
+            const isGood = latency < 50;
+            document.getElementById('latencyIcon').textContent = isGood ? '✅' : '⚠️';
+            document.getElementById('latencyStatus').textContent =
+                `${latency.toFixed(2)}ms ${isGood ? '(Excelente!)' : '(Alto)'}`;
+        }
+
+        function updateCookieDisplay(cookies) {
+            document.getElementById('cookieDisplay').textContent =
+                cookies || 'Nenhum cookie encontrado';
+        }
+
+        // Inicializar
+        window.onload = function() {
+            detectBrowser();
+
+            // Verificar capacidades
+            const hasLocalStorage = 'localStorage' in window;
+            const hasIndexedDB = 'indexedDB' in window;
+            const hasCookies = navigator.cookieEnabled;
+
+            if (!hasCookies) {
+                showStatus('error', '⚠️ Cookies desabilitados! Ative os cookies no navegador.');
+            }
+
+            // Verificar cookies existentes
+            const cookies = document.cookie;
+            if (cookies) {
+                updateCookieDisplay(cookies);
+                updateCookieStatus(true);
+            }
+
+            // Status inicial de storage
+            updateStorageStatus(hasLocalStorage && hasIndexedDB);
+        };
+    </script>
+</body>
+</html>

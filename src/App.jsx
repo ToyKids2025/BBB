@@ -6,7 +6,7 @@ import {
   FiSettings, FiLogOut, FiSearch,
   FiMenu, FiX, FiMoon, FiSun,
   FiZap, FiShield, FiAward, FiBarChart2,
-  FiDownload, FiUpload, FiBell
+  FiDownload, FiBell
 } from 'react-icons/fi';
 import { AUTH_SERVICE } from './auth-service';
 import { AFFILIATE_TAGS, detectPlatform, addAffiliateTag } from './config';
@@ -17,6 +17,7 @@ import {
   getAnalyticsData,
   sendTelegramNotification
 } from './firebase';
+import { isValidUrl, isSupportedProductUrl, sanitizeUrl, checkRateLimit } from './utils/validation';
 
 // Componente Principal com Firebase
 const App = memo(() => {
@@ -29,7 +30,9 @@ const App = memo(() => {
   useEffect(() => {
     // Aplicar tema
     document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
+  useEffect(() => {
     // Monitor de autenticação Firebase
     const unsubscribe = AUTH_SERVICE.onAuthStateChange((firebaseUser) => {
       if (firebaseUser) {
@@ -192,7 +195,7 @@ const LoginScreen = memo(({ onLogin }) => {
 const Dashboard = memo(({ user, onLogout, theme, toggleTheme }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications] = useState([]);
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: FiActivity, badge: null },
@@ -426,6 +429,16 @@ const LinksView = memo(() => {
   const [newLink, setNewLink] = useState({ url: '', title: '' });
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Obter usuário atual
+    AUTH_SERVICE.onAuthStateChange((firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     loadLinks();
@@ -442,9 +455,30 @@ const LinksView = memo(() => {
   const handleCreateLink = async () => {
     if (!newLink.url) return;
 
+    // Validar URL
+    if (!isValidUrl(newLink.url)) {
+      alert('Por favor, insira uma URL válida');
+      return;
+    }
+
+    if (!isSupportedProductUrl(newLink.url)) {
+      alert('Esta plataforma ainda não é suportada. Use Amazon, Mercado Livre, Magazine Luiza, etc.');
+      return;
+    }
+
+    // Rate limiting
+    const rateLimit = checkRateLimit(user.uid, 30, 60000); // 30 links por minuto
+    if (!rateLimit.allowed) {
+      alert(`Limite excedido. Aguarde ${Math.ceil(rateLimit.remainingTime / 1000)} segundos.`);
+      return;
+    }
+
     setCreating(true);
-    const platform = detectPlatform(newLink.url);
-    const urlWithTag = addAffiliateTag(newLink.url, platform);
+
+    // Sanitizar URL
+    const cleanUrl = sanitizeUrl(newLink.url);
+    const platform = detectPlatform(cleanUrl);
+    const urlWithTag = addAffiliateTag(cleanUrl, platform);
 
     const linkData = {
       url: urlWithTag,
@@ -489,10 +523,20 @@ const LinksView = memo(() => {
   };
 
   const copyLink = useCallback((url, e) => {
-    navigator.clipboard.writeText(url);
-    const btn = e.currentTarget;
-    btn.classList.add('copied');
-    setTimeout(() => btn.classList.remove('copied'), 2000);
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = e.currentTarget;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '✅ Copiado!';
+      btn.style.background = '#4caf50';
+
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.style.background = '';
+      }, 2000);
+    }).catch(err => {
+      console.error('Erro ao copiar:', err);
+      alert('Erro ao copiar. Selecione o texto manualmente.');
+    });
   }, []);
 
   if (loading) {
@@ -584,15 +628,22 @@ const LinksView = memo(() => {
                 </span>
               </div>
               <h3 className="link-title">{link.title}</h3>
-              <div className="link-url" style={{fontSize: '12px', wordBreak: 'break-all'}}>
-                {link.url}
+              <div style={{marginBottom: '15px'}}>
+                <div style={{fontSize: '11px', color: '#999', marginBottom: '5px'}}>URL Original:</div>
+                <div className="link-url" style={{fontSize: '12px', wordBreak: 'break-all', padding: '8px', background: '#f5f5f5', borderRadius: '4px', marginBottom: '10px'}}>
+                  {link.originalUrl || link.url}
+                </div>
+                <div style={{fontSize: '11px', color: '#999', marginBottom: '5px'}}>Link com Tag de Afiliado (copie este):</div>
+                <div className="link-url" style={{fontSize: '12px', wordBreak: 'break-all', padding: '8px', background: '#e8f5e9', borderRadius: '4px', border: '1px solid #4caf50'}}>
+                  {link.url}
+                </div>
               </div>
               <div className="link-stats">
                 <span><FiTrendingUp /> {link.clicks || 0} clicks</span>
               </div>
               <div className="link-actions">
-                <button className="btn btn-secondary" onClick={(e) => copyLink(link.url, e)}>
-                  <FiCopy /> Copiar
+                <button className="btn btn-primary" onClick={(e) => copyLink(link.url, e)}>
+                  <FiCopy /> Copiar Link
                 </button>
                 <button
                   className="btn btn-secondary"
@@ -601,7 +652,16 @@ const LinksView = memo(() => {
                     window.open(link.url, '_blank');
                   }}
                 >
-                  <FiExternalLink /> Abrir
+                  <FiExternalLink /> Testar
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`Confira esta oferta: ${link.url}`)}`;
+                    window.open(whatsappUrl, '_blank');
+                  }}
+                >
+                  📱 WhatsApp
                 </button>
               </div>
             </div>

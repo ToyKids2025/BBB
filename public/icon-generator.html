@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerador de Ícones BBB</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        canvas {
+            display: none;
+        }
+        .preview {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        .icon-preview {
+            text-align: center;
+        }
+        .icon-preview img {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+        button:hover {
+            background: #5567d8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Gerador de Ícones BBB</h1>
+        <p>Clique no botão para gerar todos os ícones necessários</p>
+
+        <button onclick="generateAllIcons()">Gerar Todos os Ícones</button>
+
+        <div class="preview" id="preview"></div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        function generateIcon(size) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = size;
+            canvas.height = size;
+
+            // Gradiente de fundo
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+
+            // Fundo com gradiente
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // Círculo branco central
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const radius = size * 0.35;
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+
+            // Texto BBB
+            ctx.font = `bold ${size * 0.25}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
+            ctx.fillStyle = '#667eea';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('BBB', centerX, centerY);
+
+            // Adicionar borda sutil ao círculo
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+            ctx.lineWidth = size * 0.02;
+            ctx.stroke();
+
+            return canvas.toDataURL('image/png');
+        }
+
+        function generateAllIcons() {
+            const sizes = [96, 152, 167, 180, 192, 512];
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+
+            sizes.forEach(size => {
+                const dataUrl = generateIcon(size);
+
+                // Criar preview
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'icon-preview';
+
+                const img = document.createElement('img');
+                img.src = dataUrl;
+                img.width = Math.min(size, 150);
+                img.height = Math.min(size, 150);
+
+                const label = document.createElement('p');
+                label.textContent = `${size}x${size}`;
+
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = `icon-${size}.png`;
+                link.textContent = 'Baixar';
+                link.style.display = 'block';
+                link.style.marginTop = '10px';
+                link.style.color = '#667eea';
+
+                previewDiv.appendChild(img);
+                previewDiv.appendChild(label);
+                previewDiv.appendChild(link);
+                preview.appendChild(previewDiv);
+            });
+
+            // Gerar favicon.ico também
+            const favicon = generateIcon(32);
+            const faviconLink = document.createElement('a');
+            faviconLink.href = favicon;
+            faviconLink.download = 'favicon.ico';
+            faviconLink.textContent = 'Baixar Favicon (32x32)';
+            faviconLink.style.display = 'block';
+            faviconLink.style.marginTop = '20px';
+            faviconLink.style.fontSize = '18px';
+            faviconLink.style.color = '#667eea';
+            preview.appendChild(faviconLink);
+        }
+
+        // Gerar automaticamente ao carregar
+        window.onload = () => {
+            generateAllIcons();
+        };
+    </script>
+</body>
+</html>

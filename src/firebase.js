@@ -184,15 +184,18 @@ export const getAnalyticsData = async () => {
       const allLinks = await getDocs(linksRef);
       const userLinks = [];
 
-      allLinks.forEach((doc) => {
-        if (doc.data().userId === userId) {
-          userLinks.push(doc);
-        }
-      });
+      if (allLinks && allLinks.forEach) {
+        allLinks.forEach((doc) => {
+          if (doc.data().userId === userId) {
+            userLinks.push(doc);
+          }
+        });
+      }
 
       linksSnapshot = { docs: userLinks };
     } catch (e) {
       console.log('Erro ao buscar links para analytics:', e.message);
+      linksSnapshot = { docs: [] };
     }
 
     // Buscar conversões sem query complexa
@@ -202,31 +205,40 @@ export const getAnalyticsData = async () => {
       const allConversions = await getDocs(conversionsRef);
       const userConversions = [];
 
-      allConversions.forEach((doc) => {
-        if (doc.data().userId === userId) {
-          userConversions.push(doc);
-        }
-      });
+      if (allConversions && allConversions.forEach) {
+        allConversions.forEach((doc) => {
+          if (doc.data().userId === userId) {
+            userConversions.push(doc);
+          }
+        });
+      }
 
       conversionsSnapshot = { docs: userConversions };
     } catch (e) {
       console.log('Erro ao buscar conversões:', e.message);
+      conversionsSnapshot = { docs: [] };
     }
 
     // Calcular métricas
     let totalClicks = 0;
     let totalLinks = 0;
-    linksSnapshot.forEach((doc) => {
-      totalLinks++;
-      totalClicks += doc.data().clicks || 0;
-    });
+
+    if (linksSnapshot.docs && Array.isArray(linksSnapshot.docs)) {
+      linksSnapshot.docs.forEach((doc) => {
+        totalLinks++;
+        totalClicks += doc.data().clicks || 0;
+      });
+    }
 
     let totalRevenue = 0;
     let totalConversions = 0;
-    conversionsSnapshot.forEach((doc) => {
-      totalConversions++;
-      totalRevenue += doc.data().value || 0;
-    });
+
+    if (conversionsSnapshot.docs && Array.isArray(conversionsSnapshot.docs)) {
+      conversionsSnapshot.docs.forEach((doc) => {
+        totalConversions++;
+        totalRevenue += doc.data().value || 0;
+      });
+    }
 
     return {
       success: true,

@@ -523,19 +523,47 @@ const LinksView = memo(() => {
   };
 
   const copyLink = useCallback((url, e) => {
-    navigator.clipboard.writeText(url).then(() => {
-      const btn = e.currentTarget;
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '✅ Copiado!';
-      btn.style.background = '#4caf50';
+    if (!url) {
+      console.error('URL vazia');
+      return;
+    }
 
-      setTimeout(() => {
-        btn.innerHTML = originalText;
-        btn.style.background = '';
-      }, 2000);
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = e && e.currentTarget;
+      if (btn) {
+        const originalText = btn.textContent || 'Copiar Link';
+        const originalBg = btn.style.background || '';
+
+        btn.textContent = '✅ Copiado!';
+        btn.style.background = '#4caf50';
+
+        setTimeout(() => {
+          if (btn) {
+            btn.textContent = originalText;
+            btn.style.background = originalBg;
+          }
+        }, 2000);
+      }
     }).catch(err => {
       console.error('Erro ao copiar:', err);
-      alert('Erro ao copiar. Selecione o texto manualmente.');
+      // Fallback para método antigo
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+
+      try {
+        document.execCommand('copy');
+        if (e && e.currentTarget) {
+          e.currentTarget.textContent = '✅ Copiado!';
+        }
+      } catch (err2) {
+        alert('Erro ao copiar. URL: ' + url);
+      }
+
+      document.body.removeChild(textArea);
     });
   }, []);
 

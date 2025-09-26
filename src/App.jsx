@@ -17,17 +17,28 @@ const DOMAIN = 'https://bbbrasil.com';
 
 // Componente Principal
 function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
+  // MODO DESENVOLVIMENTO - Auto-login (REMOVER EM PRODUÇÃO!)
+  const [user, setUser] = useState({
+    username: 'admin',
+    role: 'super_admin',
+    email: 'admin@bbbrasil.com'
+  });
+  const [loading, setLoading] = useState(false);
+
+  // MODO PRODUÇÃO - Descomentar estas linhas:
+  // const [user, setUser] = useState(null);
+  // const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    // Verificar autenticação
+    // MODO PRODUÇÃO - Descomentar este bloco:
+    /*
     const token = localStorage.getItem('bb_token');
     if (token) {
       validateToken(token);
     } else {
       setLoading(false);
     }
+    */
   }, []);
   
   const validateToken = async (token) => {

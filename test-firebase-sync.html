@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Teste Firebase Sync - Eternal Tracking</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        h1 {
+            color: #f39c12;
+            text-align: center;
+            font-size: 2.5em;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .card {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .card h3 {
+            color: #f39c12;
+            margin-top: 0;
+            border-bottom: 2px solid #0f3460;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .status.success { background: #27ae60; color: white; }
+        .status.error { background: #e74c3c; color: white; }
+        .status.warning { background: #f39c12; color: black; }
+        .status.info { background: #3498db; color: white; }
+        button {
+            background: #f39c12;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #e67e22;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: #0f3460;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .metric-value {
+            font-weight: bold;
+            color: #f39c12;
+        }
+        .log-container {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #0f3460;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .log-entry {
+            padding: 2px 0;
+            border-bottom: 1px solid #16213e;
+        }
+        .realtime-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #27ae60;
+            animation: pulse 2s infinite;
+            margin-left: 10px;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase Sync Testing Suite <span class="realtime-indicator"></span></h1>
+
+    <div class="dashboard">
+        <!-- Firebase Connection -->
+        <div class="card">
+            <h3>🔌 Firebase Connection</h3>
+            <div id="firebase-status" class="status info">Desconectado</div>
+            <button onclick="connectFirebase()">🔌 Conectar Firebase</button>
+            <button onclick="testAuth()">🔐 Testar Autenticação</button>
+            <div class="metric">
+                <span>Status:</span>
+                <span class="metric-value" id="connection-status">Offline</span>
+            </div>
+            <div class="metric">
+                <span>Project ID:</span>
+                <span class="metric-value">afiliador-inteligente</span>
+            </div>
+        </div>
+
+        <!-- Firestore Sync -->
+        <div class="card">
+            <h3>💾 Firestore Sync</h3>
+            <button onclick="saveToFirestore()">💾 Salvar Link Teste</button>
+            <button onclick="loadFromFirestore()">📥 Carregar Links</button>
+            <button onclick="syncBatch()">🔄 Sync em Lote</button>
+            <div class="metric">
+                <span>Links Salvos:</span>
+                <span class="metric-value" id="links-count">0</span>
+            </div>
+            <div class="metric">
+                <span>Última Sync:</span>
+                <span class="metric-value" id="last-sync">Nunca</span>
+            </div>
+            <div id="firestore-log" class="log-container"></div>
+        </div>
+
+        <!-- Analytics Tracking -->
+        <div class="card">
+            <h3>📊 Analytics Events</h3>
+            <button onclick="trackEvent('test_click')">📍 Track Click</button>
+            <button onclick="trackEvent('conversion')">💰 Track Conversion</button>
+            <button onclick="trackEvent('page_view')">👁️ Track View</button>
+            <div class="metric">
+                <span>Events Enviados:</span>
+                <span class="metric-value" id="events-sent">0</span>
+            </div>
+            <div class="metric">
+                <span>Taxa de Sucesso:</span>
+                <span class="metric-value" id="success-rate">0%</span>
+            </div>
+            <div id="analytics-log" class="log-container"></div>
+        </div>
+
+        <!-- Realtime Updates -->
+        <div class="card">
+            <h3>⚡ Realtime Updates</h3>
+            <button onclick="startRealtimeListener()">▶️ Iniciar Listener</button>
+            <button onclick="stopRealtimeListener()">⏸️ Parar Listener</button>
+            <button onclick="simulateRealtimeUpdate()">🔄 Simular Update</button>
+            <div class="metric">
+                <span>Updates Recebidos:</span>
+                <span class="metric-value" id="updates-received">0</span>
+            </div>
+            <div id="realtime-log" class="log-container"></div>
+        </div>
+
+        <!-- Offline Persistence -->
+        <div class="card">
+            <h3>🔌 Offline Persistence</h3>
+            <button onclick="testOfflineMode()">📴 Modo Offline</button>
+            <button onclick="syncOfflineData()">🔄 Sincronizar Offline</button>
+            <div class="metric">
+                <span>Dados Offline:</span>
+                <span class="metric-value" id="offline-data">0</span>
+            </div>
+            <div class="metric">
+                <span>Pendente Sync:</span>
+                <span class="metric-value" id="pending-sync">0</span>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="card">
+            <h3>⚡ Performance</h3>
+            <button onclick="runPerformanceTest()">🏃 Teste de Performance</button>
+            <button onclick="stressTest()">💪 Stress Test</button>
+            <div class="metric">
+                <span>Latência Média:</span>
+                <span class="metric-value" id="avg-latency">0ms</span>
+            </div>
+            <div class="metric">
+                <span>Operações/seg:</span>
+                <span class="metric-value" id="ops-per-sec">0</span>
+            </div>
+            <div class="metric">
+                <span>Taxa de Erro:</span>
+                <span class="metric-value" id="error-rate">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import {
+            getAuth,
+            signInAnonymously
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import {
+            getFirestore,
+            collection,
+            doc,
+            setDoc,
+            getDocs,
+            onSnapshot,
+            enableNetwork,
+            disableNetwork
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import {
+            getAnalytics,
+            logEvent
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
+
+        // Configuração Firebase (usando as variáveis de ambiente do projeto)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDP-2TOFuq_7zB78shhA4AGXvKJ166DYaw",
+            authDomain: "afiliador-inteligente.firebaseapp.com",
+            projectId: "afiliador-inteligente",
+            storageBucket: "afiliador-inteligente.firebasestorage.app",
+            messagingSenderId: "215123809953",
+            appId: "1:215123809953:web:573e5e71ad1b2d3bb902e0"
+        };
+
+        // Variáveis globais
+        let app, auth, db, analytics;
+        let realtimeListener = null;
+        let eventsSent = 0;
+        let eventsSuccess = 0;
+        let updatesReceived = 0;
+        let pendingSyncData = [];
+
+        // Conectar ao Firebase
+        window.connectFirebase = async function() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                analytics = getAnalytics(app);
+
+                updateStatus('firebase-status', 'success', '✅ Firebase conectado!');
+                document.getElementById('connection-status').textContent = 'Online';
+
+                // Auto-autenticar
+                await signInAnonymously(auth);
+                updateStatus('firebase-status', 'success', '✅ Autenticado anonimamente');
+
+            } catch (error) {
+                updateStatus('firebase-status', 'error', '❌ Erro: ' + error.message);
+            }
+        };
+
+        // Testar autenticação
+        window.testAuth = async function() {
+            try {
+                const user = auth.currentUser;
+                if (user) {
+                    updateStatus('firebase-status', 'success', `✅ Usuário: ${user.uid}`);
+                } else {
+                    await signInAnonymously(auth);
+                    updateStatus('firebase-status', 'success', '✅ Autenticado com sucesso');
+                }
+            } catch (error) {
+                updateStatus('firebase-status', 'error', '❌ Erro auth: ' + error.message);
+            }
+        };
+
+        // Salvar no Firestore
+        window.saveToFirestore = async function() {
+            try {
+                const testLink = {
+                    id: 'link_' + Date.now(),
+                    url: 'https://amazon.com.br/test',
+                    platform: 'amazon',
+                    ref: 'buscabusca0f-20',
+                    clicks: Math.floor(Math.random() * 100),
+                    createdAt: new Date().toISOString(),
+                    eternal: true,
+                    fingerprint: generateFingerprint()
+                };
+
+                await setDoc(doc(db, 'links', testLink.id), testLink);
+
+                addLog('firestore-log', `✅ Link salvo: ${testLink.id}`);
+                document.getElementById('last-sync').textContent = new Date().toLocaleTimeString();
+
+                // Atualizar contador
+                const snapshot = await getDocs(collection(db, 'links'));
+                document.getElementById('links-count').textContent = snapshot.size;
+
+            } catch (error) {
+                addLog('firestore-log', `❌ Erro: ${error.message}`);
+            }
+        };
+
+        // Carregar do Firestore
+        window.loadFromFirestore = async function() {
+            try {
+                const snapshot = await getDocs(collection(db, 'links'));
+                const links = [];
+
+                snapshot.forEach(doc => {
+                    links.push({ id: doc.id, ...doc.data() });
+                });
+
+                document.getElementById('links-count').textContent = links.length;
+                addLog('firestore-log', `📥 ${links.length} links carregados`);
+
+                // Mostrar últimos 3 links
+                links.slice(-3).forEach(link => {
+                    addLog('firestore-log', `• ${link.platform}: ${link.clicks} clicks`);
+                });
+
+            } catch (error) {
+                addLog('firestore-log', `❌ Erro: ${error.message}`);
+            }
+        };
+
+        // Sync em lote
+        window.syncBatch = async function() {
+            try {
+                const batch = [];
+                for (let i = 0; i < 10; i++) {
+                    batch.push({
+                        id: 'batch_' + Date.now() + '_' + i,
+                        url: `https://example.com/product-${i}`,
+                        platform: ['amazon', 'mercadolivre', 'magazine'][i % 3],
+                        clicks: Math.floor(Math.random() * 1000),
+                        createdAt: new Date().toISOString()
+                    });
+                }
+
+                // Salvar todos em paralelo
+                const promises = batch.map(item =>
+                    setDoc(doc(db, 'links', item.id), item)
+                );
+
+                await Promise.all(promises);
+                addLog('firestore-log', `✅ ${batch.length} itens sincronizados em lote`);
+                document.getElementById('last-sync').textContent = new Date().toLocaleTimeString();
+
+            } catch (error) {
+                addLog('firestore-log', `❌ Erro batch: ${error.message}`);
+            }
+        };
+
+        // Track Analytics Event
+        window.trackEvent = function(eventName) {
+            try {
+                eventsSent++;
+
+                const eventData = {
+                    timestamp: Date.now(),
+                    fingerprint: generateFingerprint(),
+                    source: 'eternal-tracking'
+                };
+
+                logEvent(analytics, eventName, eventData);
+                eventsSuccess++;
+
+                addLog('analytics-log', `📊 ${eventName} tracked`);
+                document.getElementById('events-sent').textContent = eventsSent;
+
+                const rate = Math.round((eventsSuccess / eventsSent) * 100);
+                document.getElementById('success-rate').textContent = rate + '%';
+
+            } catch (error) {
+                addLog('analytics-log', `❌ Erro: ${error.message}`);
+            }
+        };
+
+        // Realtime Listener
+        window.startRealtimeListener = function() {
+            if (realtimeListener) {
+                addLog('realtime-log', '⚠️ Listener já ativo');
+                return;
+            }
+
+            try {
+                realtimeListener = onSnapshot(
+                    collection(db, 'links'),
+                    { includeMetadataChanges: true },
+                    (snapshot) => {
+                        snapshot.docChanges().forEach((change) => {
+                            updatesReceived++;
+                            document.getElementById('updates-received').textContent = updatesReceived;
+
+                            if (change.type === 'added') {
+                                addLog('realtime-log', `➕ Novo: ${change.doc.id}`);
+                            } else if (change.type === 'modified') {
+                                addLog('realtime-log', `✏️ Modificado: ${change.doc.id}`);
+                            } else if (change.type === 'removed') {
+                                addLog('realtime-log', `🗑️ Removido: ${change.doc.id}`);
+                            }
+                        });
+
+                        const fromCache = snapshot.metadata.fromCache;
+                        if (fromCache) {
+                            addLog('realtime-log', '📦 Dados do cache local');
+                        }
+                    }
+                );
+
+                addLog('realtime-log', '✅ Listener iniciado');
+
+            } catch (error) {
+                addLog('realtime-log', `❌ Erro: ${error.message}`);
+            }
+        };
+
+        // Parar Listener
+        window.stopRealtimeListener = function() {
+            if (realtimeListener) {
+                realtimeListener();
+                realtimeListener = null;
+                addLog('realtime-log', '⏸️ Listener parado');
+            }
+        };
+
+        // Simular update
+        window.simulateRealtimeUpdate = async function() {
+            try {
+                const docId = 'link_' + Date.now();
+                await setDoc(doc(db, 'links', docId), {
+                    url: 'https://realtime-test.com',
+                    updatedAt: new Date().toISOString(),
+                    realtime: true
+                });
+
+                addLog('realtime-log', `🔄 Update simulado: ${docId}`);
+
+            } catch (error) {
+                addLog('realtime-log', `❌ Erro: ${error.message}`);
+            }
+        };
+
+        // Modo Offline
+        window.testOfflineMode = async function() {
+            try {
+                await disableNetwork(db);
+                updateStatus('firebase-status', 'warning', '📴 Modo offline ativado');
+                document.getElementById('connection-status').textContent = 'Offline';
+
+                // Salvar dados offline
+                const offlineData = {
+                    id: 'offline_' + Date.now(),
+                    data: 'Teste offline',
+                    timestamp: Date.now()
+                };
+
+                pendingSyncData.push(offlineData);
+                localStorage.setItem('bb_offline_queue', JSON.stringify(pendingSyncData));
+
+                document.getElementById('offline-data').textContent = pendingSyncData.length;
+                document.getElementById('pending-sync').textContent = pendingSyncData.length;
+
+            } catch (error) {
+                console.error('Erro offline:', error);
+            }
+        };
+
+        // Sincronizar dados offline
+        window.syncOfflineData = async function() {
+            try {
+                await enableNetwork(db);
+                updateStatus('firebase-status', 'success', '✅ Online novamente');
+                document.getElementById('connection-status').textContent = 'Online';
+
+                // Sincronizar dados pendentes
+                for (const item of pendingSyncData) {
+                    await setDoc(doc(db, 'offline', item.id), item);
+                }
+
+                const synced = pendingSyncData.length;
+                pendingSyncData = [];
+                localStorage.removeItem('bb_offline_queue');
+
+                document.getElementById('offline-data').textContent = '0';
+                document.getElementById('pending-sync').textContent = '0';
+
+                updateStatus('firebase-status', 'success', `✅ ${synced} itens sincronizados`);
+
+            } catch (error) {
+                console.error('Erro sync:', error);
+            }
+        };
+
+        // Teste de Performance
+        window.runPerformanceTest = async function() {
+            const operations = 50;
+            const startTime = Date.now();
+            let errors = 0;
+
+            try {
+                const promises = [];
+
+                for (let i = 0; i < operations; i++) {
+                    promises.push(
+                        setDoc(doc(db, 'performance', 'test_' + i), {
+                            index: i,
+                            timestamp: Date.now()
+                        }).catch(() => errors++)
+                    );
+                }
+
+                await Promise.all(promises);
+
+                const duration = Date.now() - startTime;
+                const avgLatency = Math.round(duration / operations);
+                const opsPerSec = Math.round((operations / duration) * 1000);
+                const errorRate = Math.round((errors / operations) * 100);
+
+                document.getElementById('avg-latency').textContent = avgLatency + 'ms';
+                document.getElementById('ops-per-sec').textContent = opsPerSec;
+                document.getElementById('error-rate').textContent = errorRate + '%';
+
+            } catch (error) {
+                console.error('Erro performance:', error);
+            }
+        };
+
+        // Stress Test
+        window.stressTest = async function() {
+            const waves = 5;
+            const opsPerWave = 100;
+
+            for (let wave = 0; wave < waves; wave++) {
+                await runPerformanceTest();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            updateStatus('firebase-status', 'success', `✅ Stress test completo: ${waves * opsPerWave} operações`);
+        };
+
+        // Funções auxiliares
+        function updateStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.className = 'status ' + type;
+            element.textContent = message;
+        }
+
+        function addLog(containerId, message) {
+            const container = document.getElementById(containerId);
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.insertBefore(entry, container.firstChild);
+
+            // Limitar a 10 entradas
+            while (container.children.length > 10) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        function generateFingerprint() {
+            const data = [
+                navigator.userAgent,
+                screen.width + 'x' + screen.height,
+                new Date().getTimezoneOffset(),
+                navigator.language
+            ].join('|');
+
+            // Simple hash
+            let hash = 0;
+            for (let i = 0; i < data.length; i++) {
+                const char = data.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+
+            return Math.abs(hash).toString(36);
+        }
+
+        // Auto-conectar ao carregar
+        window.addEventListener('load', () => {
+            setTimeout(connectFirebase, 1000);
+        });
+    </script>
+</body>
+</html>

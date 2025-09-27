@@ -22,11 +22,28 @@ export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : nul
 // Funções de Autenticação
 export const loginUser = async (email, password) => {
   try {
+    if (!email || !password) {
+      return { success: false, error: 'Email e senha são obrigatórios' };
+    }
+
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return { success: true, user: userCredential.user };
   } catch (error) {
     console.error('Erro no login:', error);
-    return { success: false, error: error.message };
+
+    // Mensagens de erro mais amigáveis
+    let errorMessage = 'Erro ao fazer login';
+    if (error.code === 'auth/user-not-found') {
+      errorMessage = 'Usuário não encontrado';
+    } else if (error.code === 'auth/wrong-password') {
+      errorMessage = 'Senha incorreta';
+    } else if (error.code === 'auth/invalid-email') {
+      errorMessage = 'Email inválido';
+    } else if (error.code === 'auth/too-many-requests') {
+      errorMessage = 'Muitas tentativas. Aguarde um momento';
+    }
+
+    return { success: false, error: errorMessage };
   }
 };
 
@@ -43,28 +60,56 @@ export const logoutUser = async () => {
 // Funções do Firestore - Links
 export const saveLink = async (linkData) => {
   try {
-    const docRef = doc(collection(db, 'links'));
-    await setDoc(docRef, {
-      ...linkData,
-      createdAt: new Date().toISOString(),
-      userId: auth.currentUser?.uid
-    });
-
-    // Log analytics
-    if (analytics) {
-      logEvent(analytics, 'link_created', {
-        platform: linkData.platform,
-        user_id: auth.currentUser?.uid
-      });
+    if (!linkData || !linkData.url) {
+      return { success: false, error: 'Dados do link inválidos' };
     }
 
-    // Enviar notificação Telegram
-    await sendTelegramNotification(`🔗 Novo link criado!\nPlataforma: ${linkData.platform}\nTítulo: ${linkData.title || 'Sem título'}`);
+    if (!auth.currentUser) {
+      return { success: false, error: 'Usuário não autenticado' };
+    }
 
-    return { success: true, id: docRef.id };
+    const docRef = doc(collection(db, 'links'));
+    const linkToSave = {
+      ...linkData,
+      createdAt: new Date().toISOString(),
+      userId: auth.currentUser.uid,
+      clicks: linkData.clicks || 0
+    };
+
+    await setDoc(docRef, linkToSave);
+
+    // Log analytics com try-catch separado
+    try {
+      if (analytics) {
+        logEvent(analytics, 'link_created', {
+          platform: linkData.platform,
+          user_id: auth.currentUser.uid
+        });
+      }
+    } catch (analyticsError) {
+      console.log('Erro ao registrar analytics:', analyticsError);
+      // Não falhar a operação por causa do analytics
+    }
+
+    // Enviar notificação Telegram (não-bloqueante)
+    sendTelegramNotification(
+      `🔗 Novo link criado!\n` +
+      `Plataforma: ${linkData.platform}\n` +
+      `Título: ${linkData.title || 'Sem título'}`
+    ).catch(err => console.log('Erro ao enviar notificação:', err));
+
+    return { success: true, id: docRef.id, link: linkToSave };
   } catch (error) {
     console.error('Erro ao salvar link:', error);
-    return { success: false, error: error.message };
+
+    let errorMessage = 'Erro ao salvar link';
+    if (error.code === 'permission-denied') {
+      errorMessage = 'Sem permissão para salvar links';
+    } else if (error.code === 'unavailable') {
+      errorMessage = 'Serviço temporáriamente indisponível';
+    }
+
+    return { success: false, error: errorMessage };
   }
 };
 
@@ -104,30 +149,48 @@ export const getLinks = async () => {
 
 export const updateLinkClick = async (linkId) => {
   try {
+    if (!linkId) {
+      return { success: false, error: 'ID do link inválido' };
+    }
+
     const linkRef = doc(db, 'links', linkId);
     const linkDoc = await getDoc(linkRef);
 
-    if (linkDoc.exists()) {
-      const currentClicks = linkDoc.data().clicks || 0;
-      await updateDoc(linkRef, {
-        clicks: currentClicks + 1,
-        lastClickedAt: new Date().toISOString()
-      });
+    if (!linkDoc.exists()) {
+      return { success: false, error: 'Link não encontrado' };
+    }
 
-      // Log analytics
+    const currentClicks = linkDoc.data().clicks || 0;
+    const newClicks = currentClicks + 1;
+
+    await updateDoc(linkRef, {
+      clicks: newClicks,
+      lastClickedAt: new Date().toISOString()
+    });
+
+    // Log analytics (não-bloqueante)
+    try {
       if (analytics) {
         logEvent(analytics, 'link_clicked', {
           link_id: linkId,
-          platform: linkDoc.data().platform
+          platform: linkDoc.data().platform,
+          total_clicks: newClicks
         });
       }
-
-      return { success: true };
+    } catch (analyticsError) {
+      console.log('Erro ao registrar click no analytics:', analyticsError);
     }
-    return { success: false, error: 'Link não encontrado' };
+
+    return { success: true, clicks: newClicks };
   } catch (error) {
     console.error('Erro ao atualizar clicks:', error);
-    return { success: false, error: error.message };
+
+    // Não falhar silenciosamente - registrar o erro mas continuar
+    if (error.code === 'permission-denied') {
+      return { success: false, error: 'Sem permissão para atualizar' };
+    }
+
+    return { success: false, error: 'Erro ao registrar click' };
   }
 };
 
@@ -261,6 +324,12 @@ const sendTelegramNotification = async (message) => {
   const botToken = process.env.REACT_APP_TELEGRAM_BOT_TOKEN;
   const chatId = process.env.REACT_APP_TELEGRAM_CHAT_ID;
 
+  // Verificar se as credenciais existem
+  if (!botToken || !chatId) {
+    console.log('Telegram não configurado');
+    return null;
+  }
+
   try {
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
@@ -270,13 +339,21 @@ const sendTelegramNotification = async (message) => {
       body: JSON.stringify({
         chat_id: chatId,
         text: message,
-        parse_mode: 'HTML'
+        parse_mode: 'HTML',
+        disable_web_page_preview: true
       })
     });
 
-    return await response.json();
+    const result = await response.json();
+
+    if (!result.ok) {
+      console.log('Erro na resposta do Telegram:', result.description);
+    }
+
+    return result;
   } catch (error) {
     console.error('Erro ao enviar notificação Telegram:', error);
+    // Não lançar erro - apenas registrar
     return null;
   }
 };

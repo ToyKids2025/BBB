@@ -1,0 +1,241 @@
+/* Link Enhancer CSS - Melhorias de visibilidade */
+
+/* Links com destaque de afiliado */
+.affiliate-url {
+  position: relative;
+  background: linear-gradient(135deg, #e8f5e9, #f1f8e9) !important;
+  border: 2px solid #4caf50 !important;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+  transition: all 0.3s ease;
+  animation: pulseGlow 2s infinite;
+}
+
+.affiliate-url:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  cursor: pointer;
+}
+
+.affiliate-url::before {
+  content: '👆 Clique para copiar';
+  position: absolute;
+  top: -25px;
+  right: 10px;
+  background: #4caf50;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.affiliate-url:hover::before {
+  opacity: 1;
+}
+
+/* Animação de destaque */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+  }
+  50% {
+    box-shadow: 0 2px 16px rgba(76, 175, 80, 0.4);
+  }
+}
+
+/* Botão de copiar melhorado */
+.btn-primary[style*="linear-gradient"] {
+  position: relative;
+  overflow: hidden;
+  font-size: 16px !important;
+  padding: 12px 24px !important;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  transition: all 0.3s;
+}
+
+.btn-primary[style*="linear-gradient"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+}
+
+.btn-primary[style*="linear-gradient"]::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-primary[style*="linear-gradient"]:active::after {
+  width: 300px;
+  height: 300px;
+}
+
+/* Toast de sucesso */
+.copy-success-toast {
+  animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  font-weight: 600;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* Card de link melhorado */
+.link-card {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.link-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.link-card:hover::before {
+  left: 100%;
+}
+
+.link-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Badge de plataforma */
+.platform-badge {
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.platform-badge.amazon {
+  background: linear-gradient(135deg, #ff9900, #ffad33);
+  color: white;
+}
+
+.platform-badge.mercadolivre {
+  background: linear-gradient(135deg, #ffe600, #fff033);
+  color: #333;
+}
+
+.platform-badge.magazineluiza {
+  background: linear-gradient(135deg, #0086ff, #3399ff);
+  color: white;
+}
+
+/* WhatsApp button enhancement */
+button[style*="background: #25D366"] {
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+}
+
+button[style*="background: #25D366"]:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+}
+
+/* Indicador de URL original vs afiliado */
+.original-url {
+  opacity: 0.7;
+  font-family: monospace;
+  font-size: 11px !important;
+}
+
+/* Destaque para contagem de clicks */
+.link-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* Modal melhorado */
+.modal {
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Empty state melhorado */
+.empty-state {
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+}
+
+.empty-state svg {
+  color: #667eea;
+  margin-bottom: 20px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .affiliate-url {
+    font-size: 12px !important;
+    padding: 12px !important;
+  }
+
+  .btn-primary[style*="linear-gradient"] {
+    font-size: 14px !important;
+    padding: 10px 20px !important;
+  }
+
+  .link-card {
+    margin-bottom: 20px;
+  }
+}

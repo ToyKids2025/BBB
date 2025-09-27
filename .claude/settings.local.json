@@ -16,7 +16,8 @@
       "Bash(vercel:*)",
       "Bash(tree:*)",
       "Bash(npm test:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(gzip:*)"
     ],
     "deny": [],
     "ask": []

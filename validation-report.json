@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-09-27T10:29:59.381Z",
+  "score": "100%",
+  "duration": "0.05s",
+  "passed": [
+    "✅ src/utils/eternal-tracking.js (46.46KB)",
+    "✅ Eternal Tracking: 1665 linhas de código",
+    "✅ src/utils/crypto-utils.js (9.26KB)",
+    "✅ public/sw-eternal.js (11.08KB)",
+    "✅ src/components/MonitoringDashboard.jsx (25.34KB)",
+    "✅ src/firebase.js (10.34KB)",
+    "✅ src/App.jsx (30.46KB)",
+    "✅ 8 cookies configurados com diferentes durações",
+    "✅ Cookies com duração até 3650 dias",
+    "✅ 9 chaves de storage configuradas",
+    "✅ Event listener 'install' configurado",
+    "✅ Event listener 'activate' configurado",
+    "✅ Event listener 'fetch' configurado",
+    "✅ Event listener 'sync' configurado",
+    "✅ Event listener 'message' configurado",
+    "✅ Cache API implementado",
+    "✅ Tracking de afiliados no SW",
+    "✅ Classe AmazonSubscribeLinks implementada",
+    "✅ Tag afiliado Amazon configurada: buscabusca0f-20",
+    "✅ Bundle gzipped: 176.34KB (< 200KB meta)",
+    "✅ Métrica 'totalClicks' implementada",
+    "✅ Métrica 'conversionRate' implementada",
+    "✅ Métrica 'cookiePersistence' implementada",
+    "✅ Métrica 'deviceAnalysis' implementada",
+    "✅ Métrica 'topLinks' implementada",
+    "✅ Atualização automática a cada 60 segundos"
+  ],
+  "failed": [],
+  "warnings": [
+    "⚠️ Apenas 0 métodos de fingerprinting encontrados",
+    "⚠️ Apenas 3/5 tipos de links S&S encontrados",
+    "⚠️ Apenas 9 locais de persistência (meta: 15+)"
+  ],
+  "metrics": {
+    "eternalTrackingLines": 1665,
+    "totalCookies": 8,
+    "storageKeys": 9,
+    "bundleSizeGzipped": "176.34",
+    "bundleSize": "0.58MB"
+  }
+}

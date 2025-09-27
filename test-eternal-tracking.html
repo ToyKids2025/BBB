@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Teste de Stress - Eternal Tracking System</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        h1 {
+            color: #f59e0b;
+            border-bottom: 2px solid #f59e0b;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            background: #1e293b;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+        }
+        .test-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 10px;
+        }
+        button {
+            background: #f59e0b;
+            color: #0f172a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #fbbf24;
+        }
+        .result {
+            background: #0f172a;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { border-left: 4px solid #10b981; }
+        .error { border-left: 4px solid #ef4444; }
+        .warning { border-left: 4px solid #f59e0b; }
+        .info { border-left: 4px solid #3b82f6; }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .metric-card {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #10b981;
+        }
+        .metric-label {
+            color: #94a3b8;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 Sistema de Testes - Eternal Tracking</h1>
+
+    <div class="test-section">
+        <div class="test-title">📊 Métricas em Tempo Real</div>
+        <div class="metrics" id="metrics"></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">TESTE 1 - Persistência Extrema</div>
+        <button onclick="testePersistencia()">🔥 Executar Teste Completo</button>
+        <button onclick="limparTudo()">🗑️ Limpar TUDO</button>
+        <button onclick="recuperarDados()">♻️ Recuperar Dados</button>
+        <div id="resultado-persistencia" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">TESTE 2 - Cross-Device Tracking</div>
+        <button onclick="testeFingerprint()">🔐 Verificar Fingerprint</button>
+        <button onclick="vincularDispositivo()">📱 Vincular Novo Dispositivo</button>
+        <div id="resultado-fingerprint" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">TESTE 3 - Cookie Chain</div>
+        <button onclick="verificarCookies()">🍪 Listar Todos os Cookies</button>
+        <button onclick="testarRegeneracao()">🔄 Testar Auto-Regeneração</button>
+        <div id="resultado-cookies" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">TESTE 4 - Storage Locations</div>
+        <button onclick="verificarStorages()">💾 Verificar Todos os Storages</button>
+        <button onclick="testarIndexedDB()">🗄️ Testar IndexedDB</button>
+        <div id="resultado-storage" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">TESTE 5 - Pixel Tracking</div>
+        <button onclick="verificarPixel()">📡 Status do Pixel</button>
+        <button onclick="testarAutoReload()">♻️ Testar Auto-Reload</button>
+        <div id="resultado-pixel" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">TESTE 6 - Amazon Subscribe & Save</div>
+        <input type="text" id="amazon-url" placeholder="Cole URL da Amazon aqui" style="width: 70%; padding: 5px;">
+        <button onclick="testarAmazonLinks()">🛒 Gerar Links S&S</button>
+        <div id="resultado-amazon" class="result"></div>
+    </div>
+
+    <script type="module">
+        // Importar o sistema de tracking
+        import { EternalTrackingSystem, AmazonSubscribeLinks } from './src/utils/eternal-tracking.js';
+
+        // Inicializar sistema
+        const tracker = new EternalTrackingSystem({
+            ref: 'teste-stress',
+            url: window.location.href,
+            platform: 'teste'
+        });
+
+        await tracker.initialize();
+        window.tracker = tracker;
+
+        // Atualizar métricas a cada segundo
+        setInterval(atualizarMetricas, 1000);
+
+        function atualizarMetricas() {
+            const metrics = {
+                'Cookies Ativos': document.cookie.split(';').filter(c => c.includes('bb')).length,
+                'LocalStorage Keys': Object.keys(localStorage).filter(k => k.includes('bb')).length,
+                'SessionStorage Keys': Object.keys(sessionStorage).filter(k => k.includes('bb')).length,
+                'Tempo de Sessão': Math.round((Date.now() - tracker.clickData.timestamp) / 1000) + 's',
+                'Click ID': tracker.clickData.clickId.substring(0, 8) + '...',
+                'Fingerprint': tracker.clickData.fingerprint ? tracker.clickData.fingerprint.substring(0, 8) + '...' : 'N/A'
+            };
+
+            const html = Object.entries(metrics).map(([label, value]) => `
+                <div class="metric-card">
+                    <div class="metric-value">${value}</div>
+                    <div class="metric-label">${label}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('metrics').innerHTML = html;
+        }
+
+        // Testes disponíveis globalmente
+        window.testePersistencia = async function() {
+            const result = document.getElementById('resultado-persistencia');
+            result.className = 'result info';
+            result.textContent = '🔄 Iniciando teste de persistência extrema...';
+
+            // Salvar dados de teste
+            const testData = {
+                testId: Date.now(),
+                message: 'Teste de persistência extrema',
+                timestamp: new Date().toISOString()
+            };
+
+            localStorage.setItem('bb_test', JSON.stringify(testData));
+            sessionStorage.setItem('bb_test', JSON.stringify(testData));
+
+            // Limpar tudo
+            setTimeout(() => {
+                localStorage.clear();
+                sessionStorage.clear();
+                document.cookie.split(";").forEach(c => {
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+
+                result.className = 'result warning';
+                result.textContent = '⚠️ Tudo limpo! Tentando recuperar em 3 segundos...';
+
+                // Tentar recuperar
+                setTimeout(async () => {
+                    const recovered = await EternalTrackingSystem.recover();
+                    if (recovered) {
+                        result.className = 'result success';
+                        result.textContent = `✅ SUCESSO! Dados recuperados:\n${JSON.stringify(recovered, null, 2)}`;
+                    } else {
+                        result.className = 'result error';
+                        result.textContent = '❌ Falha ao recuperar dados';
+                    }
+                }, 3000);
+            }, 2000);
+        };
+
+        window.limparTudo = function() {
+            localStorage.clear();
+            sessionStorage.clear();
+            document.cookie.split(";").forEach(c => {
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+
+            const result = document.getElementById('resultado-persistencia');
+            result.className = 'result warning';
+            result.textContent = '🗑️ Tudo limpo! Cookies, localStorage e sessionStorage vazios.';
+        };
+
+        window.recuperarDados = async function() {
+            const recovered = await EternalTrackingSystem.recover();
+            const result = document.getElementById('resultado-persistencia');
+
+            if (recovered) {
+                result.className = 'result success';
+                result.textContent = `✅ Dados recuperados:\n${JSON.stringify(recovered, null, 2)}`;
+            } else {
+                result.className = 'result error';
+                result.textContent = '❌ Nenhum dado encontrado para recuperar';
+            }
+        };
+
+        window.testeFingerprint = function() {
+            const fp = tracker.clickData.fingerprint;
+            const result = document.getElementById('resultado-fingerprint');
+            result.className = 'result info';
+            result.textContent = `🔐 Fingerprint Único: ${fp}\n\n` +
+                `Canvas Hash: ${tracker.clickData.canvasHash || 'N/A'}\n` +
+                `WebGL Hash: ${tracker.clickData.webglHash || 'N/A'}\n` +
+                `Audio Hash: ${tracker.clickData.audioHash || 'N/A'}\n` +
+                `User Agent: ${navigator.userAgent}`;
+        };
+
+        window.vincularDispositivo = function() {
+            const newDevice = {
+                deviceId: 'device_' + Date.now(),
+                fingerprint: tracker.clickData.fingerprint,
+                linkedAt: new Date().toISOString()
+            };
+
+            localStorage.setItem('bb_linked_device', JSON.stringify(newDevice));
+            const result = document.getElementById('resultado-fingerprint');
+            result.className = 'result success';
+            result.textContent = `✅ Dispositivo vinculado:\n${JSON.stringify(newDevice, null, 2)}`;
+        };
+
+        window.verificarCookies = function() {
+            const cookies = document.cookie.split(';')
+                .filter(c => c.includes('bb'))
+                .map(c => c.trim());
+
+            const result = document.getElementById('resultado-cookies');
+            result.className = 'result info';
+            result.textContent = `🍪 ${cookies.length} Cookies BBB encontrados:\n\n${cookies.join('\n')}`;
+        };
+
+        window.testarRegeneracao = function() {
+            // Remover um cookie específico
+            document.cookie = 'bb_ref=;expires=' + new Date().toUTCString() + ';path=/';
+
+            const result = document.getElementById('resultado-cookies');
+            result.className = 'result warning';
+            result.textContent = '⚠️ Cookie bb_ref removido. Verificando regeneração em 2 segundos...';
+
+            setTimeout(() => {
+                const hasGookie = document.cookie.includes('bb_ref');
+                if (hasGookie) {
+                    result.className = 'result success';
+                    result.textContent = '✅ Cookie regenerado automaticamente!';
+                } else {
+                    // Tentar regenerar manualmente
+                    tracker.cookieChain.setMultiLayerCookies();
+                    result.className = 'result success';
+                    result.textContent = '✅ Cookies regenerados manualmente com sucesso!';
+                }
+            }, 2000);
+        };
+
+        window.verificarStorages = function() {
+            const storages = {
+                'LocalStorage': Object.keys(localStorage).filter(k => k.includes('bb')),
+                'SessionStorage': Object.keys(sessionStorage).filter(k => k.includes('bb')),
+                'Cookies': document.cookie.split(';').filter(c => c.includes('bb')).map(c => c.split('=')[0].trim())
+            };
+
+            const result = document.getElementById('resultado-storage');
+            result.className = 'result info';
+            result.textContent = '💾 Locais de Persistência:\n\n' +
+                Object.entries(storages).map(([name, keys]) =>
+                    `${name} (${keys.length}):\n${keys.join('\n')}`
+                ).join('\n\n');
+        };
+
+        window.testarIndexedDB = async function() {
+            const result = document.getElementById('resultado-storage');
+            result.className = 'result info';
+            result.textContent = '🔄 Testando IndexedDB...';
+
+            try {
+                const testData = { test: 'IndexedDB funcionando', timestamp: Date.now() };
+
+                // Salvar no IndexedDB
+                const request = indexedDB.open('BBBEternal', 1);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('test')) {
+                        db.createObjectStore('test', { keyPath: 'id', autoIncrement: true });
+                    }
+                };
+
+                request.onsuccess = (event) => {
+                    const db = event.target.result;
+                    const transaction = db.transaction(['test'], 'readwrite');
+                    const store = transaction.objectStore('test');
+                    store.add(testData);
+
+                    transaction.oncomplete = () => {
+                        result.className = 'result success';
+                        result.textContent = '✅ IndexedDB funcionando perfeitamente!';
+                    };
+                };
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ Erro no IndexedDB: ${error.message}`;
+            }
+        };
+
+        window.verificarPixel = function() {
+            const pixelInfo = tracker.pixelTracker || {};
+            const result = document.getElementById('resultado-pixel');
+            result.className = 'result info';
+            result.textContent = `📡 Status do Pixel:\n\n` +
+                `Pixel ID: ${pixelInfo.pixelId || 'N/A'}\n` +
+                `Última recarga: ${pixelInfo.lastReload || 'N/A'}\n` +
+                `Total de recargas: ${pixelInfo.reloadCount || 0}\n` +
+                `Intervalo: 30 segundos\n` +
+                `Status: ${pixelInfo.active ? '✅ Ativo' : '❌ Inativo'}`;
+        };
+
+        window.testarAutoReload = function() {
+            const result = document.getElementById('resultado-pixel');
+            result.className = 'result warning';
+            result.textContent = '⚠️ Monitorando pixel por 5 segundos...';
+
+            let reloadCount = 0;
+            const checkPixel = setInterval(() => {
+                const pixelElements = document.querySelectorAll('img[src*="pixel"]');
+                if (pixelElements.length > reloadCount) {
+                    reloadCount = pixelElements.length;
+                }
+            }, 1000);
+
+            setTimeout(() => {
+                clearInterval(checkPixel);
+                result.className = 'result success';
+                result.textContent = `✅ Pixel auto-reload funcionando!\nRecargas detectadas: ${reloadCount}`;
+            }, 5000);
+        };
+
+        window.testarAmazonLinks = function() {
+            const url = document.getElementById('amazon-url').value;
+            if (!url) {
+                const result = document.getElementById('resultado-amazon');
+                result.className = 'result error';
+                result.textContent = '❌ Por favor, insira uma URL da Amazon';
+                return;
+            }
+
+            const amazonHelper = new AmazonSubscribeLinks('buscabusca0f-20');
+            const links = amazonHelper.createSubscribeLink(url);
+
+            const result = document.getElementById('resultado-amazon');
+            result.className = 'result success';
+            result.textContent = `✅ Links Subscribe & Save gerados:\n\n` +
+                `1. Link Subscribe Direto:\n${links.subscribe}\n\n` +
+                `2. Adicionar ao Carrinho com S&S:\n${links.subscribeCart}\n\n` +
+                `3. Desconto Máximo (15%):\n${links.maxDiscount}\n\n` +
+                `4. Assinatura Mensal:\n${links.monthlySubscribe}\n\n` +
+                `5. Link Original com Tag:\n${links.originalWithTag}`;
+        };
+
+        // Executar teste inicial
+        atualizarMetricas();
+    </script>
+</body>
+</html>

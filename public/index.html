@@ -48,14 +48,43 @@
     <title>BBB Link Enhancer Premium</title>
 
     <script>
-        // Register Service Worker
+        // Register Service Workers - Normal + Eternal
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('%PUBLIC_URL%/service-worker.js')
-                    .then(registration => console.log('SW registered:', registration))
-                    .catch(error => console.log('SW registration failed:', error));
+            window.addEventListener('load', async () => {
+                try {
+                    // Service Worker padrão do React
+                    const swRegistration = await navigator.serviceWorker.register('%PUBLIC_URL%/service-worker.js');
+                    console.log('SW registered:', swRegistration);
+
+                    // Eternal Service Worker para tracking perpétuo
+                    const eternalRegistration = await navigator.serviceWorker.register('%PUBLIC_URL%/sw-eternal.js', {
+                        scope: '/'
+                    });
+                    console.log('🔥 Eternal SW registered:', eternalRegistration);
+
+                    // Request notification permission
+                    if ('Notification' in window && Notification.permission === 'default') {
+                        Notification.requestPermission();
+                    }
+
+                    // Request persistent storage
+                    if (navigator.storage && navigator.storage.persist) {
+                        const isPersisted = await navigator.storage.persist();
+                        console.log(`Persistent storage: ${isPersisted ? 'granted' : 'denied'}`);
+                    }
+                } catch (error) {
+                    console.error('SW registration failed:', error);
+                }
             });
         }
+
+        // Pixel tracking inicial
+        (function() {
+            const pixel = new Image(1, 1);
+            pixel.src = 'https://buscabuscabrasil.com.br/p.gif?event=page_load&t=' + Date.now();
+            pixel.style.display = 'none';
+            document.body.appendChild(pixel);
+        })();
     </script>
 </head>
 <body>

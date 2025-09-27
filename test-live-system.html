@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 TESTE SISTEMA COMPLETO - Push + WhatsApp FUNCIONANDO!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .status-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.active {
+            background: #10b981;
+        }
+
+        .status-indicator.inactive {
+            background: #ef4444;
+        }
+
+        .status-indicator.pending {
+            background: #f59e0b;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+            font-size: 1em;
+            width: 100%;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .notification-preview {
+            background: #f8f9fa;
+            border: 2px solid #764ba2;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .live-indicator {
+            display: inline-block;
+            color: #10b981;
+            font-weight: bold;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 SISTEMA DE REMARKETING FOMO - <span class="live-indicator">AO VIVO</span></h1>
+
+        <div class="status-grid">
+            <!-- Status WhatsApp -->
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">📱 WhatsApp API</span>
+                    <span class="status-indicator" id="whatsapp-status"></span>
+                </div>
+
+                <div class="input-group">
+                    <label>Número WhatsApp (com DDD):</label>
+                    <input type="tel" id="whatsapp-number" placeholder="11999999999" value="">
+                </div>
+
+                <button class="test-button" onclick="testWhatsAppConnection()">
+                    🔌 Testar Conexão WhatsApp
+                </button>
+
+                <button class="test-button" onclick="sendWhatsAppTest()">
+                    📱 Enviar WhatsApp Teste
+                </button>
+
+                <div id="whatsapp-result" class="result"></div>
+            </div>
+
+            <!-- Status Push Notifications -->
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">🔔 Push Notifications</span>
+                    <span class="status-indicator" id="push-status"></span>
+                </div>
+
+                <button class="test-button" onclick="requestPushPermission()">
+                    🔔 Ativar Push Notifications
+                </button>
+
+                <button class="test-button" onclick="sendPushTest()">
+                    📨 Enviar Push Teste
+                </button>
+
+                <button class="test-button" onclick="sendFOMOPush()">
+                    🔥 Push FOMO (Escassez)
+                </button>
+
+                <div id="push-result" class="result"></div>
+            </div>
+
+            <!-- Sistema Principal -->
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">⚙️ Sistema Principal</span>
+                    <span class="status-indicator" id="system-status"></span>
+                </div>
+
+                <button class="test-button" onclick="checkSystemStatus()">
+                    🔍 Verificar Status Geral
+                </button>
+
+                <button class="test-button" onclick="simulateAbandonedCart()">
+                    🛒 Simular Carrinho Abandonado
+                </button>
+
+                <button class="test-button" onclick="triggerRemarketingSequence()">
+                    🚀 Iniciar Sequência Completa
+                </button>
+
+                <div id="system-result" class="result"></div>
+            </div>
+
+            <!-- Métricas em Tempo Real -->
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">📊 Métricas Live</span>
+                    <span class="status-indicator active"></span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0;">
+                    <div style="text-align: center; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #764ba2;" id="messages-sent">0</div>
+                        <div style="font-size: 0.9em; color: #666;">Mensagens</div>
+                    </div>
+                    <div style="text-align: center; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #10b981;" id="conversions">0</div>
+                        <div style="font-size: 0.9em; color: #666;">Conversões</div>
+                    </div>
+                </div>
+
+                <button class="test-button" onclick="viewMessageQueue()">
+                    📋 Ver Fila de Mensagens
+                </button>
+
+                <div id="metrics-result" class="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado global
+        let messagesSent = 0;
+        let conversions = 0;
+        let pushPermission = Notification.permission;
+
+        // Verificar status inicial
+        window.addEventListener('load', () => {
+            checkAllStatuses();
+            setInterval(updateMetrics, 5000);
+        });
+
+        // Verificar todos os status
+        async function checkAllStatuses() {
+            // WhatsApp
+            checkWhatsAppStatus();
+
+            // Push
+            checkPushStatus();
+
+            // Sistema
+            checkSystemStatus();
+        }
+
+        // WhatsApp - Verificar conexão
+        async function checkWhatsAppStatus() {
+            try {
+                const response = await fetch('http://localhost:3001/');
+                const data = await response.json();
+
+                const indicator = document.getElementById('whatsapp-status');
+                const result = document.getElementById('whatsapp-result');
+
+                if (data.status === 'online') {
+                    indicator.className = 'status-indicator active';
+                    result.className = 'result success';
+                    result.textContent = `✅ WhatsApp Server Online\nFila: ${data.queue} mensagens`;
+                } else {
+                    indicator.className = 'status-indicator inactive';
+                }
+            } catch (error) {
+                const indicator = document.getElementById('whatsapp-status');
+                indicator.className = 'status-indicator inactive';
+
+                const result = document.getElementById('whatsapp-result');
+                result.className = 'result error';
+                result.textContent = '❌ Servidor WhatsApp offline\nExecute: node server-whatsapp.js';
+            }
+        }
+
+        // WhatsApp - Testar conexão
+        async function testWhatsAppConnection() {
+            try {
+                const response = await fetch('http://localhost:3001/whatsapp/connect', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                const result = document.getElementById('whatsapp-result');
+                if (data.success) {
+                    result.className = 'result success';
+                    result.textContent = `✅ ${data.message}\nQR Code: ${data.qrCode}`;
+                    checkWhatsAppStatus();
+                }
+            } catch (error) {
+                const result = document.getElementById('whatsapp-result');
+                result.className = 'result error';
+                result.textContent = `❌ Erro: ${error.message}`;
+            }
+        }
+
+        // WhatsApp - Enviar teste
+        async function sendWhatsAppTest() {
+            const phone = document.getElementById('whatsapp-number').value;
+
+            if (!phone) {
+                alert('Por favor, insira um número de WhatsApp');
+                return;
+            }
+
+            const message = `🔥 *TESTE REMARKETING FOMO*
+
+Olá! Este é um teste do sistema.
+
+✅ WhatsApp funcionando!
+📱 Número: ${phone}
+
+*Ofertas exclusivas em breve!*
+
+Sistema by BuscaBuscaBrasil`;
+
+            try {
+                const response = await fetch('http://localhost:3001/whatsapp/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, message })
+                });
+
+                const data = await response.json();
+
+                const result = document.getElementById('whatsapp-result');
+                if (data.success) {
+                    result.className = 'result success';
+                    result.textContent = `✅ Mensagem enviada!\nID: ${data.messageId}\n\nAbra o link:\n${data.whatsappUrl}`;
+
+                    messagesSent++;
+                    updateMetrics();
+
+                    // Abrir WhatsApp Web
+                    if (confirm('Abrir WhatsApp Web com a mensagem?')) {
+                        window.open(data.whatsappUrl, '_blank');
+                    }
+                } else {
+                    result.className = 'result error';
+                    result.textContent = `❌ Erro: ${data.error}`;
+                }
+            } catch (error) {
+                const result = document.getElementById('whatsapp-result');
+                result.className = 'result error';
+                result.textContent = `❌ Erro: ${error.message}`;
+            }
+        }
+
+        // Push - Verificar status
+        function checkPushStatus() {
+            const indicator = document.getElementById('push-status');
+            const result = document.getElementById('push-result');
+
+            if (!('Notification' in window)) {
+                indicator.className = 'status-indicator inactive';
+                result.className = 'result error';
+                result.textContent = '❌ Navegador não suporta Push';
+                return;
+            }
+
+            if (Notification.permission === 'granted') {
+                indicator.className = 'status-indicator active';
+                result.className = 'result success';
+                result.textContent = '✅ Push Notifications ativadas';
+            } else if (Notification.permission === 'denied') {
+                indicator.className = 'status-indicator inactive';
+                result.className = 'result error';
+                result.textContent = '❌ Push bloqueadas pelo usuário';
+            } else {
+                indicator.className = 'status-indicator pending';
+                result.className = 'result info';
+                result.textContent = '⏳ Permissão pendente';
+            }
+
+            pushPermission = Notification.permission;
+        }
+
+        // Push - Solicitar permissão
+        async function requestPushPermission() {
+            if (!('Notification' in window)) {
+                alert('Seu navegador não suporta notificações');
+                return;
+            }
+
+            const permission = await Notification.requestPermission();
+
+            const result = document.getElementById('push-result');
+            if (permission === 'granted') {
+                result.className = 'result success';
+                result.textContent = '✅ Permissão concedida!';
+
+                // Mostrar notificação de teste
+                new Notification('🔥 Push Notifications Ativadas!', {
+                    body: 'Você receberá ofertas exclusivas!',
+                    icon: '/icon-192.png',
+                    badge: '/icon-72.png'
+                });
+            } else {
+                result.className = 'result error';
+                result.textContent = '❌ Permissão negada';
+            }
+
+            checkPushStatus();
+        }
+
+        // Push - Enviar teste
+        function sendPushTest() {
+            if (Notification.permission !== 'granted') {
+                alert('Ative as notificações primeiro!');
+                return;
+            }
+
+            const notification = new Notification('🔔 Teste de Push Notification', {
+                body: 'Sistema de Remarketing FOMO funcionando!',
+                icon: '/icon-192.png',
+                badge: '/icon-72.png',
+                vibrate: [200, 100, 200],
+                requireInteraction: true,
+                actions: [
+                    { action: 'open', title: '🛒 Ver Oferta' },
+                    { action: 'close', title: '❌ Fechar' }
+                ]
+            });
+
+            notification.onclick = () => {
+                alert('Click detectado! Redirecionando para oferta...');
+                conversions++;
+                updateMetrics();
+            };
+
+            const result = document.getElementById('push-result');
+            result.className = 'result success';
+            result.textContent = '✅ Push notification enviada!';
+
+            messagesSent++;
+            updateMetrics();
+        }
+
+        // Push - Enviar FOMO
+        function sendFOMOPush() {
+            if (Notification.permission !== 'granted') {
+                alert('Ative as notificações primeiro!');
+                return;
+            }
+
+            const templates = [
+                {
+                    title: '🔥 Só 3 unidades restantes!',
+                    body: 'O produto que você viu está quase esgotado!'
+                },
+                {
+                    title: '👥 23 pessoas compraram!',
+                    body: 'Produto muito procurado nas últimas horas'
+                },
+                {
+                    title: '💰 R$50 de DESCONTO!',
+                    body: 'Oferta exclusiva só hoje!'
+                },
+                {
+                    title: '🚨 ÚLTIMA CHANCE!',
+                    body: 'Link expira em 1 hora!'
+                }
+            ];
+
+            const template = templates[Math.floor(Math.random() * templates.length)];
+
+            const notification = new Notification(template.title, {
+                body: template.body,
+                icon: '/icon-192.png',
+                badge: '/icon-72.png',
+                vibrate: [500, 200, 500],
+                requireInteraction: true,
+                tag: 'fomo-' + Date.now()
+            });
+
+            notification.onclick = () => {
+                alert('🎯 Conversão! Usuário clicou na oferta!');
+                conversions++;
+                updateMetrics();
+            };
+
+            const result = document.getElementById('push-result');
+            result.className = 'result success';
+            result.textContent = `✅ Push FOMO enviada!\n${template.title}`;
+
+            messagesSent++;
+            updateMetrics();
+        }
+
+        // Sistema - Verificar status
+        async function checkSystemStatus() {
+            const indicator = document.getElementById('system-status');
+            const result = document.getElementById('system-result');
+
+            try {
+                // Verificar localStorage
+                const hasTracking = localStorage.getItem('bb_ref') !== null;
+                const hasCookies = document.cookie.includes('bb_');
+
+                if (hasTracking || hasCookies) {
+                    indicator.className = 'status-indicator active';
+                    result.className = 'result success';
+                    result.textContent = `✅ Sistema Eternal Tracking ativo\nCookies: ${document.cookie.split(';').filter(c => c.includes('bb_')).length}\nStorage Keys: ${Object.keys(localStorage).filter(k => k.includes('bb')).length}`;
+                } else {
+                    indicator.className = 'status-indicator pending';
+                    result.className = 'result info';
+                    result.textContent = '⏳ Sistema aguardando primeiro click';
+                }
+            } catch (error) {
+                indicator.className = 'status-indicator inactive';
+                result.className = 'result error';
+                result.textContent = `❌ Erro: ${error.message}`;
+            }
+        }
+
+        // Sistema - Simular carrinho abandonado
+        async function simulateAbandonedCart() {
+            const clickData = {
+                id: 'cart_' + Date.now(),
+                product: 'Produto Teste',
+                price: 'R$ 299,90',
+                platform: 'amazon',
+                timestamp: Date.now()
+            };
+
+            // Salvar no localStorage
+            localStorage.setItem('bb_abandoned_cart', JSON.stringify(clickData));
+
+            const result = document.getElementById('system-result');
+            result.className = 'result success';
+            result.textContent = `✅ Carrinho abandonado simulado!\n\nProduto: ${clickData.product}\nValor: ${clickData.price}\n\nAguarde as notificações de remarketing...`;
+
+            // Enviar notificação após 3 segundos
+            setTimeout(() => {
+                if (Notification.permission === 'granted') {
+                    new Notification('🛒 Você esqueceu algo!', {
+                        body: `${clickData.product} ainda está no carrinho`,
+                        icon: '/icon-192.png'
+                    });
+                }
+            }, 3000);
+        }
+
+        // Sistema - Sequência completa
+        async function triggerRemarketingSequence() {
+            const result = document.getElementById('system-result');
+            result.className = 'result info';
+            result.textContent = '🚀 Iniciando sequência de remarketing...';
+
+            const phone = document.getElementById('whatsapp-number').value;
+
+            // 1. Escassez (imediato)
+            setTimeout(async () => {
+                if (Notification.permission === 'granted') {
+                    new Notification('🔥 Estoque Baixo!', {
+                        body: 'Só 5 unidades restantes!',
+                        icon: '/icon-192.png'
+                    });
+                }
+
+                if (phone) {
+                    await sendWhatsAppMessage(phone, '🔥 ALERTA: Só 5 unidades restantes!');
+                }
+
+                result.textContent += '\n✅ 1/4 - Escassez enviada';
+            }, 1000);
+
+            // 2. Prova Social (3 segundos)
+            setTimeout(async () => {
+                if (Notification.permission === 'granted') {
+                    new Notification('👥 Muito Procurado!', {
+                        body: '31 pessoas compraram hoje',
+                        icon: '/icon-192.png'
+                    });
+                }
+
+                if (phone) {
+                    await sendWhatsAppMessage(phone, '👥 31 pessoas compraram hoje!');
+                }
+
+                result.textContent += '\n✅ 2/4 - Prova social enviada';
+            }, 4000);
+
+            // 3. Desconto (6 segundos)
+            setTimeout(async () => {
+                if (Notification.permission === 'granted') {
+                    new Notification('💰 Desconto Exclusivo!', {
+                        body: 'R$50 OFF só pra você!',
+                        icon: '/icon-192.png'
+                    });
+                }
+
+                if (phone) {
+                    await sendWhatsAppMessage(phone, '💰 R$50 OFF exclusivo pra você!');
+                }
+
+                result.textContent += '\n✅ 3/4 - Desconto enviado';
+            }, 7000);
+
+            // 4. Urgência (9 segundos)
+            setTimeout(async () => {
+                if (Notification.permission === 'granted') {
+                    new Notification('🚨 ÚLTIMA CHANCE!', {
+                        body: 'Oferta expira em 1 hora!',
+                        icon: '/icon-192.png',
+                        requireInteraction: true
+                    });
+                }
+
+                if (phone) {
+                    await sendWhatsAppMessage(phone, '🚨 ÚLTIMA CHANCE! Expira em 1 hora!');
+                }
+
+                result.className = 'result success';
+                result.textContent += '\n✅ 4/4 - Sequência completa!';
+            }, 10000);
+        }
+
+        // Enviar WhatsApp auxiliar
+        async function sendWhatsAppMessage(phone, message) {
+            try {
+                await fetch('http://localhost:3001/whatsapp/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, message })
+                });
+                messagesSent++;
+                updateMetrics();
+            } catch (error) {
+                console.error('Erro WhatsApp:', error);
+            }
+        }
+
+        // Ver fila de mensagens
+        async function viewMessageQueue() {
+            try {
+                const response = await fetch('http://localhost:3001/whatsapp/queue');
+                const data = await response.json();
+
+                const result = document.getElementById('metrics-result');
+                result.className = 'result info';
+                result.textContent = `📋 Fila de Mensagens\n\nTotal: ${data.total} mensagens\n\n`;
+
+                if (data.messages.length > 0) {
+                    data.messages.forEach(msg => {
+                        const time = new Date(msg.timestamp).toLocaleTimeString();
+                        result.textContent += `• ${msg.phone} - ${time}\n`;
+                    });
+                } else {
+                    result.textContent += 'Fila vazia';
+                }
+            } catch (error) {
+                const result = document.getElementById('metrics-result');
+                result.className = 'result error';
+                result.textContent = `❌ Erro: ${error.message}`;
+            }
+        }
+
+        // Atualizar métricas
+        function updateMetrics() {
+            document.getElementById('messages-sent').textContent = messagesSent;
+            document.getElementById('conversions').textContent = conversions;
+        }
+    </script>
+</body>
+</html>

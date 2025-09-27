@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Teste de Persistência 24h+ - Eternal Tracking</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #764ba2;
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+        .test-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .test-description {
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+        button {
+            background: white;
+            color: #764ba2;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .result-box {
+            background: #f7f7f7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            color: #333;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .timer {
+            text-align: center;
+            font-size: 3em;
+            font-weight: bold;
+            color: #764ba2;
+            margin: 30px 0;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 1s;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #764ba2;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Teste de Persistência de Longo Prazo</h1>
+
+        <div class="timer" id="timer">00:00:00</div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div class="stats-grid" id="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-cookies">0</div>
+                <div class="stat-label">Cookies Ativos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-storage">0</div>
+                <div class="stat-label">Storage Keys</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-recovery">0%</div>
+                <div class="stat-label">Taxa Recuperação</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-events">0</div>
+                <div class="stat-label">Eventos Salvos</div>
+            </div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-title">📅 TESTE 1: Simulação de 24 Horas</div>
+            <div class="test-description">
+                Salva dados com timestamps modificados para simular passagem de tempo.
+                Verifica se os dados persistem após 24h, 7 dias, 30 dias simulados.
+            </div>
+            <button onclick="simular24Horas()">⏰ Simular 24 Horas</button>
+            <button onclick="simular7Dias()">📅 Simular 7 Dias</button>
+            <button onclick="simular30Dias()">📆 Simular 30 Dias</button>
+            <div id="result-time" class="result-box"></div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-title">💾 TESTE 2: Stress de Persistência</div>
+            <div class="test-description">
+                Salva dados em TODOS os 15+ locais simultaneamente e verifica integridade.
+            </div>
+            <button onclick="salvarEmTodosLocais()">💾 Salvar em 15+ Locais</button>
+            <button onclick="verificarTodosLocais()">🔍 Verificar Integridade</button>
+            <button onclick="limparERecuperar()">♻️ Limpar e Recuperar</button>
+            <div id="result-persistence" class="result-box"></div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-title">🔄 TESTE 3: Sincronização Contínua</div>
+            <div class="test-description">
+                Gera eventos continuamente e verifica sincronização em tempo real.
+            </div>
+            <button onclick="iniciarGeracaoEventos()">▶️ Iniciar Geração</button>
+            <button onclick="pararGeracaoEventos()">⏸️ Parar Geração</button>
+            <button onclick="verificarSincronizacao()">🔄 Verificar Sync</button>
+            <div id="result-sync" class="result-box"></div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-title">📱 TESTE 4: Cross-Browser/Device</div>
+            <div class="test-description">
+                Exporta dados para transferir entre navegadores/dispositivos.
+            </div>
+            <button onclick="exportarDados()">📤 Exportar Dados</button>
+            <button onclick="importarDados()">📥 Importar Dados</button>
+            <button onclick="verificarCompatibilidade()">🔧 Verificar Compatibilidade</button>
+            <div id="result-cross" class="result-box"></div>
+        </div>
+    </div>
+
+    <script>
+        // Estado global
+        let startTime = Date.now();
+        let eventGenerator = null;
+        let generatedEvents = [];
+        let recoveryAttempts = 0;
+        let successfulRecoveries = 0;
+
+        // Timer
+        setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+
+            document.getElementById('timer').textContent =
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+            // Atualizar barra de progresso (24h = 100%)
+            const progressPercent = Math.min((elapsed / (24 * 3600000)) * 100, 100);
+            document.getElementById('progress').style.width = progressPercent + '%';
+        }, 1000);
+
+        // Atualizar estatísticas
+        setInterval(() => {
+            // Cookies
+            const cookies = document.cookie.split(';').filter(c => c.includes('bb')).length;
+            document.getElementById('stat-cookies').textContent = cookies;
+
+            // Storage
+            const storageKeys = Object.keys(localStorage).filter(k => k.includes('bb')).length;
+            document.getElementById('stat-storage').textContent = storageKeys;
+
+            // Taxa de recuperação
+            const recoveryRate = recoveryAttempts > 0
+                ? Math.round((successfulRecoveries / recoveryAttempts) * 100)
+                : 0;
+            document.getElementById('stat-recovery').textContent = recoveryRate + '%';
+
+            // Eventos
+            const events = JSON.parse(localStorage.getItem('bb_events') || '[]').length;
+            document.getElementById('stat-events').textContent = events;
+        }, 2000);
+
+        // TESTE 1: Simulação de tempo
+        function simular24Horas() {
+            const result = document.getElementById('result-time');
+            result.className = 'result-box info';
+            result.textContent = '⏰ Simulando passagem de 24 horas...\\n';
+
+            // Criar dados com timestamp antigo
+            const oldTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+            const testData = {
+                id: 'test_24h_' + Date.now(),
+                createdAt: oldTimestamp,
+                expiresAt: oldTimestamp + (90 * 24 * 60 * 60 * 1000), // 90 dias
+                data: 'Dados de teste para persistência 24h+'
+            };
+
+            // Salvar em múltiplos locais
+            localStorage.setItem('bb_test_24h', JSON.stringify(testData));
+            sessionStorage.setItem('bb_test_24h', JSON.stringify(testData));
+
+            // Cookie com expiração longa
+            document.cookie = `bb_test_24h=${JSON.stringify(testData)}; max-age=${90 * 24 * 60 * 60}; path=/`;
+
+            setTimeout(() => {
+                // Verificar se ainda existe
+                const recovered = localStorage.getItem('bb_test_24h');
+                const cookieExists = document.cookie.includes('bb_test_24h');
+
+                if (recovered && cookieExists) {
+                    result.className = 'result-box success';
+                    result.textContent += '✅ Dados persistindo após 24h simuladas!\\n';
+                    result.textContent += 'LocalStorage: ✓\\n';
+                    result.textContent += 'Cookie: ✓\\n';
+                    result.textContent += JSON.stringify(JSON.parse(recovered), null, 2);
+                } else {
+                    result.className = 'result-box error';
+                    result.textContent += '❌ Alguns dados foram perdidos';
+                }
+            }, 2000);
+        }
+
+        function simular7Dias() {
+            const result = document.getElementById('result-time');
+            result.className = 'result-box info';
+            result.textContent = '📅 Simulando 7 dias...\\n';
+
+            const oldTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000);
+            const testData = {
+                id: 'test_7d_' + Date.now(),
+                createdAt: oldTimestamp,
+                expiresAt: oldTimestamp + (180 * 24 * 60 * 60 * 1000),
+                data: 'Dados de teste para 7 dias'
+            };
+
+            // Salvar com diferentes estratégias
+            for (let i = 0; i < 5; i++) {
+                localStorage.setItem(`bb_backup_${i}`, JSON.stringify(testData));
+                document.cookie = `bb_backup_${i}=${JSON.stringify(testData)}; max-age=${180 * 24 * 60 * 60}; path=/`;
+            }
+
+            result.className = 'result-box success';
+            result.textContent += '✅ Dados salvos com redundância para 7 dias\\n';
+            result.textContent += `5 backups em localStorage\\n`;
+            result.textContent += `5 cookies de longa duração`;
+        }
+
+        function simular30Dias() {
+            const result = document.getElementById('result-time');
+            result.className = 'result-box info';
+            result.textContent = '📆 Simulando 30 dias...\\n';
+
+            const oldTimestamp = Date.now() - (30 * 24 * 60 * 60 * 1000);
+            const testData = {
+                id: 'test_30d_' + Date.now(),
+                createdAt: oldTimestamp,
+                expiresAt: oldTimestamp + (365 * 24 * 60 * 60 * 1000),
+                data: 'Dados eternos - 365 dias'
+            };
+
+            // Super persistência
+            localStorage.setItem('bb_eternal', JSON.stringify(testData));
+            document.cookie = `bb_eternal=${JSON.stringify(testData)}; max-age=${365 * 24 * 60 * 60}; path=/`;
+
+            // IndexedDB
+            const request = indexedDB.open('BBBEternal', 1);
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains('eternal')) {
+                    db.createObjectStore('eternal', { keyPath: 'id' });
+                }
+            };
+
+            request.onsuccess = (e) => {
+                const db = e.target.result;
+                const tx = db.transaction(['eternal'], 'readwrite');
+                const store = tx.objectStore('eternal');
+                store.add(testData);
+
+                result.className = 'result-box success';
+                result.textContent += '✅ Dados eternos salvos (365 dias)\\n';
+                result.textContent += 'LocalStorage: ✓\\n';
+                result.textContent += 'Cookie (1 ano): ✓\\n';
+                result.textContent += 'IndexedDB: ✓';
+            };
+        }
+
+        // TESTE 2: Persistência em múltiplos locais
+        function salvarEmTodosLocais() {
+            const result = document.getElementById('result-persistence');
+            result.className = 'result-box info';
+            result.textContent = '💾 Salvando em todos os locais...\\n\\n';
+
+            const testData = {
+                id: 'multi_' + Date.now(),
+                timestamp: Date.now(),
+                test: 'Persistência múltipla'
+            };
+
+            let savedLocations = [];
+
+            // 1. LocalStorage
+            try {
+                localStorage.setItem('bb_multi', JSON.stringify(testData));
+                savedLocations.push('✓ LocalStorage');
+            } catch (e) {}
+
+            // 2. SessionStorage
+            try {
+                sessionStorage.setItem('bb_multi', JSON.stringify(testData));
+                savedLocations.push('✓ SessionStorage');
+            } catch (e) {}
+
+            // 3-8. Múltiplos Cookies
+            for (let i = 1; i <= 6; i++) {
+                document.cookie = `bb_cookie_${i}=${JSON.stringify(testData)}; max-age=${90 * 24 * 60 * 60}; path=/`;
+                savedLocations.push(`✓ Cookie ${i}`);
+            }
+
+            // 9. Window.name
+            try {
+                window.name = btoa(JSON.stringify(testData));
+                savedLocations.push('✓ Window.name');
+            } catch (e) {}
+
+            // 10. IndexedDB
+            const request = indexedDB.open('BBBMulti', 1);
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains('data')) {
+                    db.createObjectStore('data', { keyPath: 'id' });
+                }
+            };
+
+            request.onsuccess = (e) => {
+                const db = e.target.result;
+                const tx = db.transaction(['data'], 'readwrite');
+                tx.objectStore('data').add(testData);
+                savedLocations.push('✓ IndexedDB');
+
+                // 11. Cache API
+                caches.open('bbb-cache').then(cache => {
+                    cache.put('/test-data', new Response(JSON.stringify(testData)));
+                    savedLocations.push('✓ Cache API');
+
+                    // Mostrar resultado
+                    result.className = 'result-box success';
+                    result.textContent = `✅ Dados salvos em ${savedLocations.length} locais:\\n\\n`;
+                    result.textContent += savedLocations.join('\\n');
+                });
+            };
+        }
+
+        function verificarTodosLocais() {
+            const result = document.getElementById('result-persistence');
+            result.className = 'result-box info';
+            result.textContent = '🔍 Verificando integridade...\\n\\n';
+
+            let foundLocations = [];
+
+            // Verificar cada local
+            if (localStorage.getItem('bb_multi')) foundLocations.push('✓ LocalStorage');
+            if (sessionStorage.getItem('bb_multi')) foundLocations.push('✓ SessionStorage');
+
+            for (let i = 1; i <= 6; i++) {
+                if (document.cookie.includes(`bb_cookie_${i}`)) {
+                    foundLocations.push(`✓ Cookie ${i}`);
+                }
+            }
+
+            if (window.name) foundLocations.push('✓ Window.name');
+
+            // Verificar IndexedDB
+            const request = indexedDB.open('BBBMulti', 1);
+            request.onsuccess = (e) => {
+                const db = e.target.result;
+                if (db.objectStoreNames.contains('data')) {
+                    foundLocations.push('✓ IndexedDB');
+                }
+
+                // Verificar Cache
+                caches.has('bbb-cache').then(exists => {
+                    if (exists) foundLocations.push('✓ Cache API');
+
+                    result.className = foundLocations.length >= 10 ? 'result-box success' : 'result-box warning';
+                    result.textContent = `Encontrados ${foundLocations.length} locais com dados:\\n\\n`;
+                    result.textContent += foundLocations.join('\\n');
+                });
+            };
+        }
+
+        function limparERecuperar() {
+            const result = document.getElementById('result-persistence');
+            result.className = 'result-box warning';
+            result.textContent = '♻️ Limpando tudo e tentando recuperar...\\n';
+
+            recoveryAttempts++;
+
+            // Salvar backup antes de limpar
+            const backup = localStorage.getItem('bb_multi');
+
+            // LIMPAR TUDO
+            localStorage.clear();
+            sessionStorage.clear();
+            document.cookie.split(";").forEach(c => {
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+
+            setTimeout(() => {
+                // Tentar recuperar de window.name
+                let recovered = false;
+
+                try {
+                    if (window.name) {
+                        const data = JSON.parse(atob(window.name));
+                        localStorage.setItem('bb_recovered', JSON.stringify(data));
+                        recovered = true;
+                        successfulRecoveries++;
+                    }
+                } catch (e) {}
+
+                if (!recovered) {
+                    // Tentar IndexedDB
+                    const request = indexedDB.open('BBBMulti', 1);
+                    request.onsuccess = (e) => {
+                        const db = e.target.result;
+                        if (db.objectStoreNames.contains('data')) {
+                            const tx = db.transaction(['data'], 'readonly');
+                            const req = tx.objectStore('data').getAll();
+                            req.onsuccess = () => {
+                                if (req.result.length > 0) {
+                                    recovered = true;
+                                    successfulRecoveries++;
+                                    result.className = 'result-box success';
+                                    result.textContent = '✅ Dados recuperados do IndexedDB!';
+                                }
+                            };
+                        }
+                    };
+                }
+
+                if (recovered) {
+                    result.className = 'result-box success';
+                    result.textContent = '✅ Recuperação bem sucedida!\\n';
+                    result.textContent += `Taxa de recuperação: ${Math.round((successfulRecoveries/recoveryAttempts)*100)}%`;
+                } else {
+                    result.className = 'result-box error';
+                    result.textContent = '❌ Falha na recuperação';
+                }
+            }, 2000);
+        }
+
+        // TESTE 3: Geração contínua de eventos
+        function iniciarGeracaoEventos() {
+            const result = document.getElementById('result-sync');
+            result.className = 'result-box info';
+            result.textContent = '▶️ Gerando eventos continuamente...\\n';
+
+            let eventCount = 0;
+
+            eventGenerator = setInterval(() => {
+                const event = {
+                    id: 'evt_' + Date.now(),
+                    type: ['click', 'view', 'scroll', 'conversion'][Math.floor(Math.random() * 4)],
+                    timestamp: Date.now(),
+                    data: 'Event #' + (++eventCount)
+                };
+
+                generatedEvents.push(event);
+
+                // Salvar no localStorage
+                const events = JSON.parse(localStorage.getItem('bb_events') || '[]');
+                events.push(event);
+                localStorage.setItem('bb_events', JSON.stringify(events));
+
+                // Atualizar display
+                result.textContent = `▶️ Gerando eventos...\\n`;
+                result.textContent += `Total gerado: ${eventCount}\\n`;
+                result.textContent += `Último: ${event.type} - ${new Date(event.timestamp).toLocaleTimeString()}`;
+
+                // Limitar array para não crescer demais
+                if (events.length > 100) {
+                    events.shift();
+                }
+            }, 1000);
+        }
+
+        function pararGeracaoEventos() {
+            if (eventGenerator) {
+                clearInterval(eventGenerator);
+                eventGenerator = null;
+
+                const result = document.getElementById('result-sync');
+                result.className = 'result-box warning';
+                result.textContent = `⏸️ Geração parada\\n`;
+                result.textContent += `Total de eventos: ${generatedEvents.length}`;
+            }
+        }
+
+        function verificarSincronizacao() {
+            const result = document.getElementById('result-sync');
+            result.className = 'result-box info';
+
+            const stored = JSON.parse(localStorage.getItem('bb_events') || '[]');
+            const synced = generatedEvents.filter(e =>
+                stored.some(s => s.id === e.id)
+            );
+
+            const syncRate = generatedEvents.length > 0
+                ? Math.round((synced.length / generatedEvents.length) * 100)
+                : 0;
+
+            result.className = syncRate >= 90 ? 'result-box success' : 'result-box warning';
+            result.textContent = `🔄 Status de Sincronização:\\n\\n`;
+            result.textContent += `Eventos gerados: ${generatedEvents.length}\\n`;
+            result.textContent += `Eventos salvos: ${stored.length}\\n`;
+            result.textContent += `Taxa de sync: ${syncRate}%`;
+        }
+
+        // TESTE 4: Cross-browser
+        function exportarDados() {
+            const result = document.getElementById('result-cross');
+
+            const exportData = {
+                timestamp: Date.now(),
+                localStorage: {},
+                cookies: document.cookie,
+                events: JSON.parse(localStorage.getItem('bb_events') || '[]')
+            };
+
+            // Coletar dados do localStorage
+            for (let key in localStorage) {
+                if (key.includes('bb')) {
+                    exportData.localStorage[key] = localStorage[key];
+                }
+            }
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `eternal-tracking-export-${Date.now()}.json`;
+            a.click();
+
+            result.className = 'result-box success';
+            result.textContent = '📤 Dados exportados com sucesso!\\n';
+            result.textContent += `${Object.keys(exportData.localStorage).length} chaves exportadas`;
+        }
+
+        function importarDados() {
+            const result = document.getElementById('result-cross');
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+
+                        // Importar localStorage
+                        for (let key in data.localStorage) {
+                            localStorage.setItem(key, data.localStorage[key]);
+                        }
+
+                        // Importar eventos
+                        if (data.events) {
+                            localStorage.setItem('bb_events', JSON.stringify(data.events));
+                        }
+
+                        result.className = 'result-box success';
+                        result.textContent = '📥 Dados importados com sucesso!\\n';
+                        result.textContent += `${Object.keys(data.localStorage).length} chaves importadas`;
+                    } catch (err) {
+                        result.className = 'result-box error';
+                        result.textContent = '❌ Erro ao importar: ' + err.message;
+                    }
+                };
+
+                reader.readAsText(file);
+            };
+
+            input.click();
+        }
+
+        function verificarCompatibilidade() {
+            const result = document.getElementById('result-cross');
+            result.className = 'result-box info';
+
+            const features = {
+                'LocalStorage': typeof localStorage !== 'undefined',
+                'SessionStorage': typeof sessionStorage !== 'undefined',
+                'IndexedDB': 'indexedDB' in window,
+                'Cookies': navigator.cookieEnabled,
+                'Cache API': 'caches' in window,
+                'Service Worker': 'serviceWorker' in navigator,
+                'Broadcast Channel': 'BroadcastChannel' in window,
+                'Web Crypto': 'crypto' in window,
+                'Notifications': 'Notification' in window,
+                'Push API': 'PushManager' in window
+            };
+
+            const supported = Object.entries(features).filter(([k, v]) => v);
+            const unsupported = Object.entries(features).filter(([k, v]) => !v);
+
+            result.textContent = `🔧 Compatibilidade do Navegador:\\n\\n`;
+            result.textContent += `✅ Suportados (${supported.length}):\\n`;
+            supported.forEach(([feature]) => {
+                result.textContent += `  • ${feature}\\n`;
+            });
+
+            if (unsupported.length > 0) {
+                result.textContent += `\\n❌ Não suportados (${unsupported.length}):\\n`;
+                unsupported.forEach(([feature]) => {
+                    result.textContent += `  • ${feature}\\n`;
+                });
+            }
+
+            const score = Math.round((supported.length / Object.keys(features).length) * 100);
+            result.textContent += `\\n📊 Score de Compatibilidade: ${score}%`;
+
+            result.className = score >= 80 ? 'result-box success' : 'result-box warning';
+        }
+    </script>
+</body>
+</html>

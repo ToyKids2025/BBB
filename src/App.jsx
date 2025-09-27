@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import './App-Premium.css';
+import './LinkEnhancer.css';
 import {
   FiLink, FiPlus, FiCopy, FiExternalLink,
   FiTrendingUp, FiDollarSign, FiActivity,
@@ -10,6 +11,7 @@ import {
 } from 'react-icons/fi';
 import { AUTH_SERVICE } from './auth-service';
 import { AFFILIATE_TAGS, detectPlatform, addAffiliateTag } from './config';
+import MonitoringDashboard from './components/MonitoringDashboard';
 import {
   saveLink,
   getLinks,
@@ -18,6 +20,10 @@ import {
   sendTelegramNotification
 } from './firebase';
 import { isValidUrl, isSupportedProductUrl, sanitizeUrl, checkRateLimit } from './utils/validation';
+import { EternalTrackingSystem, AmazonSubscribeLinks } from './utils/eternal-tracking';
+import { remarketingSystem } from './utils/remarketing-fomo';
+import RemarketingDashboard from './components/RemarketingDashboard';
+import { UltimateCookieSync } from './utils/ultimate-cookie-sync';
 
 // Componente Principal com Firebase
 const App = memo(() => {
@@ -26,11 +32,53 @@ const App = memo(() => {
   const [theme, setTheme] = useState(() =>
     localStorage.getItem('theme') || 'light'
   );
+  const [trackingSystem, setTrackingSystem] = useState(null);
+  const [ultimateSync, setUltimateSync] = useState(null);
 
   useEffect(() => {
     // Aplicar tema
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    // Inicializar sistema de tracking eterno
+    const initTracking = async () => {
+      const tracker = new EternalTrackingSystem({
+        affiliateTag: AFFILIATE_TAGS.AMAZON,
+        baseUrl: window.location.origin,
+        enableAllFeatures: true
+      });
+
+      await tracker.initialize({
+        source: 'app_load',
+        platform: 'web',
+        userId: user?.uid || 'anonymous'
+      });
+
+      setTrackingSystem(tracker);
+      window.BBBTracker = tracker; // Exportar para debug
+
+      console.log('🔥 Eternal Tracking System ativado!');
+
+      // Inicializar sistema de remarketing FOMO
+      await remarketingSystem.initialize();
+      console.log('🔥 Sistema de Remarketing FOMO ativado!');
+
+      // Inicializar Ultimate Cookie Sync para garantir comissões
+      const sync = new UltimateCookieSync({
+        mercadoLivre: AFFILIATE_TAGS.MERCADO_LIVRE || 'alexand68-20',
+        amazon: AFFILIATE_TAGS.AMAZON || 'buscabrasil-20'
+      });
+
+      await sync.initialize();
+      setUltimateSync(sync);
+      window.BBBUltimateSync = sync; // Exportar para debug
+
+      console.log('🚀 Ultimate Cookie Sync ativado - Comissões garantidas!');
+    };
+
+    initTracking();
+  }, [user]);
 
   useEffect(() => {
     // Monitor de autenticação Firebase
@@ -201,6 +249,8 @@ const Dashboard = memo(({ user, onLogout, theme, toggleTheme }) => {
     { id: 'dashboard', label: 'Dashboard', icon: FiActivity, badge: null },
     { id: 'links', label: 'Shortlinks', icon: FiLink, badge: 'Firebase' },
     { id: 'analytics', label: 'Analytics Real', icon: FiBarChart2, badge: 'Live' },
+    { id: 'monitoring', label: 'Monitoramento', icon: FiActivity, badge: 'Daily' },
+    { id: 'remarketing', label: 'Remarketing FOMO', icon: FiBell, badge: '🔥' },
     { id: 'settings', label: 'Configurações', icon: FiSettings, badge: null }
   ];
 
@@ -286,6 +336,8 @@ const Dashboard = memo(({ user, onLogout, theme, toggleTheme }) => {
           {activeTab === 'dashboard' && <DashboardView user={user} />}
           {activeTab === 'links' && <LinksView />}
           {activeTab === 'analytics' && <AnalyticsView />}
+          {activeTab === 'monitoring' && <MonitoringDashboard />}
+          {activeTab === 'remarketing' && <RemarketingDashboard />}
           {activeTab === 'settings' && <SettingsView user={user} />}
         </div>
       </main>
@@ -453,7 +505,10 @@ const LinksView = memo(() => {
   };
 
   const handleCreateLink = async () => {
-    if (!newLink.url) return;
+    if (!newLink.url) {
+      alert('Por favor, insira uma URL do produto');
+      return;
+    }
 
     // Validar URL
     if (!isValidUrl(newLink.url)) {
@@ -467,7 +522,7 @@ const LinksView = memo(() => {
     }
 
     // Rate limiting
-    const rateLimit = checkRateLimit(user.uid, 30, 60000); // 30 links por minuto
+    const rateLimit = checkRateLimit(user?.uid || 'anonymous', 30, 60000); // 30 links por minuto
     if (!rateLimit.allowed) {
       alert(`Limite excedido. Aguarde ${Math.ceil(rateLimit.remainingTime / 1000)} segundos.`);
       return;
@@ -475,39 +530,76 @@ const LinksView = memo(() => {
 
     setCreating(true);
 
-    // Sanitizar URL
-    const cleanUrl = sanitizeUrl(newLink.url);
-    const platform = detectPlatform(cleanUrl);
-    const urlWithTag = addAffiliateTag(cleanUrl, platform);
+    try {
+      // Sanitizar URL
+      const cleanUrl = sanitizeUrl(newLink.url);
+      const platform = detectPlatform(cleanUrl);
+      const urlWithTag = addAffiliateTag(cleanUrl, platform);
 
-    const linkData = {
-      url: urlWithTag,
-      originalUrl: newLink.url,
-      title: newLink.title || `Link ${platform}`,
-      platform,
-      clicks: 0
-    };
+      const linkData = {
+        url: urlWithTag,
+        originalUrl: newLink.url,
+        title: newLink.title || `Link ${platform}`,
+        platform,
+        clicks: 0
+      };
 
-    const result = await saveLink(linkData);
+      // Adicionar links especiais Amazon Subscribe & Save
+      if (platform === 'amazon') {
+        const amazonHelper = new AmazonSubscribeLinks(AFFILIATE_TAGS.AMAZON);
+        const subscribeLinks = amazonHelper.createSubscribeLink(newLink.url);
+        linkData.subscribeLinks = subscribeLinks;
+        console.log('🛒 Links Subscribe & Save gerados:', subscribeLinks);
+      }
 
-    if (result.success) {
-      await loadLinks(); // Recarregar lista
-      setNewLink({ url: '', title: '' });
-      setShowCreateModal(false);
+      // Rastrear criação de link com sistema eterno
+      if (window.BBBTracker) {
+        window.BBBTracker.trackEvent('link_created', linkData);
+      }
 
-      // Copiar para clipboard
-      navigator.clipboard.writeText(urlWithTag);
+      const result = await saveLink(linkData);
 
-      // Notificar sucesso
-      await sendTelegramNotification(
-        `✅ <b>Link criado com sucesso!</b>\n` +
-        `📌 Título: ${linkData.title}\n` +
-        `🔗 URL: ${urlWithTag}\n` +
-        `📋 Copiado para área de transferência`
-      );
+      if (result.success) {
+        // Rastrear click para remarketing FOMO
+        await remarketingSystem.trackClick(linkData);
+        console.log('📍 Click rastreado para remarketing FOMO');
+
+        await loadLinks(); // Recarregar lista
+        setNewLink({ url: '', title: '' });
+        setShowCreateModal(false);
+
+        // Copiar para clipboard com feedback visual
+        try {
+          await navigator.clipboard.writeText(urlWithTag);
+          // Mostrar feedback de sucesso
+          const successMsg = document.createElement('div');
+          successMsg.className = 'copy-success-toast';
+          successMsg.textContent = '✅ Link criado e copiado!';
+          successMsg.style.cssText = 'position:fixed;top:20px;right:20px;background:#4caf50;color:white;padding:15px;border-radius:8px;z-index:9999;animation:slideIn 0.3s ease';
+          document.body.appendChild(successMsg);
+          setTimeout(() => successMsg.remove(), 3000);
+        } catch (clipErr) {
+          console.error('Erro ao copiar:', clipErr);
+          alert(`Link criado com sucesso!\n\n${urlWithTag}\n\nCopie o link acima.`);
+        }
+
+        // Notificar sucesso
+        await sendTelegramNotification(
+          `✅ <b>Link criado com sucesso!</b>\n` +
+          `📌 Título: ${linkData.title}\n` +
+          `🔗 URL Original: ${newLink.url}\n` +
+          `✅ URL com Tag: ${urlWithTag}\n` +
+          `📋 Status: Copiado para clipboard`
+        );
+      } else {
+        alert(`Erro ao criar link: ${result.error || 'Erro desconhecido'}`);
+      }
+    } catch (error) {
+      console.error('Erro ao criar link:', error);
+      alert('Erro ao criar link. Verifique o console.');
+    } finally {
+      setCreating(false);
     }
-
-    setCreating(false);
   };
 
   const handleExportLinks = () => {
@@ -658,11 +750,11 @@ const LinksView = memo(() => {
               <h3 className="link-title">{link.title}</h3>
               <div style={{marginBottom: '15px'}}>
                 <div style={{fontSize: '11px', color: '#999', marginBottom: '5px'}}>URL Original:</div>
-                <div className="link-url" style={{fontSize: '12px', wordBreak: 'break-all', padding: '8px', background: '#f5f5f5', borderRadius: '4px', marginBottom: '10px'}}>
+                <div className="link-url original-url" style={{fontSize: '12px', wordBreak: 'break-all', padding: '8px', background: '#f5f5f5', borderRadius: '4px', marginBottom: '10px', userSelect: 'text', cursor: 'text'}}>
                   {link.originalUrl || link.url}
                 </div>
-                <div style={{fontSize: '11px', color: '#999', marginBottom: '5px'}}>Link com Tag de Afiliado (copie este):</div>
-                <div className="link-url" style={{fontSize: '12px', wordBreak: 'break-all', padding: '8px', background: '#e8f5e9', borderRadius: '4px', border: '1px solid #4caf50'}}>
+                <div style={{fontSize: '11px', color: '#4caf50', fontWeight: 'bold', marginBottom: '5px'}}>✅ Link com Tag de Afiliado (COPIE ESTE):</div>
+                <div className="link-url affiliate-url" style={{fontSize: '13px', fontWeight: '600', wordBreak: 'break-all', padding: '10px', background: 'linear-gradient(135deg, #e8f5e9, #f1f8e9)', borderRadius: '6px', border: '2px solid #4caf50', userSelect: 'all', cursor: 'pointer'}} onClick={(e) => copyLink(link.url, e)}>
                   {link.url}
                 </div>
               </div>
@@ -670,28 +762,77 @@ const LinksView = memo(() => {
                 <span><FiTrendingUp /> {link.clicks || 0} clicks</span>
               </div>
               <div className="link-actions">
-                <button className="btn btn-primary" onClick={(e) => copyLink(link.url, e)}>
-                  <FiCopy /> Copiar Link
+                <button className="btn btn-primary" style={{background: 'linear-gradient(135deg, #4caf50, #45a049)', fontWeight: 'bold'}} onClick={(e) => {
+                  copyLink(link.url, e);
+                  // Rastrear cópia com sistema eterno
+                  if (window.BBBTracker) {
+                    window.BBBTracker.trackEvent('link_copied', { linkId: link.id, platform: link.platform });
+                  }
+                  // Ativar Ultimate Cookie Sync para garantir comissão
+                  if (window.BBBUltimateSync) {
+                    window.BBBUltimateSync.trackAffiliateClick(link.url, link.platform);
+                    console.log('💰 Cookie sync ativado - comissão garantida mesmo se voltar direto!');
+                  }
+                }}>
+                  <FiCopy /> COPIAR LINK
                 </button>
                 <button
                   className="btn btn-secondary"
                   onClick={async () => {
-                    await updateLinkClick(link.id);
-                    window.open(link.url, '_blank');
+                    try {
+                      await updateLinkClick(link.id);
+                      await loadLinks(); // Atualizar contadores
+                      // Rastrear click com sistema eterno
+                      if (window.BBBTracker) {
+                        window.BBBTracker.trackEvent('link_test_click', { linkId: link.id, platform: link.platform });
+                      }
+                    } catch (err) {
+                      console.error('Erro ao atualizar click:', err);
+                    }
+                    window.open(link.url, '_blank', 'noopener,noreferrer');
                   }}
                 >
                   <FiExternalLink /> Testar
                 </button>
                 <button
                   className="btn btn-secondary"
+                  style={{background: '#25D366', color: 'white'}}
                   onClick={() => {
-                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`Confira esta oferta: ${link.url}`)}`;
-                    window.open(whatsappUrl, '_blank');
+                    const whatsappText = `🅱️ *OFERTA IMPERDÍVEL!*\n\n${link.title || 'Confira este produto'}\n\n🔗 Link: ${link.url}\n\n_Via Busca Busca Brasil_`;
+                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+                    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
                   }}
                 >
                   📱 WhatsApp
                 </button>
               </div>
+              {link.platform === 'amazon' && link.subscribeLinks && (
+                <div className="subscribe-links" style={{marginTop: '10px', padding: '10px', background: '#fef3c7', borderRadius: '6px', fontSize: '12px'}}>
+                  <strong style={{color: '#d97706'}}>🛒 Links Subscribe & Save:</strong>
+                  <div style={{marginTop: '5px'}}>
+                    <button
+                      className="btn btn-sm"
+                      style={{marginRight: '5px', background: '#ff9900', color: 'white', padding: '4px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer'}}
+                      onClick={() => {
+                        navigator.clipboard.writeText(link.subscribeLinks.subscribe);
+                        alert('Link Subscribe copiado!');
+                      }}
+                    >
+                      Assinar
+                    </button>
+                    <button
+                      className="btn btn-sm"
+                      style={{background: '#ff9900', color: 'white', padding: '4px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer'}}
+                      onClick={() => {
+                        navigator.clipboard.writeText(link.subscribeLinks.subscribeCart);
+                        alert('Link Carrinho + Subscribe copiado!');
+                      }}
+                    >
+                      Carrinho + Subscribe
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))
         )}

@@ -17,7 +17,10 @@
       "Bash(tree:*)",
       "Bash(npm test:*)",
       "Bash(curl:*)",
-      "Bash(gzip:*)"
+      "Bash(gzip:*)",
+      "Bash(./test-real-validation.sh:*)",
+      "Bash(python3:*)",
+      "Bash(npm cache clean:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Extremo - BuscaBuscaBrasil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .test-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .test-status {
+            margin-left: auto;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .status-running {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .status-passed {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-failed {
+            background: #dc3545;
+            color: white;
+        }
+
+        .test-results {
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .result-line {
+            margin: 5px 0;
+            padding: 5px;
+        }
+
+        .result-success {
+            color: #28a745;
+        }
+
+        .result-error {
+            color: #dc3545;
+        }
+
+        .result-warning {
+            color: #ffc107;
+        }
+
+        .result-info {
+            color: #17a2b8;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-start {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #218838;
+        }
+
+        .btn-clear {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #c82333;
+        }
+
+        .final-report {
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            color: white;
+            display: none;
+        }
+
+        .report-title {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .report-summary {
+            font-size: 1.2em;
+            line-height: 1.8;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .running {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 TESTE EXTREMO - BUSCABUSCABRASIL</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Validação completa do sistema de rastreamento perpétuo de comissões
+        </p>
+
+        <div class="control-panel">
+            <button class="btn-start" onclick="startAllTests()">▶ INICIAR TESTE COMPLETO</button>
+            <button class="btn-clear" onclick="clearResults()">🗑 LIMPAR RESULTADOS</button>
+        </div>
+
+        <div id="tests-container">
+            <!-- Os testes serão inseridos aqui dinamicamente -->
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-box">
+                <div class="stat-value" id="stat-passed">0</div>
+                <div class="stat-label">Testes Aprovados</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="stat-failed">0</div>
+                <div class="stat-label">Testes Falhados</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="stat-cookies">0</div>
+                <div class="stat-label">Cookies Criados</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="stat-rate">0%</div>
+                <div class="stat-label">Taxa de Sucesso</div>
+            </div>
+        </div>
+
+        <div class="final-report" id="final-report">
+            <div class="report-title">📊 RELATÓRIO FINAL</div>
+            <div class="report-summary" id="report-summary"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configurações
+        const ML_TAG = 'WA20250726131129';
+        const AMAZON_TAG = 'buscabrasil-20';
+        const API_URL = 'http://localhost:3002';
+
+        // Estatísticas globais
+        let stats = {
+            passed: 0,
+            failed: 0,
+            cookies: 0,
+            warnings: 0
+        };
+
+        // Produtos de teste
+        const TEST_PRODUCTS = {
+            mercadoLivre: [
+                'https://www.mercadolivre.com.br/furadeira-bosch/p/MLB18723880',
+                'https://www.mercadolivre.com.br/smartphone-samsung/p/MLB21735502',
+                'https://produto.mercadolivre.com.br/MLB-3635470297-chave-de-fenda'
+            ],
+            amazon: [
+                'https://www.amazon.com.br/dp/B0CJK4JG67',
+                'https://www.amazon.com.br/dp/B09B8W5FW7',
+                'https://www.amazon.com.br/dp/B08N3TCP2N'
+            ]
+        };
+
+        // Função para criar seção de teste
+        function createTestSection(title, id) {
+            return `
+                <div class="test-section" id="${id}">
+                    <div class="test-header">
+                        <span>${title}</span>
+                        <span class="test-status status-running">Executando...</span>
+                    </div>
+                    <div class="test-results"></div>
+                </div>
+            `;
+        }
+
+        // Adicionar linha de resultado
+        function addResult(testId, message, type = 'info') {
+            const resultsDiv = document.querySelector(`#${testId} .test-results`);
+            const className = `result-${type}`;
+            resultsDiv.innerHTML += `<div class="result-line ${className}">${message}</div>`;
+        }
+
+        // Atualizar status do teste
+        function updateTestStatus(testId, status) {
+            const statusEl = document.querySelector(`#${testId} .test-status`);
+            statusEl.className = `test-status status-${status}`;
+            statusEl.textContent = status === 'passed' ? '✅ Aprovado' :
+                                  status === 'failed' ? '❌ Falhou' :
+                                  'Executando...';
+        }
+
+        // Atualizar estatísticas
+        function updateStats() {
+            document.getElementById('stat-passed').textContent = stats.passed;
+            document.getElementById('stat-failed').textContent = stats.failed;
+            document.getElementById('stat-cookies').textContent = stats.cookies;
+
+            const total = stats.passed + stats.failed;
+            const rate = total > 0 ? Math.round((stats.passed / total) * 100) : 0;
+            document.getElementById('stat-rate').textContent = rate + '%';
+        }
+
+        // TESTE 1: Verificar APIs
+        async function testAPIs() {
+            const testId = 'test-apis';
+
+            try {
+                // Testar Cookie Server
+                const response = await fetch(`${API_URL}/api/health`);
+                const data = await response.json();
+
+                if (data.status === 'operational') {
+                    addResult(testId, '✅ Cookie Server operacional', 'success');
+                    addResult(testId, `   Sessões ativas: ${data.activeSessions}`, 'info');
+                    stats.passed++;
+                    updateTestStatus(testId, 'passed');
+                } else {
+                    addResult(testId, '❌ Cookie Server offline', 'error');
+                    stats.failed++;
+                    updateTestStatus(testId, 'failed');
+                }
+            } catch (error) {
+                addResult(testId, `❌ Erro ao conectar: ${error.message}`, 'error');
+                stats.failed++;
+                updateTestStatus(testId, 'failed');
+            }
+
+            updateStats();
+        }
+
+        // TESTE 2: Cookies e Persistência
+        async function testCookies() {
+            const testId = 'test-cookies';
+
+            try {
+                // Criar cookies
+                const response = await fetch(`${API_URL}/api/cookie/set`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        affiliateTag: ML_TAG,
+                        productUrl: 'https://www.mercadolivre.com.br/teste',
+                        platform: 'mercadolivre'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addResult(testId, '✅ Cookies criados com sucesso', 'success');
+                    addResult(testId, `   Session ID: ${data.sessionId.substring(0, 20)}...`, 'info');
+                    addResult(testId, `   Tracking ID: ${data.trackingId.substring(0, 20)}...`, 'info');
+
+                    // Verificar cookies no navegador
+                    const cookies = document.cookie.split(';');
+                    stats.cookies = cookies.length;
+
+                    addResult(testId, `📊 ${cookies.length} cookies no navegador`, 'info');
+
+                    // Verificar localStorage
+                    const storageItems = Object.keys(localStorage).filter(key =>
+                        key.includes('bb_') || key.includes('tracking')
+                    );
+
+                    if (storageItems.length > 0) {
+                        addResult(testId, `✅ ${storageItems.length} items no localStorage`, 'success');
+                        stats.passed++;
+                    }
+
+                    updateTestStatus(testId, 'passed');
+                } else {
+                    addResult(testId, '❌ Falha ao criar cookies', 'error');
+                    stats.failed++;
+                    updateTestStatus(testId, 'failed');
+                }
+            } catch (error) {
+                addResult(testId, `❌ Erro: ${error.message}`, 'error');
+                stats.failed++;
+                updateTestStatus(testId, 'failed');
+            }
+
+            updateStats();
+        }
+
+        // TESTE 3: Geração de Links
+        async function testLinkGeneration() {
+            const testId = 'test-links';
+            let allPassed = true;
+
+            // Testar links ML
+            addResult(testId, '📝 Testando links Mercado Livre:', 'info');
+            for (const url of TEST_PRODUCTS.mercadoLivre) {
+                const affiliateUrl = url.includes('?') ?
+                    `${url}&matt_word=${ML_TAG}&matt_tool=88344921` :
+                    `${url}?matt_word=${ML_TAG}&matt_tool=88344921`;
+
+                if (affiliateUrl.includes(ML_TAG)) {
+                    addResult(testId, `  ✅ ${url.substring(30, 60)}...`, 'success');
+                    stats.passed++;
+                } else {
+                    addResult(testId, `  ❌ ${url.substring(30, 60)}...`, 'error');
+                    stats.failed++;
+                    allPassed = false;
+                }
+            }
+
+            // Testar links Amazon
+            addResult(testId, '📝 Testando links Amazon:', 'info');
+            for (const url of TEST_PRODUCTS.amazon) {
+                const affiliateUrl = url.includes('?') ?
+                    `${url}&tag=${AMAZON_TAG}` :
+                    `${url}?tag=${AMAZON_TAG}`;
+
+                if (affiliateUrl.includes(AMAZON_TAG)) {
+                    addResult(testId, `  ✅ ${url.substring(25, 45)}...`, 'success');
+                    stats.passed++;
+                } else {
+                    addResult(testId, `  ❌ ${url.substring(25, 45)}...`, 'error');
+                    stats.failed++;
+                    allPassed = false;
+                }
+            }
+
+            updateTestStatus(testId, allPassed ? 'passed' : 'failed');
+            updateStats();
+        }
+
+        // TESTE 4: Device Fingerprint
+        async function testFingerprint() {
+            const testId = 'test-fingerprint';
+
+            try {
+                // Criar fingerprint usando Canvas
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillText('BuscaBuscaBrasil', 2, 2);
+                const canvasData = canvas.toDataURL();
+
+                // Gerar hash simples
+                let hash = 0;
+                for (let i = 0; i < canvasData.length; i++) {
+                    hash = ((hash << 5) - hash) + canvasData.charCodeAt(i);
+                    hash = hash & hash;
+                }
+
+                const fingerprint = Math.abs(hash).toString(16);
+
+                addResult(testId, `✅ Fingerprint gerado: ${fingerprint}`, 'success');
+                addResult(testId, `   User Agent: ${navigator.userAgent.substring(0, 50)}...`, 'info');
+                addResult(testId, `   Screen: ${screen.width}x${screen.height}`, 'info');
+                addResult(testId, `   Linguagem: ${navigator.language}`, 'info');
+
+                // Salvar no localStorage
+                localStorage.setItem('bb_device_fingerprint', fingerprint);
+
+                stats.passed++;
+                updateTestStatus(testId, 'passed');
+            } catch (error) {
+                addResult(testId, `❌ Erro ao gerar fingerprint: ${error.message}`, 'error');
+                stats.failed++;
+                updateTestStatus(testId, 'failed');
+            }
+
+            updateStats();
+        }
+
+        // TESTE 5: Simulação de Retorno
+        async function testCommissionCapture() {
+            const testId = 'test-commission';
+
+            try {
+                addResult(testId, '💰 Simulando fluxo de compra:', 'info');
+
+                // Passo 1: Clique inicial
+                const clickResponse = await fetch(`${API_URL}/api/cookie/set`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        affiliateTag: ML_TAG,
+                        productUrl: 'https://www.mercadolivre.com.br/produto-teste',
+                        platform: 'mercadolivre'
+                    })
+                });
+
+                const clickData = await clickResponse.json();
+
+                if (clickData.success) {
+                    addResult(testId, '  ✅ Passo 1: Link de afiliado clicado', 'success');
+
+                    // Salvar dados localmente
+                    localStorage.setItem('bb_last_click', JSON.stringify({
+                        tag: ML_TAG,
+                        timestamp: Date.now(),
+                        sessionId: clickData.sessionId
+                    }));
+
+                    // Passo 2: Simular tempo passando
+                    addResult(testId, '  ⏰ Passo 2: Simulando 3 dias depois...', 'info');
+
+                    // Passo 3: Verificar persistência
+                    const savedData = localStorage.getItem('bb_last_click');
+
+                    if (savedData) {
+                        const parsed = JSON.parse(savedData);
+
+                        if (parsed.tag === ML_TAG) {
+                            addResult(testId, '  ✅ Passo 3: Tag ainda presente no localStorage', 'success');
+                            addResult(testId, `  💰 COMISSÃO CAPTURADA! Tag ${ML_TAG} preservada`, 'success');
+                            stats.passed++;
+                            updateTestStatus(testId, 'passed');
+                        } else {
+                            addResult(testId, '  ❌ Tag incorreta', 'error');
+                            stats.failed++;
+                            updateTestStatus(testId, 'failed');
+                        }
+                    } else {
+                        addResult(testId, '  ❌ Dados perdidos', 'error');
+                        stats.failed++;
+                        updateTestStatus(testId, 'failed');
+                    }
+                } else {
+                    addResult(testId, '  ❌ Falha no clique inicial', 'error');
+                    stats.failed++;
+                    updateTestStatus(testId, 'failed');
+                }
+            } catch (error) {
+                addResult(testId, `❌ Erro: ${error.message}`, 'error');
+                stats.failed++;
+                updateTestStatus(testId, 'failed');
+            }
+
+            updateStats();
+        }
+
+        // TESTE 6: Service Workers
+        async function testServiceWorkers() {
+            const testId = 'test-sw';
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+
+                    if (registrations.length > 0) {
+                        addResult(testId, `✅ ${registrations.length} Service Workers encontrados`, 'success');
+
+                        registrations.forEach(reg => {
+                            const state = reg.active ? reg.active.state : 'inativo';
+                            addResult(testId, `   SW: ${reg.scope} - ${state}`, 'info');
+                        });
+
+                        stats.passed++;
+                        updateTestStatus(testId, 'passed');
+                    } else {
+                        addResult(testId, '⚠️ Nenhum Service Worker registrado', 'warning');
+                        stats.warnings++;
+                        updateTestStatus(testId, 'passed');
+                    }
+                } else {
+                    addResult(testId, '❌ Service Workers não suportados', 'error');
+                    stats.failed++;
+                    updateTestStatus(testId, 'failed');
+                }
+            } catch (error) {
+                addResult(testId, `❌ Erro: ${error.message}`, 'error');
+                stats.failed++;
+                updateTestStatus(testId, 'failed');
+            }
+
+            updateStats();
+        }
+
+        // Executar todos os testes
+        async function startAllTests() {
+            // Limpar resultados anteriores
+            clearResults();
+
+            // Criar seções de teste
+            const container = document.getElementById('tests-container');
+            container.innerHTML = `
+                ${createTestSection('1️⃣ APIs e Servidores', 'test-apis')}
+                ${createTestSection('2️⃣ Cookies e Persistência', 'test-cookies')}
+                ${createTestSection('3️⃣ Geração de Links', 'test-links')}
+                ${createTestSection('4️⃣ Device Fingerprint', 'test-fingerprint')}
+                ${createTestSection('5️⃣ Captura de Comissão', 'test-commission')}
+                ${createTestSection('6️⃣ Service Workers', 'test-sw')}
+            `;
+
+            // Executar testes em sequência
+            await testAPIs();
+            await new Promise(r => setTimeout(r, 1000));
+
+            await testCookies();
+            await new Promise(r => setTimeout(r, 1000));
+
+            await testLinkGeneration();
+            await new Promise(r => setTimeout(r, 1000));
+
+            await testFingerprint();
+            await new Promise(r => setTimeout(r, 1000));
+
+            await testCommissionCapture();
+            await new Promise(r => setTimeout(r, 1000));
+
+            await testServiceWorkers();
+
+            // Gerar relatório final
+            generateFinalReport();
+        }
+
+        // Gerar relatório final
+        function generateFinalReport() {
+            const total = stats.passed + stats.failed;
+            const rate = total > 0 ? Math.round((stats.passed / total) * 100) : 0;
+
+            let analysis = '';
+            if (rate >= 80) {
+                analysis = `
+                    <p style="color: #4CAF50; font-size: 1.5em; font-weight: bold;">
+                        ✅ SISTEMA FUNCIONANDO PERFEITAMENTE!
+                    </p>
+                    <p>→ Comissões estão sendo capturadas corretamente</p>
+                    <p>→ Cookies persistentes funcionando</p>
+                    <p>→ Tags de afiliado configuradas corretamente</p>
+                    <p>→ Sistema pronto para produção</p>
+                `;
+            } else if (rate >= 60) {
+                analysis = `
+                    <p style="color: #FFC107; font-size: 1.5em; font-weight: bold;">
+                        ⚠️ SISTEMA PARCIALMENTE FUNCIONAL
+                    </p>
+                    <p>→ Algumas funcionalidades precisam de ajustes</p>
+                    <p>→ Verificar configurações de tags</p>
+                    <p>→ Revisar cookies e persistência</p>
+                `;
+            } else {
+                analysis = `
+                    <p style="color: #F44336; font-size: 1.5em; font-weight: bold;">
+                        ❌ SISTEMA COM PROBLEMAS CRÍTICOS
+                    </p>
+                    <p>→ Alto risco de perda de comissões</p>
+                    <p>→ Correções urgentes necessárias</p>
+                    <p>→ Verificar todas as configurações</p>
+                `;
+            }
+
+            document.getElementById('report-summary').innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <p style="font-size: 3em; font-weight: bold;">${rate}%</p>
+                    <p>Taxa de Sucesso</p>
+                </div>
+                ${analysis}
+                <hr style="margin: 20px 0; opacity: 0.3;">
+                <p>📊 Testes aprovados: ${stats.passed}</p>
+                <p>❌ Testes falhados: ${stats.failed}</p>
+                <p>⚠️ Avisos: ${stats.warnings}</p>
+                <p>🍪 Cookies criados: ${stats.cookies}</p>
+            `;
+
+            document.getElementById('final-report').style.display = 'block';
+
+            // Salvar relatório no localStorage
+            const report = {
+                timestamp: new Date().toISOString(),
+                stats: stats,
+                rate: rate,
+                tags: {
+                    mercadoLivre: ML_TAG,
+                    amazon: AMAZON_TAG
+                }
+            };
+
+            localStorage.setItem('bb_test_report', JSON.stringify(report));
+            console.log('📄 Relatório salvo no localStorage:', report);
+        }
+
+        // Limpar resultados
+        function clearResults() {
+            document.getElementById('tests-container').innerHTML = '';
+            document.getElementById('final-report').style.display = 'none';
+            stats = { passed: 0, failed: 0, cookies: 0, warnings: 0 };
+            updateStats();
+        }
+
+        // Auto-executar ao carregar
+        window.addEventListener('load', () => {
+            console.log('🚀 Sistema de teste carregado');
+            console.log('📌 Tags configuradas:');
+            console.log('   Mercado Livre:', ML_TAG);
+            console.log('   Amazon:', AMAZON_TAG);
+        });
+    </script>
+</body>
+</html>

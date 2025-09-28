@@ -6,9 +6,25 @@
 
 // TAGS DE AFILIADO CONFIRMADAS - ALEXANDRE
 export const AFFILIATE_TAGS = {
-  AMAZON: process.env.REACT_APP_AMAZON_TAG,       // Tag real Amazon
-  MERCADOLIVRE: process.env.REACT_APP_ML_AFFILIATE_ID  // Tag real Mercado Livre
+  AMAZON: process.env.REACT_APP_AMAZON_TAG || 'buscabusca0f-20',       // Tag real Amazon com fallback
+  MERCADOLIVRE: process.env.REACT_APP_ML_AFFILIATE_ID || 'WA20250726131129'  // Tag real Mercado Livre com fallback
 };
+
+// SISTEMA DE ROTAÇÃO DE TAGS (Anti-detecção)
+export const TAG_ROTATION = {
+  amazon: ['buscabusca0f-20', 'buscabr-20', 'busca01-20'],
+  mercadolivre: ['WA20250726131129', 'WA20250726131130', 'WA20250726131131']
+};
+
+// Função para selecionar tag com rotação inteligente
+export function getRotatingTag(platform) {
+  const tags = TAG_ROTATION[platform];
+  if (!tags) return AFFILIATE_TAGS[platform.toUpperCase()];
+
+  // Rotacionar baseado no dia (uma tag por dia)
+  const dayIndex = Math.floor(Date.now() / 86400000) % tags.length;
+  return tags[dayIndex];
+}
 
 // CONFIGURAÇÃO DA API (Reservado para futuro uso)
 export const API_CONFIG = {
@@ -59,8 +75,11 @@ export function detectPlatform(url) {
   return 'other';
 }
 
-// FUNÇÃO PARA ADICIONAR TAG DE AFILIADO
-export function addAffiliateTag(url, platform) {
+// FUNÇÃO PARA ADICIONAR TAG DE AFILIADO COM ROTAÇÃO
+export function addAffiliateTag(url, platform, useRotation = true) {
+  // Usar rotação inteligente ou tag fixa
+  const tag = useRotation ? getRotatingTag(platform) : AFFILIATE_TAGS[platform.toUpperCase()];
+
   switch(platform) {
     case 'amazon':
       // Verificar se já tem tag de afiliado
@@ -68,30 +87,31 @@ export function addAffiliateTag(url, platform) {
         // Extrair a tag existente
         const existingTag = url.match(/tag=([^&]+)/)?.[1];
 
-        // Se for nossa tag, retornar como está
-        if (existingTag === AFFILIATE_TAGS.AMAZON) {
+        // Se for uma de nossas tags, manter
+        if (TAG_ROTATION.amazon.includes(existingTag)) {
           return url;
         }
 
-        // Se for outra tag, substituir pela nossa
-        return url.replace(/tag=[^&]+/, `tag=${AFFILIATE_TAGS.AMAZON}`);
+        // Se for outra tag, substituir pela nossa com rotação
+        return url.replace(/tag=[^&]+/, `tag=${tag}`);
       }
 
       // Se não tem tag, adicionar
       const cleanUrl = url.split('?')[0];
-      return `${cleanUrl}?tag=${AFFILIATE_TAGS.AMAZON}`;
+      return `${cleanUrl}?tag=${tag}`;
 
     case 'mercadolivre':
       // Verificar se já tem parâmetros de afiliado
       if (url.includes('matt_word=') || url.includes('matt_tool=')) {
-        // Verificar se é nosso ID
-        if (url.includes(`matt_word=${AFFILIATE_TAGS.MERCADOLIVRE}`)) {
-          return url; // Já tem nossa tag, retornar como está
+        // Verificar se é uma de nossas tags
+        const hasOurTag = TAG_ROTATION.mercadolivre.some(t => url.includes(`matt_word=${t}`));
+        if (hasOurTag) {
+          return url; // Já tem nossa tag
         }
 
-        // Substituir por nossa tag
+        // Substituir por nossa tag com rotação
         let newUrl = url;
-        newUrl = newUrl.replace(/matt_word=[^&]+/, `matt_word=${AFFILIATE_TAGS.MERCADOLIVRE}`);
+        newUrl = newUrl.replace(/matt_word=[^&]+/, `matt_word=${tag}`);
 
         // Se não tem matt_tool, adicionar
         if (!newUrl.includes('matt_tool=')) {
@@ -103,7 +123,7 @@ export function addAffiliateTag(url, platform) {
 
       // Se não tem parâmetros de afiliado, adicionar
       const separator = url.includes('?') ? '&' : '?';
-      return `${url}${separator}matt_word=${AFFILIATE_TAGS.MERCADOLIVRE}&matt_tool=88344921`;
+      return `${url}${separator}matt_word=${tag}&matt_tool=88344921`;
 
     default:
       return url;

@@ -1,0 +1,10 @@
+RELATÓRIO DE TESTE - Sat Sep 27 14:44:34 -03 2025
+================================
+Testes aprovados: 17
+Testes falhados: 0
+Avisos: 1
+Taxa de sucesso: 100%
+
+Tags configuradas:
+  Mercado Livre: WA20250726131129
+  Amazon: buscabrasil-20

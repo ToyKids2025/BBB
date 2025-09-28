@@ -18,7 +18,7 @@ const LinkManager = memo(({ links, onRefresh, onDelete, onEdit }) => {
   const [filterPlatform, setFilterPlatform] = useState('all');
 
   // Filtrar links
-  const filteredLinks = links.filter(link => {
+  const filteredLinks = (links || []).filter(link => {
     const matchesSearch = link.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           link.url.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPlatform = filterPlatform === 'all' || link.platform === filterPlatform;
@@ -27,11 +27,11 @@ const LinkManager = memo(({ links, onRefresh, onDelete, onEdit }) => {
 
   // Estatísticas dos links
   const stats = {
-    total: links.length,
-    totalClicks: links.reduce((sum, link) => sum + (link.clicks || 0), 0),
-    avgClicks: links.length > 0 ?
-      (links.reduce((sum, link) => sum + (link.clicks || 0), 0) / links.length).toFixed(1) : 0,
-    platforms: [...new Set(links.map(l => l.platform))].length
+    total: (links || []).length,
+    totalClicks: (links || []).reduce((sum, link) => sum + (link.clicks || 0), 0),
+    avgClicks: links && links.length > 0 ?
+      ((links || []).reduce((sum, link) => sum + (link.clicks || 0), 0) / links.length).toFixed(1) : 0,
+    platforms: [...new Set((links || []).map(l => l.platform))].length
   };
 
   // Copiar link

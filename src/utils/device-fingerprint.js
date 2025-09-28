@@ -207,7 +207,8 @@ class DeviceFingerprint {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return null;
 
-      const context = new AudioContext();
+      // Criar contexto apenas após interação do usuário para evitar warning
+      const context = new AudioContext({ latencyHint: 'interactive' });
       const oscillator = context.createOscillator();
       const analyser = context.createAnalyser();
       const gainNode = context.createGain();
@@ -240,6 +241,7 @@ class DeviceFingerprint {
         };
 
         oscillator.start(0);
+      context.resume(); // Resume context se estiver suspenso
         setTimeout(() => resolve('timeout'), 100);
       });
     } catch (e) {

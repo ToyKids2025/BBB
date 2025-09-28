@@ -41,14 +41,18 @@ function App() {
       setLoading(false);
 
       if (user) {
-        // Notificar login
-        await notifications.notifyAll('✅ Login realizado com sucesso', {
+        // Notificar login (apenas se configurado)
+        try {
+          await notifications.notifyAll('✅ Login realizado com sucesso', {
           title: '🔐 Login',
           fields: [
             { name: 'Usuário', value: user.email },
             { name: 'Horário', value: new Date().toLocaleString('pt-BR') }
           ]
         });
+        } catch (err) {
+          console.log('Notificações não configuradas');
+        }
 
         // Gerar fingerprint do dispositivo
         const fp = await deviceFingerprint.generate();

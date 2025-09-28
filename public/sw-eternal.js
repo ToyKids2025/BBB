@@ -94,9 +94,12 @@ self.addEventListener('fetch', (event) => {
         // Clonar resposta para cache
         const responseToCache = response.clone();
 
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
+        // Só fazer cache de métodos GET
+        if (event.request.method === 'GET') {
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
 
         return response;
       }).catch(() => {

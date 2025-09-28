@@ -57,7 +57,12 @@ class NotificationSystem {
    * Discord Webhook
    */
   async sendDiscordNotification(message, data = {}) {
-    const webhook = this.config.discord.webhook || 'https://discord.com/api/webhooks/YOUR_WEBHOOK_HERE';
+    const webhook = this.config.discord.webhook;
+
+    // Se não houver webhook configurado, retornar silenciosamente
+    if (!webhook || webhook === '' || webhook.includes('YOUR_WEBHOOK_HERE')) {
+      return { success: false, error: 'Discord webhook não configurado' };
+    }
 
     const embed = {
       title: data.title || '🔔 Notificação BuscaBuscaBrasil',

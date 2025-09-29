@@ -1,50 +1,68 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+import AppRouter from './AppRouter';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <AppRouter />
   </React.StrictMode>
 );
 
-// Registrar Service Workers
+// Registrar Service Worker PWA
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    // Service Worker principal existente
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(registration => {
-        console.log('SW principal registrado:', registration.scope);
-      })
-      .catch(error => {
-        console.log('SW principal falhou:', error);
+  window.addEventListener('load', async () => {
+    try {
+      // Registrar SW principal
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/'
       });
 
-    // Service Worker para Push Notifications
-    navigator.serviceWorker.register('/sw-push.js')
-      .then(registration => {
-        console.log('🔥 Push SW registrado:', registration.scope);
+      console.log('✅ Service Worker registrado:', registration.scope);
 
-        // Solicitar permissão para notificações
-        if ('Notification' in window && Notification.permission === 'default') {
-          Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-              console.log('✅ Permissão para Push Notifications concedida!');
+      // Verificar atualizações
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        console.log('🔄 Nova versão do SW encontrada');
 
-              // Mostrar notificação de boas-vindas
-              new Notification('🔥 Remarketing FOMO Ativado!', {
-                body: 'Você receberá ofertas exclusivas!',
-                icon: '/icon-192.png',
-                badge: '/icon-72.png'
-              });
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // Nova versão disponível
+            if (confirm('Nova versão disponível! Atualizar agora?')) {
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+              window.location.reload();
             }
-          });
-        }
-      })
-      .catch(error => {
-        console.log('Push SW falhou:', error);
+          }
+        });
       });
+
+      // Solicitar permissão para notificações (opcional)
+      if ('Notification' in window && Notification.permission === 'default') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          console.log('✅ Notificações permitidas');
+        }
+      }
+
+      // Solicitar persistent storage
+      if (navigator.storage && navigator.storage.persist) {
+        const isPersisted = await navigator.storage.persist();
+        console.log(isPersisted ? '✅ Storage persistente' : '⚠️ Storage não persistente');
+      }
+
+      // Registrar para Background Sync
+      if ('sync' in registration) {
+        console.log('✅ Background Sync disponível');
+      }
+
+    } catch (error) {
+      console.error('❌ Erro ao registrar SW:', error);
+    }
+  });
+
+  // Listener para mensagens do SW
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    console.log('📨 Mensagem do SW:', event.data);
   });
 }

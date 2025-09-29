@@ -23,7 +23,10 @@
       "Bash(npm cache clean:*)",
       "Bash(CI=false npm run build)",
       "Bash(GENERATE_SOURCEMAP=false npm run build)",
-      "Bash(export CI=false)"
+      "Bash(export CI=false)",
+      "Bash(npm run create-kv:*)",
+      "Bash(npx wrangler:*)",
+      "Bash(wrangler kv namespace create:*)"
     ],
     "deny": [],
     "ask": []

@@ -6,11 +6,7 @@ import AnalyticsDashboard from './components/AnalyticsDashboard';
 import MonitoringDashboard from './components/MonitoringDashboard';
 import RemarketingDashboard from './components/RemarketingDashboard';
 
-// Novos componentes
-import CountdownTimer from './components/CountdownTimer';
-import QRCodeGenerator from './components/QRCodeGenerator';
-import LinkPreviewCard from './components/LinkPreviewCard';
-import BulkLinkGenerator from './components/BulkLinkGenerator';
+// Componentes ativos (sem dados mocados)
 import ClickHeatmap from './components/ClickHeatmap';
 import EnvironmentValidator from './components/EnvironmentValidator';
 import HealthCheck from './components/HealthCheck';
@@ -261,12 +257,6 @@ function App() {
             🔗 Links
           </button>
           <button
-            className={`nav-btn ${activeTab === 'bulk' ? 'active' : ''}`}
-            onClick={() => setActiveTab('bulk')}
-          >
-            📦 Bulk Generator
-          </button>
-          <button
             className={`nav-btn ${activeTab === 'analytics' ? 'active' : ''}`}
             onClick={() => setActiveTab('analytics')}
           >
@@ -295,54 +285,21 @@ function App() {
 
       {/* Main Content */}
       <main className="app-main">
-        {/* Widget de Countdown (sempre visível) */}
-        <div className="countdown-widget">
-          <CountdownTimer
-            endTime={Date.now() + (24 * 60 * 60 * 1000)}
-            productInfo={{ discount: 30 }}
-            onExpire={() => console.log('Oferta expirou!')}
-          />
-        </div>
-
         {/* Content based on active tab */}
         <div className="tab-content animate-fadeIn">
           {activeTab === 'links' && (
             <div className="links-section">
-              {/* Guia Visual Adicionado */}
+              {/* Guia Visual */}
               <HowToGenerateLinkGuide />
 
+              {/* Gerador de Links */}
               <LinkManager />
 
               {/* Lista de Links Gerados */}
               <LinkList />
-
-              {/* Preview de Link Exemplo */}
-              <div className="preview-section">
-                <h2>📱 Preview de Link</h2>
-                <LinkPreviewCard
-                  linkData={{
-                    id: 'demo',
-                    url: 'https://www.amazon.com.br/dp/B0CJK4JG67',
-                    title: 'Echo Dot 4ª Geração',
-                    platform: 'amazon',
-                    shortUrl: 'https://bbb.link/abc123'
-                  }}
-                />
-              </div>
-
-              {/* QR Code Generator */}
-              <div className="qr-section">
-                <h2>📱 Gerar QR Code</h2>
-                <QRCodeGenerator
-                  url="https://bbb.link/demo"
-                  title="Link de Demonstração"
-                  size={200}
-                />
-              </div>
             </div>
           )}
 
-          {activeTab === 'bulk' && <BulkLinkGenerator />}
           {activeTab === 'analytics' && <AnalyticsDashboard />}
           {activeTab === 'heatmap' && <ClickHeatmap />}
           {activeTab === 'monitoring' && (
@@ -668,10 +625,6 @@ function App() {
           margin: 0 auto;
         }
 
-        .countdown-widget {
-          margin-bottom: 20px;
-        }
-
         .tab-content {
           background: var(--bg-primary);
           border-radius: 12px;
@@ -697,16 +650,6 @@ function App() {
         }
         .links-section > *:nth-child(3) { /* Estilo para o LinkList ocupar a largura toda */
           grid-column: 1 / -1;
-        }
-
-        .preview-section, .qr-section {
-          padding: 20px;
-          background: var(--bg-secondary);
-          border-radius: 12px;
-        }
-
-        .preview-section h2, .qr-section h2 {
-          margin-bottom: 20px;
         }
 
         @media (max-width: 768px) {

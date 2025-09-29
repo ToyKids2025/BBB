@@ -29,23 +29,16 @@ const LinkManager = () => {
   };
 
   /**
-   * Limpa uma URL, removendo todos os parâmetros de query string (a partir do '?').
-   * @param {string} rawUrl A URL a ser limpa.
-   * @returns {string} A URL limpa.
+   * NÃO limpa a URL - preserva TODOS os parâmetros de afiliado
+   * Apenas remove espaços extras e normaliza o formato
+   * @param {string} rawUrl A URL original
+   * @returns {string} A URL normalizada SEM remover parâmetros
    */
   const cleanUrl = (rawUrl) => {
-    if (!rawUrl || !rawUrl.includes('?')) {
-      return rawUrl;
-    }
-    // Pega a parte da URL antes do '?'
-    const cleaned = rawUrl.split('?')[0];
+    if (!rawUrl) return rawUrl;
 
-    // Remove a última '/' se houver, para padronizar a URL.
-    if (cleaned.endsWith('/')) {
-      return cleaned.slice(0, -1);
-    }
-
-    return cleaned;
+    // Apenas trim de espaços, mantém TODOS os parâmetros de afiliado
+    return rawUrl.trim();
   };
 
   // Função para detectar a plataforma (movida para dentro para evitar import)
@@ -207,13 +200,13 @@ const LinkManager = () => {
 
       <form onSubmit={handleSubmit} className="link-form">
         <div className="input-group">
-          <label htmlFor="url-input">URL do Produto (será limpa automaticamente)</label>
+          <label htmlFor="url-input">URL do Produto (mantenha TODOS os parâmetros de afiliado)</label>
           <div className="input-wrapper">
             <span className="platform-icon">{platformIcons[platform] || <FiLink />}</span>
             <input
               id="url-input"
               type="url"
-              placeholder="Cole a URL longa e 'suja' aqui"
+              placeholder="Cole a URL completa com parâmetros de afiliado"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onPaste={handlePaste}

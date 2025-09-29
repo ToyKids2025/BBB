@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FiActivity, FiCalendar, FiTrendingUp, FiClock } from 'react-icons/fi';
 import { getLinks } from '../firebase';
 
@@ -12,56 +12,7 @@ const ClickHeatmap = () => {
   const [loading, setLoading] = useState(true);
   const [insights, setInsights] = useState({});
 
-  useEffect(() => {
-    loadHeatmapData();
-  }, [period]);
-
-  const loadHeatmapData = async () => {
-    setLoading(true);
-    try {
-      const result = await getLinks();
-
-      if (result.success) {
-        const processedData = processClickData(result.links);
-        setHeatmapData(processedData);
-        generateInsights(processedData);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const processClickData = (links) => {
-    // Inicializar matriz 7x24 (dias x horas)
-    const matrix = Array(7).fill(null).map(() => Array(24).fill(0));
-
-    // Processar cliques
-    // **MELHORIA:** A lógica anterior atribuía todos os cliques ao `lastClickedAt`.
-    // A nova lógica distribui os cliques de forma mais realista entre a data de criação e a data do último clique.
-    links.forEach(link => {
-      const clicks = link.clicks || 0;
-      if (clicks === 0) return;
-
-      const startDate = new Date(link.createdAt);
-      const endDate = link.lastClickedAt ? new Date(link.lastClickedAt) : startDate;
-
-      // Simula a distribuição de cliques ao longo do tempo de vida do link
-      for (let i = 0; i < clicks; i++) {
-        // Gera um timestamp aleatório entre a criação e o último clique
-        const randomTimestamp = startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime());
-        const clickDate = new Date(randomTimestamp);
-        const day = clickDate.getDay();
-        const hour = clickDate.getHours();
-        matrix[day][hour]++;
-      }
-    });
-
-    return matrix;
-  };
-
-  const generateInsights = (data) => {
+  const generateInsights = useCallback((data) => {
     // Encontrar melhor dia
     const dayTotals = data.map((day, index) => ({
       day: getDayName(index),
@@ -91,7 +42,57 @@ const ClickHeatmap = () => {
       totalClicks: data.flat().reduce((sum, val) => sum + val, 0),
       avgPerHour: (data.flat().reduce((sum, val) => sum + val, 0) / (7 * 24)).toFixed(1)
     });
+  }, []);
+
+  const loadHeatmapData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await getLinks();
+
+      if (result.success) {
+        const processedData = processClickData(result.links);
+        setHeatmapData(processedData);
+        generateInsights(processedData);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [generateInsights]);
+
+  useEffect(() => {
+    loadHeatmapData();
+  }, [period, loadHeatmapData]);
+
+  const processClickData = (links) => {
+    // Inicializar matriz 7x24 (dias x horas)
+    const matrix = Array(7).fill(null).map(() => Array(24).fill(0));
+
+    // Processar cliques
+    // **MELHORIA:** A lógica anterior atribuía todos os cliques ao `lastClickedAt`.
+    // A nova lógica distribui os cliques de forma mais realista entre a data de criação e a data do último clique.
+    links.forEach(link => {
+      const clicks = link.clicks || 0;
+      if (clicks === 0) return;
+
+      const startDate = new Date(link.createdAt);
+      const endDate = link.lastClickedAt ? new Date(link.lastClickedAt) : startDate;
+
+      // Simula a distribuição de cliques ao longo do tempo de vida do link
+      for (let i = 0; i < clicks; i++) {
+        // Gera um timestamp aleatório entre a criação e o último clique
+        const randomTimestamp = startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime());
+        const clickDate = new Date(randomTimestamp);
+        const day = clickDate.getDay();
+        const hour = clickDate.getHours();
+        matrix[day][hour]++;
+      }
+    });
+
+    return matrix;
   };
+
 
   const calculatePeriodAverage = (data, startHour, endHour) => {
     let total = 0;

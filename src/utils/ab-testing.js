@@ -4,7 +4,7 @@
  */
 
 import { db } from '../firebase';
-import { collection, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 
 class ABTestingEngine {
   constructor() {
@@ -114,6 +114,9 @@ class ABTestingEngine {
       case 'conversion':
         stats.conversions++;
         stats.revenue += value;
+        break;
+      default:
+        console.warn('Tipo de evento desconhecido:', eventType);
         break;
     }
 
@@ -312,6 +315,11 @@ class ABTestingEngine {
     const control = results[0];
     let bestVariant = null;
     let bestUplift = 0;
+
+    // Verificar se o controle tem dados suficientes
+    if (!control || control.impressions < 100) {
+      return null;
+    }
 
     for (let i = 1; i < results.length; i++) {
       const variant = results[i];

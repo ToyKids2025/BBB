@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { saveLink } from '../firebase';
 import { FiLink, FiClipboard, FiCheck, FiZap, FiX } from 'react-icons/fi';
 import { FaAmazon, FaShopify } from 'react-icons/fa';
-import { SiMercadolibre } from 'react-icons/si';
+import { SiMercadopago } from 'react-icons/si';
 
 /**
  * Componente LinkManager
@@ -22,7 +22,7 @@ const LinkManager = () => {
   // Mapeamento de plataformas para ícones
   const platformIcons = {
     amazon: <FaAmazon color="#FF9900" />,
-    mercadolivre: <SiMercadolibre color="#FFE600" />,
+    mercadolivre: <SiMercadopago color="#FFE600" />,
     shopee: <FaShopify color="#EE4D2D" />,
     magalu: <span className="platform-icon-text">M</span>,
     other: <FiLink />,

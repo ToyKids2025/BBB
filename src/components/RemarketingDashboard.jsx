@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  FiTrendingUp, FiUsers, FiSend, FiDollarSign,
-  FiClock, FiBell, FiMessageSquare, FiMail,
-  FiSmartphone, FiTarget, FiActivity, FiAward,
-  FiAlertTriangle, FiCheckCircle, FiXCircle
+  FiTrendingUp, FiSend, FiDollarSign,
+  FiClock, FiBell, FiMail,
+  FiTarget, FiActivity, FiAward,
+  FiCheckCircle
 } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
-import { remarketingSystem, conversionOptimizer } from '../utils/remarketing-fomo';
+import { remarketingSystem } from '../utils/remarketing-fomo';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 
@@ -32,30 +32,14 @@ const RemarketingDashboard = () => {
     email: { sent: 0, opened: 0, converted: 0 }
   });
 
-  const [abTests, setAbTests] = useState([]);
   const [bestTemplates, setBestTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadDashboardData();
-
-    // Atualizar a cada 30 segundos
-    const interval = setInterval(loadDashboardData, 30000);
-
-    // Escutar eventos do sistema de remarketing
-    window.addEventListener('remarketing-metrics-update', handleMetricsUpdate);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('remarketing-metrics-update', handleMetricsUpdate);
-    };
-  }, []);
 
   const handleMetricsUpdate = (event) => {
     setMetrics(event.detail);
   };
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -132,7 +116,7 @@ const RemarketingDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const loadChannelStats = async () => {
     try {
@@ -165,6 +149,21 @@ const RemarketingDashboard = () => {
     }
   };
 
+  useEffect(() => {
+    loadDashboardData();
+
+    // Atualizar a cada 30 segundos
+    const interval = setInterval(loadDashboardData, 30000);
+
+    // Escutar eventos do sistema de remarketing
+    window.addEventListener('remarketing-metrics-update', handleMetricsUpdate);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('remarketing-metrics-update', handleMetricsUpdate);
+    };
+  }, [loadDashboardData]);
+
   const loadABTests = async () => {
     try {
       const testsQuery = query(
@@ -179,7 +178,8 @@ const RemarketingDashboard = () => {
         tests.push({ id: doc.id, ...doc.data() });
       });
 
-      setAbTests(tests);
+      // A/B tests carregados: ${tests.length}
+      console.log('A/B tests carregados:', tests.length);
 
       // Identificar melhores templates
       const best = tests
@@ -209,14 +209,6 @@ const RemarketingDashboard = () => {
     return `${Math.floor(hours / 24)}d atrás`;
   };
 
-  const getChannelIcon = (channel) => {
-    switch (channel) {
-      case 'whatsapp': return <FaWhatsapp className="text-green-500" />;
-      case 'push': return <FiBell className="text-blue-500" />;
-      case 'email': return <FiMail className="text-purple-500" />;
-      default: return <FiSend className="text-gray-500" />;
-    }
-  };
 
   const getStatusBadge = (status) => {
     if (status.converted) {

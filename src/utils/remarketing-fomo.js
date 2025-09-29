@@ -5,7 +5,7 @@
  */
 
 import { db, analytics } from '../firebase';
-import { collection, doc, setDoc, getDoc, updateDoc, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, updateDoc, getDocs, query, where } from 'firebase/firestore';
 
 /**
  * Sistema Principal de Remarketing FOMO
@@ -187,6 +187,9 @@ export class RemarketingFOMO {
       this.sendPushNotification(clickData, message),
       this.sendEmailIfAvailable(clickData, message)
     ]);
+
+    // Log dos resultados
+    console.log(`Mensagens enviadas para ${clickData.sessionId}:`, results.filter(r => r.status === 'fulfilled').length);
 
     // Atualizar contador
     clickData.remindersSent++;
@@ -690,13 +693,13 @@ _Reservamos por mais 2 horas_`,
 
       // Amazon
       if (url.includes('amazon')) {
-        const match = path.match(/\/([^\/]+)\/dp\//);
+        const match = path.match(/\/([^/]+)\/dp\//);
         if (match) return decodeURIComponent(match[1]).replace(/-/g, ' ');
       }
 
       // Mercado Livre
       if (url.includes('mercadolivre')) {
-        const match = path.match(/\/p\/([^\/\?]+)/);
+        const match = path.match(/\/p\/([^/?]+)/);
         if (match) return decodeURIComponent(match[1]).replace(/-/g, ' ');
       }
 
@@ -758,13 +761,15 @@ _Reservamos por mais 2 horas_`,
   }
 
   async getClickStatus(clickId) {
-    const doc = await getDoc(doc(db, 'pending_conversions', clickId));
-    return doc.exists() ? doc.data() : null;
+    const docRef = doc(db, 'pending_conversions', clickId);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data() : null;
   }
 
   async getClickData(clickId) {
-    const doc = await getDoc(doc(db, 'pending_conversions', clickId));
-    return doc.exists() ? doc.data() : null;
+    const docRef = doc(db, 'pending_conversions', clickId);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data() : null;
   }
 
   async logNotification(channel, clickId, status) {

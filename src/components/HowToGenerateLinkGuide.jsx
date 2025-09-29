@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiArrowDown, FiCopy, FiLink, FiXCircle } from 'react-icons/fi';
+import { FiArrowDown, FiLink, FiX } from 'react-icons/fi';
 
 /**
  * Componente HowToGenerateLinkGuide
@@ -102,7 +102,7 @@ const HowToGenerateLinkGuide = () => {
           https://[seu-dominio].com/r/xyz123
         </div>
         <div className="url-box incorrect">
-          <FiXCircle /> Não compartilhe o link da Amazon diretamente!
+          <FiX /> Não compartilhe o link da Amazon diretamente!
         </div>
       </div>
     </div>

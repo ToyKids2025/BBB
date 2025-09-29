@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  FiTrendingUp, FiTrendingDown, FiAlertCircle, FiCheckCircle,
-  FiSmartphone, FiMonitor, FiActivity, FiDollarSign,
+  FiTrendingUp, FiAlertCircle, FiCheckCircle,
+  FiSmartphone, FiMonitor, FiActivity,
   FiClock, FiTarget, FiAward, FiShoppingCart
 } from 'react-icons/fi';
 import { getLinks, getAnalyticsData } from '../firebase';
@@ -24,14 +24,38 @@ const MonitoringDashboard = () => {
     addToCartRate: 30
   };
 
-  useEffect(() => {
-    loadMetrics();
-    // Atualizar a cada 60 segundos
-    const interval = setInterval(loadMetrics, 60000);
-    return () => clearInterval(interval);
-  }, [timeRange]);
+  const checkAlerts = useCallback((metricsData) => {
+    const newAlerts = [];
 
-  const loadMetrics = async () => {
+    // Verificar métricas contra targets
+    if (metricsData.avgClicksPerDay < targets.dailyClicks) {
+      newAlerts.push({
+        type: 'warning',
+        message: `Clicks diários abaixo do target (${metricsData.avgClicksPerDay}/${targets.dailyClicks})`,
+        action: 'Aumentar frequência de posts'
+      });
+    }
+
+    if (metricsData.cookiePersistence < targets.cookiePersistence) {
+      newAlerts.push({
+        type: 'danger',
+        message: `Persistência de cookies baixa (${metricsData.cookiePersistence}%)`,
+        action: 'Implementar backup de persistência'
+      });
+    }
+
+    if (metricsData.conversionRate < targets.conversionRate) {
+      newAlerts.push({
+        type: 'warning',
+        message: `Taxa de conversão baixa (${metricsData.conversionRate}%)`,
+        action: 'Otimizar landing pages'
+      });
+    }
+
+    setAlerts(newAlerts);
+  }, []);
+
+  const loadMetrics = useCallback(async () => {
     try {
       const [linksResult, analyticsResult] = await Promise.all([
         getLinks(),
@@ -88,7 +112,14 @@ const MonitoringDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange, checkAlerts]);
+
+  useEffect(() => {
+    loadMetrics();
+    // Atualizar a cada 60 segundos
+    const interval = setInterval(loadMetrics, 60000);
+    return () => clearInterval(interval);
+  }, [loadMetrics]);
 
   const analyzeDevices = (links) => {
     // Análise baseada nos dados reais dos links
@@ -230,45 +261,6 @@ const MonitoringDashboard = () => {
     });
 
     return estimatedRevenue;
-  };
-
-  const checkAlerts = (metricsData) => {
-    const newAlerts = [];
-
-    // Verificar métricas contra targets
-    if (metricsData.avgClicksPerDay < targets.dailyClicks) {
-      newAlerts.push({
-        type: 'warning',
-        message: `Clicks diários abaixo do target (${metricsData.avgClicksPerDay}/${targets.dailyClicks})`,
-        action: 'Aumentar frequência de posts'
-      });
-    }
-
-    if (metricsData.cookiePersistence < targets.cookiePersistence) {
-      newAlerts.push({
-        type: 'danger',
-        message: `Persistência de cookies baixa (${metricsData.cookiePersistence}%)`,
-        action: 'Verificar configuração de cookies'
-      });
-    }
-
-    if (metricsData.conversionRate < targets.conversionRate) {
-      newAlerts.push({
-        type: 'warning',
-        message: `Taxa de conversão baixa (${metricsData.conversionRate}%)`,
-        action: 'Melhorar qualidade dos produtos'
-      });
-    }
-
-    if (metricsData.addToCartRate < targets.addToCartRate) {
-      newAlerts.push({
-        type: 'info',
-        message: `Taxa de carrinho pode melhorar (${metricsData.addToCartRate}%)`,
-        action: 'Otimizar descrições dos produtos'
-      });
-    }
-
-    setAlerts(newAlerts);
   };
 
   if (loading) {

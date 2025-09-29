@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { auth, loginUser, logoutUser, monitorAuthState } from './firebase';
+import { loginUser, logoutUser, monitorAuthState } from './firebase';
 import { FiUser, FiLock } from 'react-icons/fi';
 import LinkManager from './components/LinkManager';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
@@ -16,7 +16,7 @@ import EnvironmentValidator from './components/EnvironmentValidator';
 import HealthCheck from './components/HealthCheck';
 import HowToGenerateLinkGuide from './components/HowToGenerateLinkGuide';
 
-import LinkList from './components/LinkList'; // Importando o novo componente
+import LinkList from './LinkList'; // CORREÇÃO: Importando da pasta correta
 // Utilitários
 import { deviceFingerprint } from './utils/device-fingerprint';
 import { notifications } from './utils/notifications';
@@ -154,8 +154,16 @@ function App() {
         </div>
 
         <div className="login-card card glass">
-          <h1 className="login-title">🚀 BuscaBuscaBrasil Premium</h1>
-          <p className="login-subtitle">Sistema Avançado de Links de Afiliados</p>
+          {/* Logo animado */}
+          <div className="logo-container">
+            <div className="logo-animation">
+              <div className="rotating-circle"></div>
+              <div className="pulse-dot"></div>
+            </div>
+          </div>
+
+          <h1 className="login-title">BuscaBuscaBrasil</h1>
+          <p className="login-subtitle">Plataforma Empresarial</p>
 
           <form onSubmit={handleLogin} className="login-form">
             {error && (
@@ -163,12 +171,12 @@ function App() {
                 {error}
               </div>
             )}
-            
+
             <div className="input-wrapper">
               <FiUser className="input-icon" />
               <input
                 type="email"
-                placeholder="Seu email de acesso"
+                placeholder="Email corporativo"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -180,7 +188,7 @@ function App() {
               <FiLock className="input-icon" />
               <input
                 type="password"
-                placeholder="Sua senha"
+                placeholder="Senha de acesso"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -189,31 +197,34 @@ function App() {
             </div>
 
             <button type="submit" className="btn btn-primary hover-lift">
-              {loading ? 'Entrando...' : 'Entrar'}
+              {loading ? 'Autenticando...' : 'Acessar Plataforma'}
             </button>
-
-            <div className="login-footer">
-              <a href="#forgot" className="forgot-password">Esqueci minha senha</a>
-            </div>
           </form>
 
-          <div className="features-list">
-            <h3>✨ Recursos Premium:</h3>
-            <ul>
-              <li>🔄 Rotação inteligente de tags</li>
-              <li>💰 Rastreamento de preços em tempo real</li>
-              <li>⏰ Countdown timer FOMO</li>
-              <li>📱 QR Code generator</li>
-              <li>📊 A/B Testing automático</li>
-              <li>🔥 Heatmap de cliques</li>
-              <li>🌙 Dark Mode</li>
-              <li>🔔 Notificações Discord/Telegram</li>
-            </ul>
+          {/* Seção de desenvolvimento */}
+          <div className="development-notice">
+            <div className="dev-header">
+              <div className="status-indicator">
+                <div className="status-dot pulsing"></div>
+                <span className="status-text">Em Desenvolvimento</span>
+              </div>
+            </div>
+
+            <div className="dev-content">
+              <p className="dev-description">
+                Plataforma em fase de testes e aprimoramentos contínuos
+              </p>
+              <div className="dev-features">
+                <span className="feature-tag">🔒 Acesso Restrito</span>
+                <span className="feature-tag">⚡ Alta Performance</span>
+                <span className="feature-tag">🛡️ Segurança Avançada</span>
+              </div>
+            </div>
           </div>
 
           <div className="system-info-footer">
-            <p>Sistema de Acesso Restrito</p>
-            <span>Versão Premium 2.0.0</span>
+            <p>Plataforma Corporativa</p>
+            <span>v2.0.0 • Beta</span>
           </div>
         </div>
       </div>
@@ -377,16 +388,73 @@ function App() {
           width: 100%;
           padding: 40px;
           text-align: center;
+          position: relative;
+          overflow: hidden;
+        }
+
+        /* Logo animado */
+        .logo-container {
+          margin-bottom: 30px;
+          display: flex;
+          justify-content: center;
+        }
+
+        .logo-animation {
+          position: relative;
+          width: 80px;
+          height: 80px;
+        }
+
+        .rotating-circle {
+          position: absolute;
+          width: 80px;
+          height: 80px;
+          border: 3px solid transparent;
+          border-top: 3px solid var(--accent-color);
+          border-radius: 50%;
+          animation: rotate 2s linear infinite;
+        }
+
+        .pulse-dot {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 20px;
+          height: 20px;
+          background: var(--accent-gradient);
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+          animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: translate(-50%, -50%) scale(1.2);
+            opacity: 0.7;
+          }
         }
 
         .login-title {
           font-size: 2rem;
           margin-bottom: 0.5rem;
           color: var(--text-primary);
+          font-weight: 600;
+          letter-spacing: -0.5px;
         }
 
         .login-subtitle {
           color: var(--text-secondary);
+          font-size: 1.1rem;
+          margin-bottom: 30px;
         }
 
         .login-form {
@@ -435,25 +503,85 @@ function App() {
           text-decoration: underline;
         }
 
-        .features-list {
-          text-align: left;
-          margin-top: 30px;
-          padding-top: 30px;
-          border-top: 1px solid var(--border-color);
+        /* Seção de desenvolvimento */
+        .development-notice {
+          margin: 30px 0;
+          padding: 25px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
         }
 
-        .features-list h3 {
-          margin-bottom: 15px;
+        .dev-header {
+          margin-bottom: 20px;
         }
 
-        .features-list ul {
-          list-style: none;
-          padding: 0;
+        .status-indicator {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
         }
 
-        .features-list li {
-          padding: 8px 0;
+        .status-dot {
+          width: 12px;
+          height: 12px;
+          background: #ffd700;
+          border-radius: 50%;
+          box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .status-dot.pulsing {
+          animation: statusPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.6;
+            transform: scale(1.1);
+          }
+        }
+
+        .status-text {
+          color: #ffd700;
+          font-weight: 600;
+          font-size: 14px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .dev-content {
+          text-align: center;
+        }
+
+        .dev-description {
           color: var(--text-secondary);
+          margin-bottom: 20px;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+
+        .dev-features {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          justify-content: center;
+        }
+
+        .feature-tag {
+          display: inline-block;
+          padding: 6px 12px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          font-size: 12px;
+          color: var(--text-primary);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(5px);
         }
 
         .system-info-footer {

@@ -3,7 +3,7 @@
  * Identifica usuários únicos mesmo sem cookies
  */
 
-import { sha256 } from './crypto-utils';
+// import { sha256 } from './crypto-utils'; // Não utilizado
 
 class DeviceFingerprint {
   constructor() {

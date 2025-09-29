@@ -128,7 +128,7 @@ export function md5(string) {
     return utftext;
   }
 
-  var x = Array();
+  var x = [];
   var k, AA, BB, CC, DD, a, b, c, d;
   var S11 = 7, S12 = 12, S13 = 17, S14 = 22;
   var S21 = 5, S22 = 9, S23 = 14, S24 = 20;
@@ -233,7 +233,7 @@ export const Base64 = {
 export function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    const v = c === 'x' ? r : ((r & 0x3) | 0x8);
     return v.toString(16);
   });
 }
@@ -272,7 +272,7 @@ export const SimpleCrypto = {
   }
 };
 
-export default {
+const CryptoUtils = {
   sha256,
   md5,
   Base64,
@@ -280,3 +280,5 @@ export default {
   simpleHash,
   SimpleCrypto
 };
+
+export default CryptoUtils;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getLinks, deleteLink } from '../firebase';
+import { getLinks, deleteLink, updateLink } from './firebase';
 import { FiClipboard, FiTrash2, FiEdit, FiLink, FiBarChart2 } from 'react-icons/fi';
 
 /**
@@ -12,6 +12,8 @@ const LinkList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copiedId, setCopiedId] = useState(null);
+  const [editingLink, setEditingLink] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     fetchLinks();
@@ -43,6 +45,26 @@ const LinkList = () => {
       } else {
         alert('Erro ao deletar o link.');
       }
+    }
+  };
+
+  const handleEdit = (link) => {
+    setEditingLink({ ...link });
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!editingLink) return;
+
+    const { id, title, url } = editingLink;
+    const result = await updateLink(id, { title, url });
+
+    if (result.success) {
+      await fetchLinks(); // Recarrega a lista para mostrar a alteração
+      setIsEditModalOpen(false);
+    } else {
+      alert('Erro ao atualizar o link.');
     }
   };
 
@@ -170,7 +192,7 @@ const LinkList = () => {
                       <button onClick={() => handleCopy(link.id)} className="action-btn" title="Copiar Link">
                         {copiedId === link.id ? <span className="copied-feedback">✓</span> : <FiClipboard />}
                       </button>
-                      <button onClick={() => alert('Função de editar em desenvolvimento.')} className="action-btn" title="Editar Link">
+                      <button onClick={() => handleEdit(link)} className="action-btn" title="Editar Link">
                         <FiEdit />
                       </button>
                       <button onClick={() => handleDelete(link.id)} className="action-btn delete" title="Deletar Link">
@@ -188,6 +210,47 @@ const LinkList = () => {
           <FiBarChart2 size={40} />
           <p>Você ainda não gerou nenhum link.</p>
           <p>Use o "Gerador de Links Mágicos" para começar!</p>
+        </div>
+      )}
+
+      {isEditModalOpen && editingLink && (
+        <div className="modal-overlay" onClick={() => setIsEditModalOpen(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Editar Link</h2>
+              <button className="btn-icon" onClick={() => setIsEditModalOpen(false)}>✕</button>
+            </div>
+            <form onSubmit={handleUpdate}>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label>Título</label>
+                  <input
+                    type="text"
+                    value={editingLink.title}
+                    onChange={(e) => setEditingLink({ ...editingLink, title: e.target.value })}
+                    className="input"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>URL de Destino</label>
+                  <input
+                    type="url"
+                    value={editingLink.url}
+                    onChange={(e) => setEditingLink({ ...editingLink, url: e.target.value })}
+                    className="input"
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn-secondary" onClick={() => setIsEditModalOpen(false)}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

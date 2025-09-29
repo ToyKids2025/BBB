@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiAlertTriangle, FiTool, FiClock, FiWifiOff, FiZap, FiCode } from 'react-icons/fi';
+import { FiAlertTriangle, FiTool, FiCode, FiCheckCircle } from 'react-icons/fi';
 
 /**
  * Componente HealthCheck
@@ -71,8 +71,8 @@ const HealthCheck = () => {
           font-size: 1.5rem;
         }
         .problem-list {
-          display: flex;
-          flex-direction: column;
+          display: grid;
+          grid-template-columns: 1fr;
           gap: 1.5rem;
         }
         .problem-card {
@@ -127,6 +127,30 @@ const HealthCheck = () => {
           color: white;
           margin-left: 1rem;
         }
+        .no-problems-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 3rem 1rem;
+          text-align: center;
+          color: var(--success);
+          border: 2px dashed var(--success-bg);
+          border-radius: 12px;
+          background: var(--success-bg-light);
+        }
+        .no-problems-state svg {
+          font-size: 3rem;
+          margin-bottom: 1rem;
+        }
+        .no-problems-state h3 {
+          margin: 0 0 0.5rem;
+        }
+        @media (min-width: 768px) {
+          .problem-list {
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+          }
+        }
       `}</style>
 
       <div className="health-header">
@@ -155,7 +179,11 @@ const HealthCheck = () => {
           ))}
         </div>
       ) : (
-        <div style={{ textAlign: 'center', color: 'var(--success)' }}>✅ Nenhum problema crítico detectado. O sistema parece saudável!</div>
+        <div className="no-problems-state">
+          <FiCheckCircle />
+          <h3>Tudo Certo!</h3>
+          <p>Nenhum problema crítico detectado. O sistema parece saudável!</p>
+        </div>
       )}
     </div>
   );

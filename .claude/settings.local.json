@@ -20,7 +20,10 @@
       "Bash(gzip:*)",
       "Bash(./test-real-validation.sh:*)",
       "Bash(python3:*)",
-      "Bash(npm cache clean:*)"
+      "Bash(npm cache clean:*)",
+      "Bash(CI=false npm run build)",
+      "Bash(GENERATE_SOURCEMAP=false npm run build)",
+      "Bash(export CI=false)"
     ],
     "deny": [],
     "ask": []

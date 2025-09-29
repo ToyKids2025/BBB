@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   FiShoppingCart, FiTrendingDown, FiClock, FiStar,
   FiTruck, FiShield, FiHeart, FiEye, FiShare2
@@ -18,12 +18,7 @@ const LinkPreviewCard = ({ linkData, onShare, onAddToCart }) => {
   const [liked, setLiked] = useState(false);
   const [viewCount, setViewCount] = useState(0);
 
-  useEffect(() => {
-    loadProductData();
-    simulateViews();
-  }, [linkData]);
-
-  const loadProductData = async () => {
+  const loadProductData = useCallback(async () => {
     setLoading(true);
     try {
       const price = await fetchProductPrice(linkData.url);
@@ -33,7 +28,12 @@ const LinkPreviewCard = ({ linkData, onShare, onAddToCart }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [linkData.url]);
+
+  useEffect(() => {
+    loadProductData();
+    simulateViews();
+  }, [linkData, loadProductData]);
 
   const simulateViews = () => {
     // Simular contagem de visualizações

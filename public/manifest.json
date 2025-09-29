@@ -1,119 +1,29 @@
 {
   "short_name": "BBB Links",
-  "name": "Busca Busca Brasil - Link Enhancer Premium",
-  "description": "Sistema profissional de gerenciamento de links de afiliados com tracking eterno 90+ dias",
+  "name": "BuscaBuscaBrasil Link Enhancer",
+  "description": "Sistema inteligente de recuperação de comissões de afiliados com persistência máxima e tracking avançado.",
   "icons": [
-    {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
     {
       "src": "icon-96.png",
       "type": "image/png",
-      "sizes": "96x96",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icon-152.png",
-      "type": "image/png",
-      "sizes": "152x152"
-    },
-    {
-      "src": "icon-167.png",
-      "type": "image/png",
-      "sizes": "167x167"
-    },
-    {
-      "src": "icon-180.png",
-      "type": "image/png",
-      "sizes": "180x180"
+      "sizes": "96x96"
     },
     {
       "src": "icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ],
-  "start_url": "/",
-  "scope": "/",
+  "start_url": ".",
   "display": "standalone",
-  "orientation": "any",
   "theme_color": "#667eea",
-  "background_color": "#0a0a0a",
-  "categories": ["business", "productivity", "shopping"],
-  "lang": "pt-BR",
-  "dir": "ltr",
-  "prefer_related_applications": false,
-  "shortcuts": [
-    {
-      "name": "Criar Link",
-      "short_name": "Novo",
-      "description": "Criar novo link de afiliado",
-      "url": "/?action=create",
-      "icons": [{ "src": "icon-96.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "description": "Ver estatísticas",
-      "url": "/?view=dashboard",
-      "icons": [{ "src": "icon-96.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Monitoramento",
-      "short_name": "Monitor",
-      "description": "Monitoramento diário",
-      "url": "/?view=monitoring",
-      "icons": [{ "src": "icon-96.png", "sizes": "96x96" }]
-    }
-  ],
-  "share_target": {
-    "action": "/share",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url",
-      "files": [
-        {
-          "name": "file",
-          "accept": ["*/*"]
-        }
-      ]
-    }
-  },
-  "related_applications": [],
-  "permissions": [
-    "notifications",
-    "background-sync",
-    "periodic-background-sync",
-    "push",
-    "badge"
-  ],
-  "gcm_sender_id": "103953800507",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
-  "handle_links": "preferred",
-  "launch_handler": {
-    "client_mode": ["navigate-existing", "auto"]
-  },
-  "scope_extensions": [
-    {
-      "origin": "https://buscabuscabrasil.com.br"
-    },
-    {
-      "origin": "https://*.buscabuscabrasil.com.br"
-    }
-  ]
+  "background_color": "#1a1a1a",
+  "scope": "/"
 }

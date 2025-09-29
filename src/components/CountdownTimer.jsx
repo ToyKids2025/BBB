@@ -6,24 +6,22 @@ import { FiClock, FiAlertCircle, FiTrendingDown, FiShoppingCart } from 'react-ic
  * Aumenta conversão em 30-40% com gatilhos psicológicos
  */
 const CountdownTimer = ({ endTime, productInfo, onExpire }) => {
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
-  const [isUrgent, setIsUrgent] = useState(false);
-  const [animation, setAnimation] = useState('');
-
-  function calculateTimeLeft() {
+  const calculateTimeLeft = () => {
     const difference = endTime - Date.now();
-
     if (difference <= 0) {
       return null;
     }
-
     return {
       hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
       minutes: Math.floor((difference / 1000 / 60) % 60),
       seconds: Math.floor((difference / 1000) % 60),
       total: difference
     };
-  }
+  };
+
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+  const [isUrgent, setIsUrgent] = useState(false);
+  const [animation, setAnimation] = useState('');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -48,7 +46,7 @@ const CountdownTimer = ({ endTime, productInfo, onExpire }) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [endTime, isUrgent, onExpire]);
+  }, [endTime, isUrgent, onExpire, calculateTimeLeft]);
 
   if (!timeLeft) {
     return (

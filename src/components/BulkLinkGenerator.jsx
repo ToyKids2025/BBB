@@ -101,9 +101,9 @@ const BulkLinkGenerator = ({ onComplete }) => {
   const extractTitle = (url) => {
     // Tentar extrair nome do produto da URL
     const patterns = {
-      amazon: /\/([^\/]+)\/dp\//,
-      mercadolivre: /\/([^\/]+)-MLB/,
-      default: /\/([^\/]+)$/
+      amazon: /([^/]+)\/dp\//,
+      mercadolivre: /([^/]+)-MLB/,
+      default: /([^/]+)$/
     };
 
     const platform = detectPlatform(url);

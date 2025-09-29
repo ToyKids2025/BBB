@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FiDownload, FiShare2, FiCopy, FiSmartphone } from 'react-icons/fi';
 
 /**
@@ -10,12 +10,8 @@ const QRCodeGenerator = ({ url, title, size = 200 }) => {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    generateQRCode();
-  }, [url]);
-
   // Gerar QR Code usando API pública gratuita
-  const generateQRCode = () => {
+  const generateQRCode = useCallback(() => {
     // Usar Google Charts API (gratuita e sem limites)
     const qrApiUrl = `https://chart.googleapis.com/chart?cht=qr&chs=${size}x${size}&chl=${encodeURIComponent(url)}&choe=UTF-8`;
 
@@ -24,7 +20,11 @@ const QRCodeGenerator = ({ url, title, size = 200 }) => {
 
     setQrCodeUrl(qrApiUrl);
     setLoading(false);
-  };
+  }, [url, size]);
+
+  useEffect(() => {
+    generateQRCode();
+  }, [generateQRCode]);
 
   // Download do QR Code
   const downloadQRCode = async () => {

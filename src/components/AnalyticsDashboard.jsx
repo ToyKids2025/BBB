@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  FiTrendingUp, FiDollarSign, FiUsers, FiActivity,
-  FiBarChart2, FiPieChart, FiCalendar, FiAward, FiDownload
+  FiTrendingUp, FiDollarSign, FiActivity,
+  FiBarChart2, FiAward, FiDownload
 } from 'react-icons/fi';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { getAnalyticsData, getLinks } from '../firebase';
 
 /**
@@ -17,58 +17,7 @@ const AnalyticsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState([]);
 
-  useEffect(() => {
-    loadData();
-    // Atualizar a cada 30 segundos
-    const interval = setInterval(loadData, 30000);
-    return () => clearInterval(interval);
-  }, [period]);
-
-  const loadData = async () => {
-    try {
-      const [analyticsResult, linksResult] = await Promise.all([
-        getAnalyticsData(),
-        getLinks()
-      ]);
-
-      if (analyticsResult.success) {
-        setAnalytics(analyticsResult.data);
-      }
-
-      if (linksResult.success) {
-        setLinks(linksResult.links);
-        // Calcular métricas adicionais
-        setChartData(processDataForCharts(linksResult.links));
-        calculateAdvancedMetrics(linksResult.links);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const processDataForCharts = (linksData) => {
-    const platformClicks = linksData.reduce((acc, link) => {
-      const p = link.platform || 'other';
-      acc[p] = (acc[p] || 0) + (link.clicks || 0);
-      return acc;
-    }, {});
-
-    return Object.entries(platformClicks).map(([name, clicks]) => ({
-      name: name.charAt(0).toUpperCase() + name.slice(1),
-      clicks,
-    }));
-  };
-
-  const platformColors = {
-    Amazon: '#ff9900',
-    Mercadolivre: '#ffe600',
-    Magalu: '#0086ff',
-    Other: '#666',
-  };
-
-  const calculateAdvancedMetrics = (linksData) => {
+  const calculateAdvancedMetrics = useCallback((linksData) => {
     // Análise por plataforma
     const platformStats = {};
     linksData.forEach(link => {
@@ -97,15 +46,60 @@ const AnalyticsDashboard = () => {
       return true;
     });
 
-    // Performance metrics
-    const performanceData = calculatePerformance(recentLinks);
+    return { platformStats, recentLinks };
+  }, [period]);
 
-    return {
-      platformStats,
-      recentLinks,
-      performanceData
-    };
+  const loadData = useCallback(async () => {
+    try {
+      const [analyticsResult, linksResult] = await Promise.all([
+        getAnalyticsData(),
+        getLinks()
+      ]);
+
+      if (analyticsResult.success) {
+        setAnalytics(analyticsResult.data);
+      }
+
+      if (linksResult.success) {
+        setLinks(linksResult.links);
+        // Calcular métricas adicionais
+        setChartData(processDataForCharts(linksResult.links));
+        calculateAdvancedMetrics(linksResult.links);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [calculateAdvancedMetrics]);
+
+  useEffect(() => {
+    loadData();
+    // Atualizar a cada 30 segundos
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
+  }, [period, loadData]);
+
+  const processDataForCharts = (linksData) => {
+    const platformClicks = linksData.reduce((acc, link) => {
+      const p = link.platform || 'other';
+      acc[p] = (acc[p] || 0) + (link.clicks || 0);
+      return acc;
+    }, {});
+
+    return Object.entries(platformClicks).map(([name, clicks]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      clicks,
+    }));
   };
+
+  const platformColors = {
+    Amazon: '#ff9900',
+    Mercadolivre: '#ffe600',
+    Magalu: '#0086ff',
+    Other: '#666',
+  };
+
 
   const estimateRevenue = (link) => {
     const conversionRates = {

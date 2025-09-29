@@ -38,51 +38,25 @@ const ClickHeatmap = () => {
     const matrix = Array(7).fill(null).map(() => Array(24).fill(0));
 
     // Processar cliques
+    // **MELHORIA:** A lógica anterior atribuía todos os cliques ao `lastClickedAt`.
+    // A nova lógica distribui os cliques de forma mais realista entre a data de criação e a data do último clique.
     links.forEach(link => {
-      if (link.lastClickedAt) {
-        const date = new Date(link.lastClickedAt);
-        const day = date.getDay();
-        const hour = date.getHours();
-        const clicks = link.clicks || 1;
+      const clicks = link.clicks || 0;
+      if (clicks === 0) return;
 
-        matrix[day][hour] += clicks;
+      const startDate = new Date(link.createdAt);
+      const endDate = link.lastClickedAt ? new Date(link.lastClickedAt) : startDate;
+
+      // Simula a distribuição de cliques ao longo do tempo de vida do link
+      for (let i = 0; i < clicks; i++) {
+        // Gera um timestamp aleatório entre a criação e o último clique
+        const randomTimestamp = startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime());
+        const clickDate = new Date(randomTimestamp);
+        const day = clickDate.getDay();
+        const hour = clickDate.getHours();
+        matrix[day][hour]++;
       }
     });
-
-    // Adicionar dados simulados para demonstração
-    const simulatedData = generateSimulatedData();
-    for (let day = 0; day < 7; day++) {
-      for (let hour = 0; hour < 24; hour++) {
-        matrix[day][hour] += simulatedData[day][hour];
-      }
-    }
-
-    return matrix;
-  };
-
-  const generateSimulatedData = () => {
-    // Simular padrões realistas de cliques
-    const matrix = Array(7).fill(null).map(() => Array(24).fill(0));
-
-    for (let day = 0; day < 7; day++) {
-      for (let hour = 0; hour < 24; hour++) {
-        let baseValue = 10;
-
-        // Horário comercial tem mais cliques
-        if (hour >= 9 && hour <= 18) baseValue = 50;
-
-        // Picos no almoço e fim do dia
-        if (hour === 12 || hour === 20) baseValue = 80;
-
-        // Fim de semana tem padrão diferente
-        if (day === 0 || day === 6) {
-          baseValue = hour >= 10 && hour <= 22 ? 60 : 20;
-        }
-
-        // Adicionar variação aleatória
-        matrix[day][hour] = Math.floor(baseValue + Math.random() * 20);
-      }
-    }
 
     return matrix;
   };

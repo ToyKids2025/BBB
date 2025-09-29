@@ -1,6 +1,6 @@
-# 🚀 BBB Link Enhancer
+# 🚀 BuscaBuscaBrasil Link Enhancer
 
-> Sistema inteligente de recuperação de comissões de afiliados com persistência máxima e tracking avançado.
+Sistema inteligente de recuperação de comissões de afiliados com persistência máxima, tracking avançado e dashboard em tempo real.
 
 [![Deploy to Cloudflare Workers](https://img.shields.io/badge/Deploy%20to-Cloudflare%20Workers-orange)](https://workers.cloudflare.com/)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
@@ -8,7 +8,7 @@
 
 ## 📋 Visão Geral
 
-O BBB Link Enhancer resolve o problema de atribuição perdida em links de afiliados, especialmente em ambientes hostis como Instagram e WhatsApp. Recupera 15-30% das comissões perdidas através de:
+Este sistema resolve o problema de atribuição perdida em links de afiliados, especialmente em ambientes hostis como Instagram e WhatsApp. Recupera uma fatia significativa das comissões perdidas através de:
 
 - 🍪 **Cookies first-party** de 30 dias
 - 💾 **Múltipla persistência** (localStorage, IndexedDB)
@@ -17,97 +17,49 @@ O BBB Link Enhancer resolve o problema de atribuição perdida em links de afili
 - ⚡ **Redirects < 50ms** via edge computing
 
 ## 🎯 Funcionalidades
-
 - ✅ Shortlinks personalizados
 - ✅ Tracking completo de clicks
 - ✅ Dashboard em tempo real
 - ✅ Detecção automática de plataforma
-- ✅ Reconciliação de vendas
+- ✅ Limpeza automática de URLs
+- ✅ Validador de configuração
+- ✅ Diagnóstico de saúde do sistema
 - ✅ API RESTful
 - ✅ Zero custo (free tier)
 
 ## 🛠️ Stack Tecnológica
 
 - **Edge:** Cloudflare Workers
-- **Storage:** KV Namespaces
-- **Database:** Supabase (PostgreSQL)
+- **Storage:** Cloudflare KV (para redirects)
+- **Database:** Firebase Firestore (para logs e dados do app)
 - **Frontend:** React + Recharts
-- **Deploy:** Vercel/Cloudflare Pages
+- **Auth:** Firebase Authentication
+- **Deploy:** Vercel
 
 ## ⚡ Quick Start
 
-### 1. Clone o repositório
+Para rodar o projeto localmente:
+
 ```bash
-git clone https://github.com/SEU_USUARIO/bbb-link-enhancer.git
-cd bbb-link-enhancer
+# 1. Instale as dependências
+npm install --legacy-peer-deps
+
+# 2. Inicie todos os serviços
+./start-all.sh
 ```
 
-### 2. Instale as dependências
-```bash
-npm install
-```
+## 📚 Documentação Detalhada
 
-### 3. Configure as variáveis de ambiente
-```bash
-cp .env.example .env
-# Edite .env com suas credenciais
-```
-
-### 4. Deploy automático
-```bash
-npm run deploy:all
-```
-
-## 📦 Deploy Manual
-
-### Cloudflare Worker
-```bash
-npm run deploy:worker
-```
-
-### Admin Panel (Vercel)
-```bash
-npm run deploy:admin
-```
-
-## 🔧 Configuração
-
-### Cloudflare KV Namespaces
-```toml
-[[kv_namespaces]]
-binding = "BBB_LINKS"
-id = "seu_kv_id"
-```
-
-### Supabase
-1. Crie projeto em [supabase.com](https://supabase.com)
-2. Execute `schema.sql` no SQL Editor
-3. Copie URL e anon key para `.env`
-
-## 📊 Métricas
-
-| Métrica | Meta | Atual |
-|---------|------|-------|
-| Cookie Persistence | >70% | ✅ 85% |
-| Add-to-Cart Success | >30% | ✅ 42% |
-| Redirect Speed | <50ms | ✅ 35ms |
-| Uptime | 99.9% | ✅ 99.95% |
-
-## 🚀 Produtos Testados
-
-- Amazon Echo Dot → +R$ 11,96/venda
-- iPhone 13 → +R$ 146,96/venda
-- Notebook Dell → +R$ 74,97/venda
+- **[Guia de Configuração e Deploy (DEPLOYMENT.md)](./DEPLOYMENT.md)**: Passo a passo completo para configurar Firebase, Vercel e o ambiente de desenvolvimento.
+- **[Funcionalidades Premium (README-PREMIUM.md)](./README-PREMIUM.md)**: Detalhes sobre os recursos avançados do sistema.
+- **[Solução de Problemas (CONFIGURAR-FIREBASE-INDICES.md)](./CONFIGURAR-FIREBASE-INDICES.md)**: Como corrigir erros comuns do console relacionados ao Firebase.
 
 ## 📱 Plataformas Suportadas
 
 - ✅ Amazon Brasil
 - ✅ Mercado Livre
-- ✅ Magazine Luiza
-- ✅ Americanas
-- ✅ Casas Bahia
 - ✅ Shopee
-- ✅ AliExpress
+- ✅ Magazine Luiza (Magalu)
 
 ## 🔐 Segurança
 

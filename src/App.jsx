@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { auth, loginUser, logoutUser, monitorAuthState } from './firebase';
+import { FiUser, FiLock } from 'react-icons/fi';
 import LinkManager from './components/LinkManager';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
 import MonitoringDashboard from './components/MonitoringDashboard';
@@ -11,7 +12,11 @@ import QRCodeGenerator from './components/QRCodeGenerator';
 import LinkPreviewCard from './components/LinkPreviewCard';
 import BulkLinkGenerator from './components/BulkLinkGenerator';
 import ClickHeatmap from './components/ClickHeatmap';
+import EnvironmentValidator from './components/EnvironmentValidator';
+import HealthCheck from './components/HealthCheck';
+import HowToGenerateLinkGuide from './components/HowToGenerateLinkGuide';
 
+import LinkList from './components/LinkList'; // Importando o novo componente
 // Utilitários
 import { deviceFingerprint } from './utils/device-fingerprint';
 import { notifications } from './utils/notifications';
@@ -149,37 +154,47 @@ function App() {
         </div>
 
         <div className="login-card card glass">
-          <h1 className="gradient-text">🚀 BuscaBuscaBrasil Premium</h1>
-          <p>Sistema Avançado de Links de Afiliados</p>
+          <h1 className="login-title">🚀 BuscaBuscaBrasil Premium</h1>
+          <p className="login-subtitle">Sistema Avançado de Links de Afiliados</p>
 
           <form onSubmit={handleLogin} className="login-form">
             {error && (
-              <div className="error-message animate-shake">
+              <div className="error-message">
                 {error}
               </div>
             )}
+            
+            <div className="input-wrapper">
+              <FiUser className="input-icon" />
+              <input
+                type="email"
+                placeholder="Seu email de acesso"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="input"
+              />
+            </div>
 
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="input"
-            />
-
-            <input
-              type="password"
-              placeholder="Senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="input"
-            />
+            <div className="input-wrapper">
+              <FiLock className="input-icon" />
+              <input
+                type="password"
+                placeholder="Sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="input"
+              />
+            </div>
 
             <button type="submit" className="btn btn-primary hover-lift">
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
+
+            <div className="login-footer">
+              <a href="#forgot" className="forgot-password">Esqueci minha senha</a>
+            </div>
           </form>
 
           <div className="features-list">
@@ -195,6 +210,11 @@ function App() {
               <li>🔔 Notificações Discord/Telegram</li>
             </ul>
           </div>
+
+          <div className="system-info-footer">
+            <p>Sistema de Acesso Restrito</p>
+            <span>Versão Premium 2.0.0</span>
+          </div>
         </div>
       </div>
     );
@@ -202,6 +222,8 @@ function App() {
 
   return (
     <div className="app-container">
+      <EnvironmentValidator />
+
       {/* Header */}
       <header className="app-header glass">
         <div className="header-content">
@@ -275,7 +297,13 @@ function App() {
         <div className="tab-content animate-fadeIn">
           {activeTab === 'links' && (
             <div className="links-section">
+              {/* Guia Visual Adicionado */}
+              <HowToGenerateLinkGuide />
+
               <LinkManager />
+
+              {/* Lista de Links Gerados */}
+              <LinkList />
 
               {/* Preview de Link Exemplo */}
               <div className="preview-section">
@@ -306,7 +334,12 @@ function App() {
           {activeTab === 'bulk' && <BulkLinkGenerator />}
           {activeTab === 'analytics' && <AnalyticsDashboard />}
           {activeTab === 'heatmap' && <ClickHeatmap />}
-          {activeTab === 'monitoring' && <MonitoringDashboard />}
+          {activeTab === 'monitoring' && (
+            <div className="monitoring-section">
+              <MonitoringDashboard />
+              <HealthCheck />
+            </div>
+          )}
           {activeTab === 'remarketing' && <RemarketingDashboard />}
         </div>
       </main>
@@ -346,6 +379,16 @@ function App() {
           text-align: center;
         }
 
+        .login-title {
+          font-size: 2rem;
+          margin-bottom: 0.5rem;
+          color: var(--text-primary);
+        }
+
+        .login-subtitle {
+          color: var(--text-secondary);
+        }
+
         .login-form {
           margin: 30px 0;
           display: flex;
@@ -354,11 +397,42 @@ function App() {
         }
 
         .error-message {
-          background: rgba(244,67,54,0.1);
+          background: var(--error-bg);
           color: var(--error);
           padding: 10px;
           border-radius: 8px;
           border: 1px solid var(--error);
+        }
+
+        .input-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .input-icon {
+          position: absolute;
+          left: 15px;
+          color: var(--text-secondary);
+        }
+
+        .input-wrapper .input {
+          padding-left: 45px;
+        }
+
+        .login-footer {
+          text-align: right;
+          margin-top: 10px;
+        }
+
+        .forgot-password {
+          font-size: 12px;
+          color: var(--text-secondary);
+          text-decoration: none;
+        }
+
+        .forgot-password:hover {
+          text-decoration: underline;
         }
 
         .features-list {
@@ -380,6 +454,18 @@ function App() {
         .features-list li {
           padding: 8px 0;
           color: var(--text-secondary);
+        }
+
+        .system-info-footer {
+          margin-top: 30px;
+          font-size: 12px;
+          color: var(--text-secondary);
+          opacity: 0.7;
+        }
+
+        .system-info-footer p {
+          margin: 0;
+          font-weight: bold;
         }
 
         .app-container {
@@ -465,9 +551,24 @@ function App() {
           box-shadow: var(--shadow-md);
         }
 
+        .monitoring-section {
+          display: flex;
+          flex-direction: column;
+          gap: 30px;
+        }
         .links-section {
           display: grid;
           gap: 30px;
+          grid-template-columns: 1fr; /* Garante que o guia ocupe a largura total */
+        }
+
+        @media (min-width: 1024px) {
+          .links-section {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+        .links-section > *:nth-child(3) { /* Estilo para o LinkList ocupar a largura toda */
+          grid-column: 1 / -1;
         }
 
         .preview-section, .qr-section {

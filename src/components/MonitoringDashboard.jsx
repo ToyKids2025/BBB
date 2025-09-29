@@ -505,7 +505,7 @@ const MonitoringDashboard = () => {
         }
 
         .monitoring-header h1 {
-          font-size: 32px;
+          font-size: 28px;
           margin-bottom: 10px;
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           -webkit-background-clip: text;
@@ -527,7 +527,7 @@ const MonitoringDashboard = () => {
         .time-range-selector button {
           padding: 8px 16px;
           border: 1px solid #ddd;
-          background: white;
+          background: var(--bg-secondary);
           border-radius: 6px;
           cursor: pointer;
           transition: all 0.3s;
@@ -592,7 +592,7 @@ const MonitoringDashboard = () => {
         }
 
         .metric-card {
-          background: white;
+          background: var(--bg-secondary);
           border-radius: 12px;
           padding: 20px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -656,7 +656,7 @@ const MonitoringDashboard = () => {
         }
 
         .device-analysis {
-          background: white;
+          background: var(--bg-secondary);
           border-radius: 12px;
           padding: 25px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -727,7 +727,7 @@ const MonitoringDashboard = () => {
         }
 
         .top-links-section {
-          background: white;
+          background: var(--bg-secondary);
           border-radius: 12px;
           padding: 25px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);

@@ -1,12 +1,12 @@
 # 🚀 BuscaBuscaBrasil Premium - Sistema Completo de Links de Afiliados
 
-## ✨ O QUE É ESTE SISTEMA?
+## ✨ Visão Geral
 
 Sistema **PROFISSIONAL** e **AUTOMATIZADO** para gestão de links de afiliados com tecnologia de ponta, desenvolvido para **MAXIMIZAR CONVERSÕES** e **NUNCA PERDER COMISSÕES**.
 
 ---
 
-## 🎯 FUNCIONALIDADES PREMIUM IMPLEMENTADAS
+## 🎯 Funcionalidades Premium
 
 ### 🔥 CORE FEATURES
 - ✅ **Smart Tag Rotation** - Rotação automática de tags para evitar detecção
@@ -22,7 +22,7 @@ Sistema **PROFISSIONAL** e **AUTOMATIZADO** para gestão de links de afiliados c
 - ✅ **Notificações Multi-canal** - Discord, Telegram, WhatsApp
 - ✅ **Analytics Avançado** - Dashboard com métricas em tempo real
 
-### 📊 TECNOLOGIAS UTILIZADAS
+### 📊 Tecnologias Utilizadas
 - **Frontend:** React 18 + CSS3 Animations
 - **Backend:** Node.js + Express
 - **Database:** Firebase Firestore
@@ -32,21 +32,14 @@ Sistema **PROFISSIONAL** e **AUTOMATIZADO** para gestão de links de afiliados c
 
 ---
 
-## 🚀 COMO RODAR O SISTEMA
+## 🚀 Como Rodar o Sistema
 
-### MÉTODO 1: INÍCIO RÁPIDO (RECOMENDADO)
+### Início Rápido (Recomendado)
 ```bash
-# 1. Clonar o repositório
-git clone https://github.com/seu-usuario/SiteBuscaBuscaBrasilOficial.git
-cd SiteBuscaBuscaBrasilOficial
-
-# 2. Instalar dependências
+# 1. Instalar dependências
 npm install --legacy-peer-deps
 
-# 3. Configurar variáveis de ambiente
-cp .env.local .env
-
-# 4. Iniciar TUDO com um comando
+# 2. Iniciar TUDO com um comando
 ./start-all.sh
 ```
 

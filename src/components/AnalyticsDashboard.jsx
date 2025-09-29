@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   FiTrendingUp, FiDollarSign, FiUsers, FiActivity,
-  FiBarChart2, FiPieChart, FiCalendar, FiAward
+  FiBarChart2, FiPieChart, FiCalendar, FiAward, FiDownload
 } from 'react-icons/fi';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { getAnalyticsData, getLinks } from '../firebase';
 
 /**
@@ -14,6 +15,7 @@ const AnalyticsDashboard = () => {
   const [links, setLinks] = useState([]);
   const [period, setPeriod] = useState('7d');
   const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -36,6 +38,7 @@ const AnalyticsDashboard = () => {
       if (linksResult.success) {
         setLinks(linksResult.links);
         // Calcular métricas adicionais
+        setChartData(processDataForCharts(linksResult.links));
         calculateAdvancedMetrics(linksResult.links);
       }
     } catch (error) {
@@ -43,6 +46,26 @@ const AnalyticsDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const processDataForCharts = (linksData) => {
+    const platformClicks = linksData.reduce((acc, link) => {
+      const p = link.platform || 'other';
+      acc[p] = (acc[p] || 0) + (link.clicks || 0);
+      return acc;
+    }, {});
+
+    return Object.entries(platformClicks).map(([name, clicks]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      clicks,
+    }));
+  };
+
+  const platformColors = {
+    Amazon: '#ff9900',
+    Mercadolivre: '#ffe600',
+    Magalu: '#0086ff',
+    Other: '#666',
   };
 
   const calculateAdvancedMetrics = (linksData) => {
@@ -194,6 +217,49 @@ const AnalyticsDashboard = () => {
     return insights;
   };
 
+  const handleExportCSV = () => {
+    if (!links || links.length === 0) {
+      alert('Não há dados para exportar.');
+      return;
+    }
+
+    const headers = [
+      'ID',
+      'Título',
+      'Plataforma',
+      'URL de Destino',
+      'Cliques',
+      'Receita Estimada (R$)',
+      'Data de Criação'
+    ];
+
+    const csvRows = [headers.join(',')];
+
+    links.forEach(link => {
+      const row = [
+        link.id,
+        `"${(link.title || 'Sem título').replace(/"/g, '""')}"`, // Trata aspas no título
+        link.platform || 'other',
+        link.url,
+        link.clicks || 0,
+        estimateRevenue(link).toFixed(2),
+        new Date(link.createdAt).toLocaleString('pt-BR')
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    const csvString = csvRows.join('\n');
+    const blob = new Blob([`\uFEFF${csvString}`], { type: 'text/csv;charset=utf-8;' }); // Adiciona BOM para Excel
+    const url = URL.createObjectURL(blob);
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', url);
+    const today = new Date().toISOString().split('T')[0];
+    linkElement.setAttribute('download', `relatorio-links-buscabuscabrasil-${today}.csv`);
+    document.body.appendChild(linkElement);
+    linkElement.click();
+    document.body.removeChild(linkElement);
+  };
+
   if (loading) {
     return (
       <div className="dashboard-loading">
@@ -211,25 +277,33 @@ const AnalyticsDashboard = () => {
     <div className="analytics-dashboard">
       {/* Header */}
       <div className="dashboard-header">
-        <h1>📊 Analytics Dashboard</h1>
-        <div className="period-selector">
-          <button
-            className={period === '7d' ? 'active' : ''}
-            onClick={() => setPeriod('7d')}
-          >
-            7 dias
-          </button>
-          <button
-            className={period === '30d' ? 'active' : ''}
-            onClick={() => setPeriod('30d')}
-          >
-            30 dias
-          </button>
-          <button
-            className={period === 'all' ? 'active' : ''}
-            onClick={() => setPeriod('all')}
-          >
-            Todo período
+        <div className="header-title">
+          <h1>📊 Analytics Dashboard</h1>
+        </div>
+        <div className="header-actions">
+          <div className="period-selector">
+            <button
+              className={period === '7d' ? 'active' : ''}
+              onClick={() => setPeriod('7d')}
+            >
+              7 dias
+            </button>
+            <button
+              className={period === '30d' ? 'active' : ''}
+              onClick={() => setPeriod('30d')}
+            >
+              30 dias
+            </button>
+            <button
+              className={period === 'all' ? 'active' : ''}
+              onClick={() => setPeriod('all')}
+            >
+              Todo período
+            </button>
+          </div>
+          <button onClick={handleExportCSV} className="btn-export">
+            <FiDownload />
+            Exportar para CSV
           </button>
         </div>
       </div>
@@ -341,39 +415,52 @@ const AnalyticsDashboard = () => {
 
       {/* Gráfico de Performance */}
       <div className="chart-section">
-        <h2>📈 Performance por Plataforma</h2>
-        <div className="platform-bars">
-          {Object.entries(
-            links.reduce((acc, link) => {
-              const p = link.platform || 'other';
-              acc[p] = (acc[p] || 0) + (link.clicks || 0);
-              return acc;
-            }, {})
-          ).map(([platform, clicks]) => {
-            const maxClicks = Math.max(...Object.values(
-              links.reduce((acc, link) => {
-                const p = link.platform || 'other';
-                acc[p] = (acc[p] || 0) + (link.clicks || 0);
-                return acc;
-              }, {})
-            ));
-
-            const percentage = maxClicks > 0 ? (clicks / maxClicks * 100) : 0;
-
-            return (
-              <div key={platform} className="bar-item">
-                <div className="bar-label">{platform}</div>
-                <div className="bar-container">
-                  <div
-                    className={`bar ${platform}`}
-                    style={{ width: `${percentage}%` }}
-                  >
-                    <span>{clicks}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="chart-header">
+          <FiBarChart2 />
+          <h2>Performance por Plataforma</h2>
+        </div>
+        <div className="charts-container">
+          <div className="chart-wrapper">
+            <h3>Cliques por Plataforma</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                <XAxis dataKey="name" stroke="var(--text-secondary)" />
+                <YAxis stroke="var(--text-secondary)" />
+                <Tooltip
+                  contentStyle={{
+                    background: 'var(--bg-secondary)',
+                    borderColor: 'var(--border-color)',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Bar dataKey="clicks" name="Cliques">
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={platformColors[entry.name] || '#8884d8'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="chart-wrapper">
+            <h3>Distribuição de Cliques</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie data={chartData} dataKey="clicks" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={platformColors[entry.name] || '#8884d8'} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    background: 'var(--bg-secondary)',
+                    borderColor: 'var(--border-color)',
+                    borderRadius: '8px'
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
@@ -391,9 +478,15 @@ const AnalyticsDashboard = () => {
           margin-bottom: 30px;
         }
 
-        .dashboard-header h1 {
+        .header-title h1 {
           font-size: 28px;
           color: #333;
+        }
+
+        .header-actions {
+          display: flex;
+          align-items: center;
+          gap: 20px;
         }
 
         .period-selector {
@@ -416,6 +509,20 @@ const AnalyticsDashboard = () => {
           border-color: #667eea;
         }
 
+        .btn-export {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          background: #4caf50;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          font-weight: 500;
+          transition: background 0.2s;
+        }
+
         .metrics-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -424,10 +531,10 @@ const AnalyticsDashboard = () => {
         }
 
         .metric-card {
-          background: white;
+          background: var(--bg-secondary);
           border-radius: 12px;
           padding: 25px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+          box-shadow: var(--shadow-md);
           display: flex;
           align-items: center;
           gap: 20px;
@@ -439,7 +546,7 @@ const AnalyticsDashboard = () => {
         }
 
         .metric-card.primary {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: var(--accent-gradient);
           color: white;
         }
 
@@ -457,7 +564,7 @@ const AnalyticsDashboard = () => {
         .metric-content h3 {
           font-size: 14px;
           font-weight: 500;
-          margin-bottom: 8px;
+          margin: 0 0 8px;
           opacity: 0.8;
         }
 
@@ -490,7 +597,7 @@ const AnalyticsDashboard = () => {
         }
 
         .insights-section {
-          background: white;
+          background: var(--bg-secondary);
           border-radius: 12px;
           padding: 25px;
           margin-bottom: 30px;
@@ -531,7 +638,7 @@ const AnalyticsDashboard = () => {
         }
 
         .top-links-section {
-          background: white;
+          background: var(--bg-secondary);
           border-radius: 12px;
           padding: 25px;
           margin-bottom: 30px;
@@ -561,70 +668,43 @@ const AnalyticsDashboard = () => {
         }
 
         .chart-section {
-          background: white;
+          background: var(--bg-secondary);
           border-radius: 12px;
           padding: 25px;
         }
 
-        .chart-section h2 {
+        .chart-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
           font-size: 20px;
           margin-bottom: 25px;
         }
 
-        .platform-bars {
+        .charts-container {
           display: grid;
-          gap: 15px;
+          grid-template-columns: 1fr;
+          gap: 30px;
         }
 
-        .bar-item {
-          display: grid;
-          grid-template-columns: 120px 1fr;
-          align-items: center;
-          gap: 15px;
+        @media (min-width: 992px) {
+          .charts-container {
+            grid-template-columns: 2fr 1fr;
+          }
         }
 
-        .bar-label {
-          font-size: 14px;
-          font-weight: 500;
-          text-transform: capitalize;
+        .chart-wrapper {
+          background: var(--bg-tertiary);
+          padding: 20px;
+          border-radius: 12px;
+          border: 1px solid var(--border-color);
         }
 
-        .bar-container {
-          background: #f0f0f0;
-          border-radius: 20px;
-          height: 30px;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .bar {
-          height: 100%;
-          border-radius: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-          padding-right: 10px;
-          color: white;
-          font-weight: bold;
-          font-size: 12px;
-          transition: width 0.5s ease;
-        }
-
-        .bar.amazon {
-          background: #ff9900;
-        }
-
-        .bar.mercadolivre {
-          background: #ffe600;
-          color: #333;
-        }
-
-        .bar.magalu {
-          background: #0086ff;
-        }
-
-        .bar.other {
-          background: #666;
+        .chart-wrapper h3 {
+          text-align: center;
+          margin-bottom: 20px;
+          font-size: 1rem;
+          color: var(--text-secondary);
         }
 
         .dashboard-loading {

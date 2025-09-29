@@ -1,20 +1,20 @@
-# BBB Link Enhancer - Guia Completo de Deployment
+# 🚀 Guia de Configuração e Deploy - BBB Link Enhancer
 
 ## 🚀 Visão Geral do Sistema
 
 **Missão:** "Desenvolver um sistema inteligente que transforme cliques em oportunidades reais: redirecionamento de borda + armazenamento first-party + add-to-cart/deep links, para recuperar comissões que hoje se perdem e gerar métricas confiáveis para otimizar campanhas."
 
+---
+
+Este guia centraliza todas as etapas de configuração do ambiente de desenvolvimento, deploy e detalhes da arquitetura do sistema.
+
 ## 📋 Índice
 
-1. [Arquitetura](#arquitetura)
-2. [Deploy Rápido (MVP)](#deploy-rápido-mvp)
-3. [Configuração Cloudflare](#configuração-cloudflare)
-4. [Deploy do Admin Panel](#deploy-do-admin-panel)
-5. [Configuração de Segurança](#configuração-de-segurança)
-6. [Táticas de Persistência](#táticas-de-persistência)
-7. [Roadmap de Implementação](#roadmap-de-implementação)
-8. [Métricas e KPIs](#métricas-e-kpis)
-9. [Troubleshooting](#troubleshooting)
+1. [Arquitetura](#-arquitetura)
+2. [Configuração do Ambiente Local](#-configuração-do-ambiente-local)
+3. [Configuração do Firebase](#-configuração-do-firebase)
+4. [Configuração do Vercel (Deploy)](#-configuração-do-vercel-deploy)
+5. [Táticas de Persistência](#-táticas-de-persistência)
 
 ## 🏗️ Arquitetura
 
@@ -24,8 +24,8 @@
 - **Storage:** Cloudflare KV (100k reads/dia grátis)
 - **Admin UI:** React + Vercel/Cloudflare Pages (ilimitado)
 - **Database:** Supabase PostgreSQL (500MB grátis)
-- **Domain:** bbbrasil.com (já existente)
-- **Analytics:** Cloudflare Analytics (grátis)
+- **Database & Auth:** Firebase (Firestore, Authentication)
+- **Analytics:** Firebase Analytics
 
 ### Fluxo de Dados
 

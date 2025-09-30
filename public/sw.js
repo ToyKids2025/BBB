@@ -3,7 +3,7 @@
  * Cache assets, offline support, background sync
  */
 
-const CACHE_VERSION = 'bbb-v1.0.0';
+const CACHE_VERSION = 'bbb-v2.0.0'; // Incrementado para forçar update
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 const DATA_CACHE_NAME = `${CACHE_VERSION}-data`;
 
@@ -86,8 +86,8 @@ async function networkFirstStrategy(request, cacheName) {
   try {
     const networkResponse = await fetch(request);
 
-    // Salvar no cache se for sucesso
-    if (networkResponse.ok) {
+    // Salvar no cache se for sucesso E método GET (POST não pode ser cacheado)
+    if (networkResponse.ok && request.method === 'GET') {
       const cache = await caches.open(cacheName);
       cache.put(request, networkResponse.clone());
     }

@@ -35,7 +35,9 @@
       "Bash(CI=true GENERATE_SOURCEMAP=false npm run build)",
       "Bash(export CI=true)",
       "Bash(export GENERATE_SOURCEMAP=false)",
-      "Bash(export GOOGLE_APPLICATION_CREDENTIALS=\"./afiliador-inteligente-firebase-adminsdk-fbsvc-ddc0eedcbf.json\")"
+      "Bash(export GOOGLE_APPLICATION_CREDENTIALS=\"./afiliador-inteligente-firebase-adminsdk-fbsvc-ddc0eedcbf.json\")",
+      "Bash(bash:*)",
+      "WebFetch(domain:www.buscabuscabrasil.com.br)"
     ],
     "deny": [],
     "ask": []

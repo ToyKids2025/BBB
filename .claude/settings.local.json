@@ -26,7 +26,16 @@
       "Bash(export CI=false)",
       "Bash(npm run create-kv:*)",
       "Bash(npx wrangler:*)",
-      "Bash(wrangler kv namespace create:*)"
+      "Bash(wrangler kv namespace create:*)",
+      "Bash(firebase deploy:*)",
+      "Bash(npx firebase deploy:*)",
+      "Bash(npx firebase login:*)",
+      "Read(//home/aawilske/.config/configstore/**)",
+      "Bash(export GOOGLE_APPLICATION_CREDENTIALS=\"./service-account-key.json\")",
+      "Bash(CI=true GENERATE_SOURCEMAP=false npm run build)",
+      "Bash(export CI=true)",
+      "Bash(export GENERATE_SOURCEMAP=false)",
+      "Bash(export GOOGLE_APPLICATION_CREDENTIALS=\"./afiliador-inteligente-firebase-adminsdk-fbsvc-ddc0eedcbf.json\")"
     ],
     "deny": [],
     "ask": []

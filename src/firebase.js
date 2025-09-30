@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, query, where, orderBy, deleteDoc } from 'firebase/firestore';
 import { getAnalytics, logEvent } from 'firebase/analytics';
+import { detectPlatform, addAffiliateTag } from './config';
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -83,9 +84,22 @@ export const saveLink = async (linkData) => {
       return { success: false, error: 'Usuário não autenticado' };
     }
 
+    // 🔥 DETECTAR PLATAFORMA E ADICIONAR TAG DE AFILIADO AUTOMATICAMENTE
+    const platform = linkData.platform || detectPlatform(linkData.url);
+    const originalUrl = linkData.url; // Salvar URL original
+    const urlWithTag = addAffiliateTag(linkData.url, platform, true); // true = usar rotação
+
+    console.log('🏷️ Tag de Afiliado Adicionada:');
+    console.log('   Original:', originalUrl);
+    console.log('   Com Tag:', urlWithTag);
+    console.log('   Platform:', platform);
+
     const docRef = doc(collection(db, 'links'));
     const linkToSave = {
       ...linkData,
+      platform, // Garantir que platform está salvo
+      url: urlWithTag, // SALVAR URL COM TAG!
+      originalUrl: originalUrl, // Salvar original também
       createdAt: new Date().toISOString(),
       userId: auth.currentUser.uid,
       clicks: linkData.clicks || 0

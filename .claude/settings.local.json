@@ -37,7 +37,10 @@
       "Bash(export GENERATE_SOURCEMAP=false)",
       "Bash(export GOOGLE_APPLICATION_CREDENTIALS=\"./afiliador-inteligente-firebase-adminsdk-fbsvc-ddc0eedcbf.json\")",
       "Bash(bash:*)",
-      "WebFetch(domain:www.buscabuscabrasil.com.br)"
+      "WebFetch(domain:www.buscabuscabrasil.com.br)",
+      "Bash(firebase --version)",
+      "Bash(firebase projects:list:*)",
+      "Bash(firebase login:*)"
     ],
     "deny": [],
     "ask": []

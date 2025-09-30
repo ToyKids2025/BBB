@@ -64,6 +64,16 @@ CREDENCIAIS-ALEXANDRE.md
 .firebase/
 firebase-debug.log
 firestore-debug.log
+*-firebase-adminsdk-*.json
+service-account-key.json
+
+# Scripts de deploy temporários
+deploy-*.js
+deploy-*.html
+update-firestore-rules.js
+
+# Claude Code
+.claude/settings.local.json
 
 # OS files
 Thumbs.db

@@ -12,11 +12,14 @@ root.render(
 
 // Registrar Service Worker PWA
 if ('serviceWorker' in navigator) {
+  let updatePromptShown = false; // Evitar múltiplos prompts
+
   window.addEventListener('load', async () => {
     try {
       // Registrar SW principal
       const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/'
+        scope: '/',
+        updateViaCache: 'none' // Forçar verificação de atualizações
       });
 
       console.log('✅ Service Worker registrado:', registration.scope);
@@ -27,12 +30,22 @@ if ('serviceWorker' in navigator) {
         console.log('🔄 Nova versão do SW encontrada');
 
         newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // Nova versão disponível
-            if (confirm('Nova versão disponível! Atualizar agora?')) {
-              newWorker.postMessage({ type: 'SKIP_WAITING' });
-              window.location.reload();
-            }
+          if (newWorker.state === 'installed' &&
+              navigator.serviceWorker.controller &&
+              !updatePromptShown) {
+
+            updatePromptShown = true; // Marcar que já mostrou o prompt
+
+            // Aguardar 1 segundo antes de mostrar o prompt
+            setTimeout(() => {
+              if (confirm('Nova versão disponível! Atualizar agora?')) {
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                window.location.reload();
+              } else {
+                // Se usuário recusar, não perguntar de novo nesta sessão
+                console.log('⏭️ Atualização adiada');
+              }
+            }, 1000);
           }
         });
       });

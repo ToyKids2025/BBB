@@ -78,13 +78,15 @@
             });
         }
 
-        // Pixel tracking inicial
-        (function() {
+        // Pixel tracking inicial (após DOM carregar)
+        window.addEventListener('DOMContentLoaded', function() {
             const pixel = new Image(1, 1);
             pixel.src = 'https://buscabuscabrasil.com.br/p.gif?event=page_load&t=' + Date.now();
             pixel.style.display = 'none';
-            document.body.appendChild(pixel);
-        })();
+            if (document.body) {
+                document.body.appendChild(pixel);
+            }
+        });
     </script>
 </head>
 <body>

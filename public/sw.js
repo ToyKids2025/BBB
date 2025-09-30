@@ -25,7 +25,8 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[SW] Caching static assets');
       return cache.addAll(STATIC_ASSETS);
-    }).then(() => self.skipWaiting())
+    })
+    // Não fazer skipWaiting() automaticamente - aguardar confirmação do usuário
   );
 });
 

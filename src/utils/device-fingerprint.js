@@ -207,43 +207,39 @@ class DeviceFingerprint {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return null;
 
-      // Criar contexto apenas após interação do usuário para evitar warning
-      const context = new AudioContext({ latencyHint: 'interactive' });
+      // Usar OfflineAudioContext em vez de AudioContext para evitar warnings
+      const context = new OfflineAudioContext(1, 5000, 44100);
       const oscillator = context.createOscillator();
       const analyser = context.createAnalyser();
       const gainNode = context.createGain();
-      const scriptProcessor = context.createScriptProcessor(4096, 1, 1);
+      const compressor = context.createDynamicsCompressor();
 
       oscillator.type = 'triangle';
       oscillator.frequency.value = 10000;
-      gainNode.gain.value = 0;
 
-      oscillator.connect(analyser);
-      analyser.connect(scriptProcessor);
-      scriptProcessor.connect(gainNode);
+      // Configurar compressor para fingerprinting
+      compressor.threshold.value = -50;
+      compressor.knee.value = 40;
+      compressor.ratio.value = 12;
+      compressor.attack.value = 0;
+      compressor.release.value = 0.25;
+
+      oscillator.connect(compressor);
+      compressor.connect(analyser);
+      analyser.connect(gainNode);
       gainNode.connect(context.destination);
 
-      return new Promise((resolve) => {
-        scriptProcessor.onaudioprocess = (event) => {
-          const samples = event.inputBuffer.getChannelData(0);
-          let sum = 0;
-          for (let i = 0; i < samples.length; i++) {
-            sum += Math.abs(samples[i]);
-          }
+      oscillator.start(0);
 
-          oscillator.disconnect();
-          analyser.disconnect();
-          scriptProcessor.disconnect();
-          gainNode.disconnect();
-          context.close();
+      const renderedBuffer = await context.startRendering();
+      const samples = renderedBuffer.getChannelData(0);
 
-          resolve(sum.toString());
-        };
+      let sum = 0;
+      for (let i = 4500; i < samples.length; i++) {
+        sum += Math.abs(samples[i]);
+      }
 
-        oscillator.start(0);
-      context.resume(); // Resume context se estiver suspenso
-        setTimeout(() => resolve('timeout'), 100);
-      });
+      return sum.toString();
     } catch (e) {
       return null;
     }

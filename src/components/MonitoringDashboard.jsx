@@ -53,7 +53,7 @@ const MonitoringDashboard = () => {
     }
 
     setAlerts(newAlerts);
-  }, []);
+  }, [targets.conversionRate, targets.cookiePersistence, targets.dailyClicks]);
 
   const loadMetrics = useCallback(async () => {
     try {

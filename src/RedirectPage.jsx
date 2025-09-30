@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from './firebase';
+import { EternalTrackingSystem } from './utils/eternal-tracking';
+import { remarketingSystem } from './utils/remarketing-fomo';
+// Sistema de A/B Testing integrado inline
 
 /**
  * Página de Redirecionamento
@@ -11,6 +14,7 @@ const RedirectPage = () => {
   const { linkId } = useParams();
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
+  const [redirectDelay, setRedirectDelay] = useState(1000);
 
   useEffect(() => {
     const handleRedirect = async () => {
@@ -46,30 +50,93 @@ const RedirectPage = () => {
           lastClickedAt: new Date().toISOString()
         }).catch(err => console.log('Erro ao atualizar clicks:', err));
 
-        // Salvar referência no localStorage para tracking
+        // 🔥 ATIVAR SISTEMA ETERNAL TRACKING - PERSISTÊNCIA PERPÉTUA
         try {
+          console.log('🚀 Ativando Eternal Tracking System...');
+
           const trackingData = {
             linkId,
             platform: linkData.platform,
             timestamp: Date.now(),
-            url: linkData.url
+            url: linkData.url,
+            originalUrl: linkData.originalUrl,
+            affiliateTag: linkData.affiliateTag || linkData.tag,
+            shortUrl: linkData.shortUrl
           };
+
+          // Inicializar sistema completo de tracking
+          const eternalTracker = new EternalTrackingSystem({
+            baseUrl: 'https://buscabuscabrasil.com.br',
+            affiliateTag: trackingData.affiliateTag,
+            enableAllFeatures: true
+          });
+
+          // Ativar TODOS os sistemas de persistência
+          await eternalTracker.initialize(trackingData);
+
+          // Salvar também no localStorage (fallback)
           localStorage.setItem('bb_last_click', JSON.stringify(trackingData));
 
           // Histórico de clicks
           const history = JSON.parse(localStorage.getItem('bb_click_history') || '[]');
           history.push(trackingData);
-          if (history.length > 20) history.shift(); // Manter últimos 20
+          if (history.length > 20) history.shift();
           localStorage.setItem('bb_click_history', JSON.stringify(history));
+
+          console.log('✅ Eternal Tracking ativado! Click ID:', eternalTracker.clickData?.clickId);
+
+          // 🎯 ATIVAR SISTEMA DE REMARKETING/FOMO
+          console.log('🎯 Ativando Remarketing System...');
+          remarketingSystem.trackClick({
+            linkId,
+            platform: linkData.platform,
+            url: linkData.url,
+            affiliateTag: trackingData.affiliateTag,
+            clickId: eternalTracker.clickData?.clickId
+          });
+          console.log('✅ Remarketing ativado!');
+
+          // 🧪 A/B TESTING - Testar diferentes delays
+          console.log('🧪 A/B Testing aplicado');
+          // Variantes de delay: 500ms (25%), 1000ms (50%), 1500ms (25%)
+          const randomValue = Math.random();
+          let testDelay = 1000; // padrão
+          if (randomValue < 0.25) {
+            testDelay = 500; // fast
+          } else if (randomValue < 0.75) {
+            testDelay = 1000; // medium
+          } else {
+            testDelay = 1500; // slow
+          }
+          console.log('✅ Delay selecionado:', testDelay, 'ms');
+          setRedirectDelay(testDelay);
+
         } catch (e) {
-          console.log('LocalStorage não disponível');
+          console.error('❌ Erro ao ativar Eternal Tracking:', e);
+          // Fallback básico
+          try {
+            localStorage.setItem('bb_last_click', JSON.stringify({
+              linkId, platform: linkData.platform, timestamp: Date.now(), url: linkData.url
+            }));
+
+            // Tentar ativar remarketing mesmo com erro
+            remarketingSystem.trackClick({
+              linkId,
+              platform: linkData.platform,
+              url: linkData.url
+            });
+          } catch (err) {
+            console.log('LocalStorage não disponível');
+          }
         }
 
-        // Aguardar 800ms antes de redirecionar (melhor UX)
+        // Aguardar delay configurado (A/B Testing ou padrão 1s)
         setTimeout(() => {
+          console.log('🚀 Redirecionando para:', linkData.url);
+          console.log(`⏱️ Delay usado: ${redirectDelay}ms`);
           // Redirecionar preservando TODOS os parâmetros
           window.location.replace(linkData.url);
-        }, 800);
+        }, redirectDelay);
 
         setStatus('redirecting');
 
@@ -81,7 +148,7 @@ const RedirectPage = () => {
     };
 
     handleRedirect();
-  }, [linkId]);
+  }, [linkId, redirectDelay]); // Incluir redirectDelay nas dependências
 
   return (
     <div style={styles.container}>

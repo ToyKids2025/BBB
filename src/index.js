@@ -16,6 +16,9 @@ if ('serviceWorker' in navigator) {
 
   window.addEventListener('load', async () => {
     try {
+      // Não mostrar prompt de atualização em páginas de redirect
+      const isRedirectPage = window.location.pathname.startsWith('/r/');
+
       // Registrar SW principal
       const registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
@@ -24,31 +27,48 @@ if ('serviceWorker' in navigator) {
 
       console.log('✅ Service Worker registrado:', registration.scope);
 
-      // Verificar atualizações
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        console.log('🔄 Nova versão do SW encontrada');
+      // Verificar atualizações (apenas se não for página de redirect)
+      if (!isRedirectPage) {
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          console.log('🔄 Nova versão do SW encontrada');
 
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' &&
-              navigator.serviceWorker.controller &&
-              !updatePromptShown) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' &&
+                navigator.serviceWorker.controller &&
+                !updatePromptShown) {
 
-            updatePromptShown = true; // Marcar que já mostrou o prompt
+              updatePromptShown = true; // Marcar que já mostrou o prompt
 
-            // Aguardar 1 segundo antes de mostrar o prompt
-            setTimeout(() => {
-              if (confirm('Nova versão disponível! Atualizar agora?')) {
-                newWorker.postMessage({ type: 'SKIP_WAITING' });
-                window.location.reload();
-              } else {
-                // Se usuário recusar, não perguntar de novo nesta sessão
-                console.log('⏭️ Atualização adiada');
-              }
-            }, 1000);
-          }
+              // Aguardar 2 segundos antes de mostrar o prompt
+              setTimeout(() => {
+                // Verificar novamente se não está em página de redirect
+                if (!window.location.pathname.startsWith('/r/')) {
+                  if (confirm('Nova versão disponível! Atualizar agora?')) {
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                  } else {
+                    // Se usuário recusar, não perguntar de novo nesta sessão
+                    console.log('⏭️ Atualização adiada');
+                  }
+                } else {
+                  console.log('⏭️ Atualização silenciosa (página de redirect)');
+                }
+              }, 2000);
+            }
+          });
         });
-      });
+      } else {
+        // Em páginas de redirect, fazer skipWaiting silencioso
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed') {
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
+      }
 
       // Solicitar permissão para notificações (opcional)
       if ('Notification' in window && Notification.permission === 'default') {

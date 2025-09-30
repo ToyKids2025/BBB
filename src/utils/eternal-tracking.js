@@ -903,7 +903,8 @@ export class AutoRetargeting {
 
   setupFacebookPixel() {
     // Inicializar Facebook Pixel
-    if (typeof fbq === 'undefined') {
+    if (typeof window.fbq === 'undefined') {
+      /* eslint-disable */
       !function(f,b,e,v,n,t,s){
         if(f.fbq)return;n=f.fbq=function(){
           n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)
@@ -913,6 +914,7 @@ export class AutoRetargeting {
         t.src=v;s=b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t,s)
       }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      /* eslint-enable */
     }
 
     // Track events

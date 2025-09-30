@@ -879,25 +879,29 @@ export class AutoRetargeting {
   }
 
   setupAllRetargeting() {
-    // 1. Facebook Pixel
-    this.setupFacebookPixel();
+    // ⚠️ RETARGETING DESABILITADO - Requer configuração de IDs
+    // Para ativar, adicione IDs reais no config do EternalTrackingSystem
 
-    // 2. Google Ads
-    this.setupGoogleAds();
+    // Verificar se tem IDs configurados
+    const hasFacebookPixel = this.config.facebookPixelId && this.config.facebookPixelId !== 'YOUR_PIXEL_ID';
+    const hasGoogleAds = this.config.googleAdsId && this.config.googleAdsId !== 'AW-XXXXXX';
 
-    // 3. Push Notifications
-    this.setupPushNotifications();
+    if (!hasFacebookPixel && !hasGoogleAds) {
+      console.log('⚠️ Retargeting desabilitado - Configure IDs de pixel primeiro');
+      return;
+    }
 
-    // 4. Email Capture
+    // 1. Facebook Pixel (se configurado)
+    if (hasFacebookPixel) this.setupFacebookPixel();
+
+    // 2. Google Ads (se configurado)
+    if (hasGoogleAds) this.setupGoogleAds();
+
+    // 3-7: Outros sistemas (não dependem de IDs externos)
+    // this.setupPushNotifications(); // Requer VAPID key
     this.setupEmailCapture();
-
-    // 5. WhatsApp
     this.setupWhatsAppRetargeting();
-
-    // 6. Exit Intent
     this.setupExitIntent();
-
-    // 7. Scroll Tracking
     this.setupScrollTracking();
   }
 

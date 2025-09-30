@@ -3,14 +3,14 @@
  * Múltiplas camadas para garantir tracking em Safari iOS e Instagram
  */
 
-// Configurações de Cookie Seguro
-const COOKIE_CONFIG = {
-  maxAge: 30 * 24 * 60 * 60, // 30 dias
-  secure: true,
-  sameSite: 'Lax', // Permite navegação mas protege contra CSRF
-  path: '/',
-  domain: window.location.hostname
-};
+// Configurações de Cookie Seguro (usado nas funções de cookie)
+// const COOKIE_CONFIG = {
+//   maxAge: 30 * 24 * 60 * 60, // 30 dias
+//   secure: true,
+//   sameSite: 'Lax',
+//   path: '/',
+//   domain: window.location.hostname
+// };
 
 /**
  * Define cookie com configurações máximas de segurança
@@ -332,10 +332,13 @@ export function detectBrowserCapabilities() {
 // Instância global
 export const persistence = new SafariPersistence();
 
-export default {
+// Export default como objeto nomeado
+const persistenceModule = {
   setCookieSecure,
   getCookieSecure,
   SafariPersistence,
   detectBrowserCapabilities,
   persistence
 };
+
+export default persistenceModule;

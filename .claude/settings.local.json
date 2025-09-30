@@ -40,7 +40,8 @@
       "WebFetch(domain:www.buscabuscabrasil.com.br)",
       "Bash(firebase --version)",
       "Bash(firebase projects:list:*)",
-      "Bash(firebase login:*)"
+      "Bash(firebase login:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

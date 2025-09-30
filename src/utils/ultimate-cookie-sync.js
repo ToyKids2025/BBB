@@ -13,10 +13,10 @@
 export class UltimateCookieSync {
   constructor() {
     this.affiliateTags = {
-      mercadolivre: 'SEUTAGML', // Substitua com sua tag real
-      amazon: 'buscabusca0f-20',
-      magazine: 'SEUTAGMAG',
-      shopee: 'SEUTAGSHOPEE'
+      mercadolivre: 'WA20250726131129', // Tag oficial Mercado Livre
+      amazon: 'buscabusca0f-20', // Tag oficial Amazon
+      magazine: '', // Não tem tag ainda
+      shopee: '' // Não tem tag ainda
     };
 
     this.cookieDomains = {
@@ -61,35 +61,27 @@ export class UltimateCookieSync {
   }
 
   /**
-   * 1. INJETAR COOKIES UNIVERSAIS
-   * Cookies que funcionam em TODOS os subdomínios
+   * ❌ DESABILITADO: INJETAR COOKIES CROSS-DOMAIN
+   *
+   * Motivo: Navegadores modernos BLOQUEIAM cookies cross-domain por segurança.
+   * Você está em buscabuscabrasil.com.br e não pode setar cookies para:
+   * - amazon.com.br
+   * - mercadolivre.com.br
+   * - Qualquer outro domínio
+   *
+   * Isso é bloqueado por:
+   * - Same-Origin Policy
+   * - CORS
+   * - ITP (Safari)
+   * - Enhanced Tracking Prevention (Firefox)
+   * - Privacy Sandbox (Chrome)
+   *
+   * Alternativa: Cookies no SEU domínio já funcionam (Eternal Tracking)
    */
   injectUniversalCookies() {
-    const platforms = ['mercadolivre', 'amazon', 'magazine', 'shopee'];
-
-    platforms.forEach(platform => {
-      const tag = this.affiliateTags[platform];
-      const domains = this.cookieDomains[platform];
-
-      domains.forEach(domain => {
-        // Cookie principal - 365 dias
-        this.setCookieForDomain(domain, `aff_tag`, tag, 365);
-        this.setCookieForDomain(domain, `ref_${platform}`, tag, 365);
-        this.setCookieForDomain(domain, `_aff`, tag, 365);
-
-        // Cookies de backup com nomes que sites não bloqueiam
-        this.setCookieForDomain(domain, `user_pref`, tag, 365);
-        this.setCookieForDomain(domain, `session_id`, this.generateSessionId(tag), 365);
-        this.setCookieForDomain(domain, `device_id`, this.generateDeviceId(tag), 365);
-
-        // Cookies com nomes genéricos (passam despercebidos)
-        this.setCookieForDomain(domain, `_ga_custom`, tag, 365);
-        this.setCookieForDomain(domain, `_fbp_custom`, tag, 365);
-        this.setCookieForDomain(domain, `_gcl_au`, tag, 365);
-      });
-    });
-
-    console.log('🍪 Cookies universais injetados em todos os domínios');
+    console.log('⚠️ Cross-domain cookies DESABILITADOS (bloqueados pelo navegador)');
+    console.log('✅ Usando cookies no próprio domínio (Eternal Tracking)');
+    return; // ❌ DESABILITADO - Não funciona cross-domain
   }
 
   setCookieForDomain(domain, name, value, days) {
@@ -171,55 +163,13 @@ export class UltimateCookieSync {
 
   /**
    * 3. SERVICE WORKER INTERCEPTADOR
-   * Intercepta TODAS as requisições para ML/Amazon e adiciona parâmetros
+   * ❌ DESABILITADO: Blob workers não funcionam em produção HTTPS
+   * Alternativa: Usar SW estático em /public/sw.js
    */
   async registerInterceptorSW() {
-    if (!('serviceWorker' in navigator)) return;
-
-    try {
-      // Criar Service Worker dinâmico
-      const swCode = `
-        self.addEventListener('fetch', event => {
-          const url = new URL(event.request.url);
-
-          // Interceptar requisições para Mercado Livre
-          if (url.hostname.includes('mercadolivre.com') || url.hostname.includes('mercadolibre.com')) {
-            const modifiedUrl = new URL(event.request.url);
-
-            // Adicionar parâmetros de afiliado se não existirem
-            if (!modifiedUrl.searchParams.has('matt_tool')) {
-              modifiedUrl.searchParams.set('matt_tool', '${this.affiliateTags.mercadolivre}');
-              modifiedUrl.searchParams.set('matt_word', '${this.affiliateTags.mercadolivre}');
-            }
-
-            event.respondWith(fetch(modifiedUrl));
-            return;
-          }
-
-          // Interceptar requisições para Amazon
-          if (url.hostname.includes('amazon.com')) {
-            const modifiedUrl = new URL(event.request.url);
-
-            if (!modifiedUrl.searchParams.has('tag')) {
-              modifiedUrl.searchParams.set('tag', '${this.affiliateTags.amazon}');
-            }
-
-            event.respondWith(fetch(modifiedUrl));
-            return;
-          }
-        });
-      `;
-
-      // Registrar Service Worker
-      const blob = new Blob([swCode], { type: 'application/javascript' });
-      const swUrl = URL.createObjectURL(blob);
-
-      await navigator.serviceWorker.register(swUrl, { scope: '/' });
-      console.log('⚙️ Service Worker interceptador registrado');
-
-    } catch (error) {
-      console.log('SW interceptador não pode ser registrado:', error);
-    }
+    // ❌ DESABILITADO - Não funciona via Blob em produção
+    console.log('⚠️ SW Interceptor desabilitado (requer SW estático)');
+    return;
   }
 
   /**
@@ -277,45 +227,68 @@ export class UltimateCookieSync {
   async generateUniqueFingerprint() {
     const components = [];
 
-    // Canvas fingerprinting
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    ctx.textBaseline = 'top';
-    ctx.font = '14px Arial';
-    ctx.fillText('🔥BBB', 2, 2);
-    components.push(canvas.toDataURL());
+    try {
+      // Canvas fingerprinting
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.textBaseline = 'top';
+      ctx.font = '14px Arial';
+      ctx.fillText('🔥BBB', 2, 2);
+      components.push(canvas.toDataURL());
 
-    // WebGL fingerprinting
-    const gl = canvas.getContext('webgl');
-    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-    if (debugInfo) {
-      components.push(gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL));
-      components.push(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL));
+      // WebGL fingerprinting
+      const gl = canvas.getContext('webgl');
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      if (debugInfo) {
+        components.push(gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL));
+        components.push(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL));
+      }
+    } catch (e) {
+      components.push('canvas-unavailable');
     }
 
-    // Audio fingerprinting
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const analyser = audioContext.createAnalyser();
-    const gainNode = audioContext.createGain();
-    const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+    // Audio fingerprinting com proteção
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        const audioContext = new AudioContext();
+        const oscillator = audioContext.createOscillator();
+        const analyser = audioContext.createAnalyser();
+        const gainNode = audioContext.createGain();
+        const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
 
-    oscillator.connect(analyser);
-    analyser.connect(scriptProcessor);
-    scriptProcessor.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    gainNode.gain.value = 0;
+        oscillator.connect(analyser);
+        analyser.connect(scriptProcessor);
+        scriptProcessor.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        gainNode.gain.value = 0;
 
-    oscillator.start(0);
+        oscillator.start(0);
 
-    // Coletar dados de áudio
-    await new Promise(resolve => {
-      scriptProcessor.onaudioprocess = (event) => {
-        const output = event.inputBuffer.getChannelData(0);
-        components.push(output.slice(0, 100).toString());
-        resolve();
-      };
-    });
+        // Coletar dados de áudio com timeout
+        await Promise.race([
+          new Promise(resolve => {
+            scriptProcessor.onaudioprocess = (event) => {
+              const output = event.inputBuffer.getChannelData(0);
+              components.push(output.slice(0, 100).toString());
+
+              // ✅ LIMPAR: Desconectar tudo e fechar context
+              oscillator.stop();
+              oscillator.disconnect();
+              analyser.disconnect();
+              scriptProcessor.disconnect();
+              gainNode.disconnect();
+              audioContext.close();
+
+              resolve();
+            };
+          }),
+          new Promise(resolve => setTimeout(resolve, 500)) // Timeout 500ms
+        ]);
+      }
+    } catch (e) {
+      components.push('audio-unavailable');
+    }
 
     // Adicionar outros componentes
     components.push(navigator.userAgent);
@@ -323,8 +296,8 @@ export class UltimateCookieSync {
     components.push(screen.width + 'x' + screen.height);
     components.push(screen.colorDepth);
     components.push(new Date().getTimezoneOffset());
-    components.push(navigator.hardwareConcurrency);
-    components.push(navigator.deviceMemory);
+    components.push(navigator.hardwareConcurrency || 0);
+    components.push(navigator.deviceMemory || 0);
 
     // Gerar hash único
     const fingerprint = await this.hashComponents(components.join('|||'));
@@ -547,53 +520,17 @@ export class UltimateCookieSync {
   }
 
   /**
-   * MÉTODO ESPECIAL: GARANTIR COMISSÃO NO MERCADO LIVRE
+   * ❌ REMOVIDO: GARANTIA DE COMISSÃO VIA IFRAME/REQUESTS
+   *
+   * Motivo: ML e Amazon detectam e bloqueiam essas técnicas.
+   * Pior: Podem banir sua conta de afiliado permanentemente!
+   *
+   * Solução correta: Os cookies de longa duração (365 dias) +
+   * fingerprinting já garantem atribuição por 30-90 dias naturalmente.
    */
-  async guaranteeMLCommission(productUrl) {
-    // Técnica 1: Adicionar ao carrinho com tag
-    const addToCartUrl = `https://www.mercadolivre.com.br/gz/cart/add?item_id=${this.extractMLItemId(productUrl)}&quantity=1&matt_tool=${this.affiliateTags.mercadolivre}`;
-
-    // Técnica 2: Favoritar com tag (cria cookie de 30 dias)
-    const favoriteUrl = `https://www.mercadolivre.com.br/gz/favorites/add?item_id=${this.extractMLItemId(productUrl)}&matt_word=${this.affiliateTags.mercadolivre}`;
-
-    // Criar iframes para executar ações
-    [addToCartUrl, favoriteUrl].forEach(url => {
-      const iframe = document.createElement('iframe');
-      iframe.src = url;
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-      setTimeout(() => iframe.remove(), 3000);
-    });
-
-    console.log('✅ Comissão ML garantida por 30 dias');
-  }
-
   extractMLItemId(url) {
     const match = url.match(/MLB-?(\d+)/);
     return match ? match[1] : '';
-  }
-
-  /**
-   * MÉTODO ESPECIAL: GARANTIR COMISSÃO NA AMAZON
-   */
-  async guaranteeAmazonCommission(productUrl) {
-    // Técnica 1: Adicionar à lista de desejos
-    const asin = this.extractASIN(productUrl);
-    const wishlistUrl = `https://www.amazon.com.br/gp/registry/wishlist/add.html?ASIN=${asin}&tag=${this.affiliateTags.amazon}`;
-
-    // Técnica 2: Subscribe & Save (cookie de 90 dias!)
-    const subscribeUrl = `https://www.amazon.com.br/gp/subscribe-and-save/details/?ASIN=${asin}&tag=${this.affiliateTags.amazon}`;
-
-    // Técnica 3: Adicionar ao carrinho
-    const cartUrl = `https://www.amazon.com.br/gp/aws/cart/add.html?ASIN.1=${asin}&Quantity.1=1&tag=${this.affiliateTags.amazon}`;
-
-    // Executar todas as técnicas
-    [wishlistUrl, subscribeUrl, cartUrl].forEach(url => {
-      const img = new Image();
-      img.src = url;
-    });
-
-    console.log('✅ Comissão Amazon garantida por 90 dias');
   }
 
   extractASIN(url) {
@@ -623,10 +560,8 @@ export class UltimateCookieSync {
   }
 }
 
-// Auto-inicializar quando importado
+// Exportar instância (será inicializada manualmente no RedirectPage)
 export const ultimateCookieSync = new UltimateCookieSync();
 
-// Inicializar automaticamente após 1 segundo
-setTimeout(() => {
-  ultimateCookieSync.initialize();
-}, 1000);
+// ❌ AUTO-INIT REMOVIDO - Inicialização manual no RedirectPage
+// Motivo: Evitar duplicação e desperdício de recursos

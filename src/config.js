@@ -74,6 +74,13 @@ export function addAffiliateTag(url, platform, useRotation = false) {
   // SEMPRE usar tag oficial (rotação desativada)
   const tag = AFFILIATE_TAGS[platform.toUpperCase()];
 
+  // 🚀 DEEP LINKS: Tentar abrir app nativo primeiro
+  const deepLink = createDeepLink(url, platform, tag);
+  if (deepLink && isMobile()) {
+    console.log('📱 Deep link disponível:', deepLink);
+    // Retornar URL normal como fallback, mas tentar deep link no RedirectPage
+  }
+
   switch(platform) {
     case 'amazon':
       // Verificar se já tem tag de afiliado
@@ -95,6 +102,11 @@ export function addAffiliateTag(url, platform, useRotation = false) {
       return `${cleanUrl}?tag=${tag}`;
 
     case 'mercadolivre':
+      // ⚠️ IMPORTANTE: matt_tool geralmente é o mesmo que matt_word
+      // Se você tem um matt_tool diferente, configure em .env:
+      // REACT_APP_ML_TOOL_ID=seu_tool_id
+      const mlTool = process.env.REACT_APP_ML_TOOL_ID || tag; // Usar mesma tag por padrão
+
       // Verificar se já tem parâmetros de afiliado
       if (url.includes('matt_word=') || url.includes('matt_tool=')) {
         // Verificar se já é nossa tag oficial
@@ -108,7 +120,10 @@ export function addAffiliateTag(url, platform, useRotation = false) {
 
         // Se não tem matt_tool, adicionar
         if (!newUrl.includes('matt_tool=')) {
-          newUrl += '&matt_tool=88344921';
+          newUrl += `&matt_tool=${mlTool}`;
+        } else {
+          // Substituir matt_tool também
+          newUrl = newUrl.replace(/matt_tool=[^&]+/, `matt_tool=${mlTool}`);
         }
 
         return newUrl;
@@ -116,7 +131,7 @@ export function addAffiliateTag(url, platform, useRotation = false) {
 
       // Se não tem parâmetros de afiliado, adicionar
       const separator = url.includes('?') ? '&' : '?';
-      return `${url}${separator}matt_word=${tag}&matt_tool=88344921`;
+      return `${url}${separator}matt_word=${tag}&matt_tool=${mlTool}`;
 
     default:
       return url;
@@ -162,6 +177,66 @@ export async function createShortlink(destinationUrl) {
   }
 }
 
+// 🚀 DEEP LINKS - Abrir apps nativos (melhor conversão!)
+export function createDeepLink(url, platform, tag) {
+  try {
+    switch(platform) {
+      case 'mercadolivre':
+        // ML Deep Link: mlapp://item/{item_id}
+        const mlItemId = url.match(/MLB-?(\d+)/)?.[1];
+        if (mlItemId) {
+          return `mlapp://item/MLB${mlItemId}?matt_word=${tag}`;
+        }
+        break;
+
+      case 'amazon':
+        // Amazon Deep Link: com.amazon.mobile.shopping://
+        const asin = url.match(/\/dp\/([A-Z0-9]{10})/)?.[1];
+        if (asin) {
+          return `com.amazon.mobile.shopping://www.amazon.com.br/dp/${asin}?tag=${tag}`;
+        }
+        break;
+
+      case 'shopee':
+        // Shopee Deep Link
+        return url.replace('https://shopee.com.br', 'shopee://');
+
+      case 'magalu':
+        // Magalu Deep Link
+        return url.replace('https://www.magazineluiza.com.br', 'magalu://');
+
+      default:
+        return null;
+    }
+  } catch (e) {
+    return null;
+  }
+  return null;
+}
+
+export function isMobile() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+// Função para tentar abrir deep link com fallback
+export function openWithDeepLink(url, deepLink) {
+  if (!isMobile() || !deepLink) {
+    window.location.replace(url);
+    return;
+  }
+
+  // Tentar deep link
+  const start = Date.now();
+  window.location.href = deepLink;
+
+  // Fallback para URL web após 1.5s (app não instalado)
+  setTimeout(() => {
+    if (Date.now() - start < 2000) {
+      window.location.replace(url);
+    }
+  }, 1500);
+}
+
 // EXPORTAR CONFIGURAÇÕES
 const config = {
   AFFILIATE_TAGS,
@@ -169,7 +244,10 @@ const config = {
   SYSTEM_CONFIG,
   detectPlatform,
   addAffiliateTag,
-  createShortlink
+  createShortlink,
+  createDeepLink,
+  isMobile,
+  openWithDeepLink
 };
 
 export default config;

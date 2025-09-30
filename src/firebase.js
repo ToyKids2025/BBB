@@ -87,7 +87,7 @@ export const saveLink = async (linkData) => {
     // 🔥 DETECTAR PLATAFORMA E ADICIONAR TAG DE AFILIADO AUTOMATICAMENTE
     const platform = linkData.platform || detectPlatform(linkData.url);
     const originalUrl = linkData.url; // Salvar URL original
-    const urlWithTag = addAffiliateTag(linkData.url, platform, true); // true = usar rotação
+    const urlWithTag = addAffiliateTag(linkData.url, platform); // Rotação desabilitada no config
 
     console.log('🏷️ Tag de Afiliado Adicionada:');
     console.log('   Original:', originalUrl);

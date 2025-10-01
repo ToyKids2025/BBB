@@ -56,11 +56,16 @@ export const SYSTEM_CONFIG = {
 export function detectPlatform(url) {
   const urlLower = url.toLowerCase();
 
-  if (urlLower.includes('amazon.com')) return 'amazon';
+  // ✅ DETECTAR AMAZON (incluindo links curtos amzn.to)
+  if (urlLower.includes('amazon.com') || urlLower.includes('amzn.to')) return 'amazon';
+
+  // ✅ DETECTAR MERCADO LIVRE (incluindo /sec/ e /social/)
   if (urlLower.includes('mercadolivre.com') ||
       urlLower.includes('mercadolibre.com') ||
       urlLower.includes('mercadolivre.com.br') ||
-      urlLower.includes('/sec/')) return 'mercadolivre';
+      urlLower.includes('/sec/') ||
+      urlLower.includes('/social/')) return 'mercadolivre';
+
   if (urlLower.includes('magazineluiza.com') || urlLower.includes('magalu.com')) return 'magalu';
   if (urlLower.includes('americanas.com')) return 'americanas';
   if (urlLower.includes('casasbahia.com')) return 'casasbahia';

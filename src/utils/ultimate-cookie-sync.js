@@ -141,15 +141,6 @@ export class UltimateCookieSync {
   createInvisibleIframe() {
     console.log('⚠️ Iframe sync DESABILITADO (URLs não existem / X-Frame-Options)');
     return; // ❌ DESABILITADO
-            fingerprint: this.getFingerprint()
-          }, '*');
-        } catch (e) {
-          // Cross-origin pode bloquear, mas tentamos
-        }
-      };
-    });
-
-    console.log('🔗 Iframes de sincronização criados');
   }
 
   /**

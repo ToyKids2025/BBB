@@ -48,7 +48,7 @@ export class RemarketingFOMO {
 
     const clickTracking = {
       clickId,
-      linkId: linkData.id,
+      linkId: linkData.linkId || linkData.id, // ✅ FIX: Aceita ambos os formatos
       userId: this.getUserId(),
       productUrl: linkData.url,
       productName: this.extractProductName(linkData.url),

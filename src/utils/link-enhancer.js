@@ -34,12 +34,15 @@ export class LinkEnhancer {
   async enhanceLink(url, platform = null) {
     if (!url) return url;
 
-    // Auto-detectar platform se não fornecida
-    if (!platform) {
-      platform = this.detectPlatform(url);
+    // Auto-detectar platform (sempre, mesmo se vier "other")
+    const detectedPlatform = this.detectPlatform(url);
+
+    // Se platform vier como "other" ou não fornecida, usar o detectado
+    if (!platform || platform === 'other') {
+      platform = detectedPlatform;
     }
 
-    console.log('🔧 [Link Enhancer] Processando:', { url: url.substring(0, 50), platform });
+    console.log('🔧 [Link Enhancer] Processando:', { url: url.substring(0, 50), platform, detected: detectedPlatform });
 
     try {
       let enhancedUrl = url;

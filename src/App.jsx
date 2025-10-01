@@ -17,7 +17,8 @@ import LinkList from './LinkList'; // CORREÇÃO: Importando da pasta correta
 import { deviceFingerprint } from './utils/device-fingerprint';
 import { notifications } from './utils/notifications';
 import { abTesting } from './utils/ab-testing';
-import { guardian } from './utils/commission-guardian'; // 💎 Commission Guardian global
+// eslint-disable-next-line no-unused-vars
+import { guardian } from './utils/commission-guardian'; // 💎 Commission Guardian global (auto-init)
 
 // Estilos e tema
 import './styles/theme.css';

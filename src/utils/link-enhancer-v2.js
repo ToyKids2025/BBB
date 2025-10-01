@@ -44,14 +44,18 @@ export class LinkEnhancerV2 {
   async enhanceLink(url, platform = null, options = {}) {
     if (!url) return url;
 
-    // Auto-detectar platform
-    if (!platform) {
-      platform = this.detectPlatform(url);
+    // Auto-detectar platform (sempre, mesmo se vier "other")
+    const detectedPlatform = this.detectPlatform(url);
+
+    // Se platform vier como "other" mas detectamos Amazon/ML, usar o detectado
+    if (!platform || platform === 'other') {
+      platform = detectedPlatform;
     }
 
     console.log('🔧 [Link Enhancer V2] Processando:', {
       url: url.substring(0, 50),
       platform,
+      detected: detectedPlatform,
       v2: true
     });
 

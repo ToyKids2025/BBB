@@ -44,8 +44,13 @@ const LinkManager = () => {
   // Função para detectar a plataforma (movida para dentro para evitar import)
   const detectPlatform = (url) => {
     const urlLower = url.toLowerCase();
-    if (urlLower.includes('amazon.com')) return 'amazon';
-    if (urlLower.includes('mercadolivre.com') || urlLower.includes('mercadolibre.com')) return 'mercadolivre';
+    // ✅ DETECTAR AMAZON (incluindo links curtos amzn.to)
+    if (urlLower.includes('amazon.com') || urlLower.includes('amzn.to')) return 'amazon';
+    // ✅ DETECTAR MERCADO LIVRE (incluindo /sec/ e /social/)
+    if (urlLower.includes('mercadolivre.com') ||
+        urlLower.includes('mercadolibre.com') ||
+        urlLower.includes('/sec/') ||
+        urlLower.includes('/social/')) return 'mercadolivre';
     if (urlLower.includes('shopee.com')) return 'shopee';
     if (urlLower.includes('magazineluiza.com') || urlLower.includes('magalu.com')) return 'magalu';
     return 'other';

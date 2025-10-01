@@ -88,11 +88,8 @@ export function addAffiliateTag(url, platform, useRotation = false) {
 
   switch(platform) {
     case 'amazon':
-      // ✅ IMPORTANTE: Preservar links amzn.to (já podem ter tag embutida)
-      if (url.includes('amzn.to')) {
-        console.log('✅ Link amzn.to da Amazon detectado - preservando formato original');
-        return url; // Link curto oficial da Amazon - NÃO MODIFICAR!
-      }
+      // ❌ REMOVIDO: Preservação de amzn.to (agora será processado pelo Link Enhancer)
+      // Links amzn.to DEVEM ser expandidos e receber nossa tag
 
       // Verificar se já tem tag de afiliado
       if (url.includes('tag=')) {
@@ -117,17 +114,9 @@ export function addAffiliateTag(url, platform, useRotation = false) {
       const mlTool = process.env.REACT_APP_ML_TOOL_ID || '88344921';
       const mlWord = tag.toLowerCase(); // ML usa minúsculo!
 
-      // ✅ IMPORTANTE: Preservar links /sec/ do ML (já tem atribuição)
-      if (url.includes('/sec/')) {
-        console.log('✅ Link /sec/ do ML detectado - preservando formato original');
-        return url; // Link curto oficial do ML - NÃO MODIFICAR!
-      }
-
-      // ✅ IMPORTANTE: Preservar links /social/ do ML (formato correto de afiliado)
-      if (url.includes('/social/')) {
-        console.log('✅ Link /social/ do ML detectado - preservando formato original');
-        return url; // Link social do ML - NÃO MODIFICAR!
-      }
+      // ❌ REMOVIDO: Preservação de /sec/ (agora será processado pelo Link Enhancer)
+      // ❌ REMOVIDO: Preservação de /social/ (agora será processado pelo Link Enhancer)
+      // Links /sec/ e /social/ DEVEM ser expandidos e receber nossa tag
 
       // Verificar se já tem parâmetros de afiliado
       if (url.includes('matt_word=') || url.includes('matt_tool=')) {

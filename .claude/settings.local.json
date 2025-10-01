@@ -43,7 +43,9 @@
       "Bash(firebase login:*)",
       "Bash(pkill:*)",
       "Bash(git log:*)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(awk:*)",
+      "Bash(npm:*)"
     ],
     "deny": [],
     "ask": []

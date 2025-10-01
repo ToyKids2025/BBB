@@ -17,6 +17,7 @@ import LinkList from './LinkList'; // CORREÇÃO: Importando da pasta correta
 import { deviceFingerprint } from './utils/device-fingerprint';
 import { notifications } from './utils/notifications';
 import { abTesting } from './utils/ab-testing';
+import { guardian } from './utils/commission-guardian'; // 💎 Commission Guardian global
 
 // Estilos e tema
 import './styles/theme.css';

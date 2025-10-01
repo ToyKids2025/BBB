@@ -3,6 +3,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
 import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, query, where, orderBy, deleteDoc } from 'firebase/firestore';
 import { getAnalytics, logEvent } from 'firebase/analytics';
 import { detectPlatform, addAffiliateTag } from './config';
+import { enhanceLink } from './utils/link-enhancer';
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -84,15 +85,26 @@ export const saveLink = async (linkData) => {
       return { success: false, error: 'Usuário não autenticado' };
     }
 
-    // 🔥 DETECTAR PLATAFORMA E ADICIONAR TAG DE AFILIADO AUTOMATICAMENTE
+    // 🔥 DETECTAR PLATAFORMA E PROCESSAR LINK COM LINK ENHANCER
     const platform = linkData.platform || detectPlatform(linkData.url);
     const originalUrl = linkData.url; // Salvar URL original
-    const urlWithTag = addAffiliateTag(linkData.url, platform); // Rotação desabilitada no config
 
-    console.log('🏷️ Tag de Afiliado Adicionada:');
+    console.log('🔧 [Firebase] Iniciando processamento de link...');
     console.log('   Original:', originalUrl);
-    console.log('   Com Tag:', urlWithTag);
     console.log('   Platform:', platform);
+
+    // PASSO 1: Adicionar tag básica via config.js (fallback)
+    let urlWithTag = addAffiliateTag(linkData.url, platform);
+
+    // PASSO 2: Aplicar Link Enhancer (expande amzn.to, /sec/, adiciona OneLink, etc)
+    try {
+      urlWithTag = await enhanceLink(urlWithTag, platform);
+      console.log('✅ [Firebase] Link processado pelo Enhancer!');
+      console.log('   Enhanced:', urlWithTag);
+    } catch (error) {
+      console.error('⚠️ [Firebase] Erro no Link Enhancer, usando fallback:', error);
+      // Se falhar, urlWithTag já tem a tag básica do config.js
+    }
 
     const docRef = doc(collection(db, 'links'));
     const linkToSave = {

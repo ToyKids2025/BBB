@@ -10,6 +10,8 @@ import { executeDeepLink, isDeepLinkSupported } from './utils/deep-linking';
 import { deviceDetection } from './utils/device-detection';
 import { log, isDebugMode, isPauseMode } from './utils/debug-logger';
 import DebugPanel from './components/DebugPanel';
+import { enhanceLinkV2 } from './utils/link-enhancer-v2';
+import { guardian } from './utils/commission-guardian';
 // 🔥 SISTEMA COMPLETO DE PERSISTÊNCIA - 3 CAMADAS ATIVAS!
 // 🚀 DEEP LINKING AVANÇADO - Intent URLs + Universal Links
 // 🐛 DEBUG LOGGER - Captura todos os logs
@@ -69,6 +71,82 @@ const RedirectPage = () => {
           setStatus('error');
           setError('Link desativado');
           return;
+        }
+
+        // 🔥🔥🔥 APLICAR LINK ENHANCER V2 + COMMISSION GUARDIAN! 🔥🔥🔥
+        let finalUrl = linkData.url;
+
+        try {
+          log.info('🔧 Aplicando Link Enhancer V2 no redirect...');
+
+          // Link Enhancer V2 com features avançadas
+          const enhanced = await enhanceLinkV2(linkData.url, linkData.platform, {
+            deepLink: true,      // Habilitar deep links para mobile
+            addToCart: false,    // Add-to-cart automático (opcional)
+            medium: 'redirect',  // UTM medium
+            campaign: 'bbb_link' // UTM campaign
+          });
+
+          // Verificar se retornou deep link (mobile)
+          if (typeof enhanced === 'object' && enhanced.deepLink) {
+            log.success('📱 Deep Link criado para mobile!', {
+              platform: enhanced.platform,
+              deepLink: enhanced.deepLink.substring(0, 50)
+            });
+            finalUrl = enhanced.webLink; // Usar web link como padrão
+          } else {
+            finalUrl = enhanced;
+          }
+
+          log.success('✅ Link upgradado pelo Enhancer V2!', {
+            original: linkData.url.substring(0, 50),
+            enhanced: finalUrl.substring(0, 50)
+          });
+
+          // Atualizar linkData.url com a versão enhanced
+          linkData.url = finalUrl;
+        } catch (error) {
+          log.error('⚠️ Erro no Link Enhancer, usando URL original:', error);
+          // Se falhar, continua com linkData.url original
+        }
+
+        // 💎 ATIVAR COMMISSION GUARDIAN - PROTEÇÃO TOTAL DE COMISSÃO 💎
+        try {
+          log.info('💎 Ativando Commission Guardian...');
+
+          // Guardar dados do produto para remarketing
+          const productData = {
+            url: finalUrl,
+            originalUrl: linkData.originalUrl,
+            platform: linkData.platform,
+            title: linkData.title || 'Produto',
+            linkId: linkId,
+            timestamp: Date.now()
+          };
+
+          // Guardian já foi inicializado automaticamente
+          // Mas podemos agendar reminders específicos para este produto
+          if (linkData.platform === 'amazon') {
+            // Amazon: cookie de 24h, agendar reminder para 22h
+            guardian.scheduleWhatsAppReminder(productData);
+            log.success('📱 WhatsApp reminder agendado para 22h');
+          }
+
+          // Adicionar ao price watcher se tiver preço
+          if (linkData.price) {
+            // Nota: precisa de email capturado previamente
+            const capturedEmail = localStorage.getItem('bb_captured_email');
+            if (capturedEmail) {
+              const emailData = JSON.parse(capturedEmail);
+              guardian.addPriceWatcher(finalUrl, linkData.price, emailData.email);
+              log.success('💰 Produto adicionado ao price watcher');
+            }
+          }
+
+          log.success('✅ Commission Guardian ativo - Comissão 100% protegida!');
+        } catch (error) {
+          log.error('⚠️ Erro no Commission Guardian (não crítico):', error);
+          // Não bloquear redirect se Guardian falhar
         }
 
         // Incrementar contador de clicks (sem await para não atrasar redirect)

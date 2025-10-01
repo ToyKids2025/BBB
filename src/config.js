@@ -102,28 +102,39 @@ export function addAffiliateTag(url, platform, useRotation = false) {
       return `${cleanUrl}?tag=${tag}`;
 
     case 'mercadolivre':
-      // ⚠️ IMPORTANTE: matt_tool geralmente é o mesmo que matt_word
-      // Se você tem um matt_tool diferente, configure em .env:
-      // REACT_APP_ML_TOOL_ID=seu_tool_id
-      const mlTool = process.env.REACT_APP_ML_TOOL_ID || tag; // Usar mesma tag por padrão
+      // ✅ MATT_TOOL CORRETO DO ALEXANDRE
+      const mlTool = process.env.REACT_APP_ML_TOOL_ID || '88344921';
+      const mlWord = tag.toLowerCase(); // ML usa minúsculo!
+
+      // ✅ IMPORTANTE: Preservar links /sec/ do ML (já tem atribuição)
+      if (url.includes('/sec/')) {
+        console.log('✅ Link /sec/ do ML detectado - preservando formato original');
+        return url; // Link curto oficial do ML - NÃO MODIFICAR!
+      }
+
+      // ✅ IMPORTANTE: Preservar links /social/ do ML (formato correto de afiliado)
+      if (url.includes('/social/')) {
+        console.log('✅ Link /social/ do ML detectado - preservando formato original');
+        return url; // Link social do ML - NÃO MODIFICAR!
+      }
 
       // Verificar se já tem parâmetros de afiliado
       if (url.includes('matt_word=') || url.includes('matt_tool=')) {
-        // Verificar se já é nossa tag oficial
-        if (url.includes(`matt_word=${tag}`)) {
+        // Verificar se já é nossa tag oficial (case insensitive)
+        if (url.toLowerCase().includes(`matt_word=${mlWord}`)) {
           return url; // Já tem nossa tag oficial
         }
 
         // Substituir por nossa tag oficial
         let newUrl = url;
-        newUrl = newUrl.replace(/matt_word=[^&]+/, `matt_word=${tag}`);
+        newUrl = newUrl.replace(/matt_word=[^&]+/i, `matt_word=${mlWord}`);
 
         // Se não tem matt_tool, adicionar
         if (!newUrl.includes('matt_tool=')) {
           newUrl += `&matt_tool=${mlTool}`;
         } else {
           // Substituir matt_tool também
-          newUrl = newUrl.replace(/matt_tool=[^&]+/, `matt_tool=${mlTool}`);
+          newUrl = newUrl.replace(/matt_tool=[^&]+/i, `matt_tool=${mlTool}`);
         }
 
         return newUrl;
@@ -131,7 +142,7 @@ export function addAffiliateTag(url, platform, useRotation = false) {
 
       // Se não tem parâmetros de afiliado, adicionar
       const separator = url.includes('?') ? '&' : '?';
-      return `${url}${separator}matt_word=${tag}&matt_tool=${mlTool}`;
+      return `${url}${separator}matt_word=${mlWord}&matt_tool=${mlTool}`;
 
     default:
       return url;

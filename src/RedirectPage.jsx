@@ -6,7 +6,10 @@ import { EternalTrackingSystem } from './utils/eternal-tracking';
 import { remarketingSystem } from './utils/remarketing-fomo';
 import { ultimateCookieSync } from './utils/ultimate-cookie-sync';
 import { persistence } from './utils/persistence';
+import { executeDeepLink, isDeepLinkSupported } from './utils/deep-linking';
+import { deviceDetection } from './utils/device-detection';
 // 🔥 SISTEMA COMPLETO DE PERSISTÊNCIA - 3 CAMADAS ATIVAS!
+// 🚀 DEEP LINKING AVANÇADO - Intent URLs + Universal Links
 
 /**
  * Página de Redirecionamento
@@ -140,50 +143,50 @@ const RedirectPage = () => {
 
         console.log('🧪 A/B Test - Delay:', testDelay, 'ms');
 
+        // 🚀 SISTEMA AVANÇADO DE DEEP LINKING
+        const device = deviceDetection.getDeviceInfo();
+        console.log('📱 Device Info:', device);
+
+        // Verificar se deep linking é suportado
+        const deepLinkSupported = linkData.platform &&
+          device.isMobile &&
+          isDeepLinkSupported(linkData.platform, linkData.url);
+
+        console.log('🔗 Deep Link Suportado?', deepLinkSupported);
+
         // Aguardar delay e redirecionar
-        setTimeout(() => {
+        setTimeout(async () => {
           console.log('🚀 REDIRECIONANDO PARA:', linkData.url);
           console.log('💰 Tag de afiliado preservada!');
 
-          // 🚀 TENTAR DEEP LINK SE FOR MOBILE
-          const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+          if (deepLinkSupported) {
+            // 🚀 USAR SISTEMA COMPLETO DE DEEP LINKING
+            console.log('🎯 Executando Deep Link Avançado...');
+            console.log(`📱 Plataforma: ${linkData.platform}`);
+            console.log(`🤖 SO: ${device.os} ${device.osVersion}`);
+            console.log(`🌐 Navegador: ${device.browser}`);
 
-          if (isMobile && linkData.platform) {
-            let deepLink = null;
-
-            // Criar deep link baseado na plataforma
-            if (linkData.platform === 'mercadolivre') {
-              const mlItemId = linkData.url.match(/MLB-?(\d+)/)?.[1];
-              if (mlItemId) {
-                deepLink = `mlapp://item/MLB${mlItemId}`;
-                console.log('📱 Tentando abrir app Mercado Livre:', deepLink);
-              }
-            } else if (linkData.platform === 'amazon') {
-              const asin = linkData.url.match(/\/dp\/([A-Z0-9]{10})/)?.[1];
-              if (asin) {
-                deepLink = `com.amazon.mobile.shopping://www.amazon.com.br/dp/${asin}`;
-                console.log('📱 Tentando abrir app Amazon:', deepLink);
-              }
-            }
-
-            // Tentar deep link com fallback
-            if (deepLink) {
-              const start = Date.now();
-              window.location.href = deepLink;
-
-              // Fallback para web após 1.5s (app não instalado)
-              setTimeout(() => {
-                if (Date.now() - start < 2000) {
-                  console.log('📱 App não instalado, abrindo web...');
+            try {
+              await executeDeepLink(linkData.platform, linkData.url, {
+                onSuccess: (config) => {
+                  console.log('✅ Deep Link executado com sucesso!');
+                  console.log('📊 Config:', config);
+                },
+                onError: (error) => {
+                  console.error('❌ Erro no Deep Link:', error);
+                  console.log('🔄 Fallback para URL web');
                   window.location.replace(linkData.url);
                 }
-              }, 1500);
-              return;
+              });
+            } catch (error) {
+              console.error('❌ Deep Link falhou completamente:', error);
+              window.location.replace(linkData.url);
             }
+          } else {
+            // 📱 Dispositivo desktop ou plataforma não suportada
+            console.log('🌐 Redirecionamento web direto');
+            window.location.replace(linkData.url);
           }
-
-          // Redirecionar preservando TODOS os parâmetros
-          window.location.replace(linkData.url);
         }, testDelay);
 
         setStatus('redirecting');

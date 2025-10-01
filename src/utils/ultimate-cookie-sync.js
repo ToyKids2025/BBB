@@ -12,18 +12,15 @@
 
 export class UltimateCookieSync {
   constructor() {
+    // ✅ APENAS AMAZON E MERCADO LIVRE
     this.affiliateTags = {
       mercadolivre: 'WA20250726131129', // Tag oficial Mercado Livre
-      amazon: 'buscabusca0f-20', // Tag oficial Amazon
-      magazine: '', // Não tem tag ainda
-      shopee: '' // Não tem tag ainda
+      amazon: 'buscabusca0f-20' // Tag oficial Amazon
     };
 
     this.cookieDomains = {
-      mercadolivre: ['.mercadolivre.com.br', '.mercadolibre.com', '.mercadopago.com'],
-      amazon: ['.amazon.com.br', '.amazon.com', '.a2z.com', '.aws.amazon.com'],
-      magazine: ['.magazineluiza.com.br', '.magalu.com.br'],
-      shopee: ['.shopee.com.br']
+      mercadolivre: ['.mercadolivre.com.br', '.mercadolibre.com'],
+      amazon: ['.amazon.com.br', '.amazon.com']
     };
 
     this.initialized = false;
@@ -108,57 +105,22 @@ export class UltimateCookieSync {
 
   /**
    * 2. PIXEL TRACKING PERPÉTUO
-   * Pixel invisível que se auto-recarrega e mantém sessão ativa
+   * ❌ DESABILITADO - Causa erros 404 e não funciona
+   * Pixels tracking não funcionam porque:
+   * - URLs não existem (404)
+   * - Não é assim que afiliados funcionam
+   * - Tag só funciona no redirect final
    */
   createPerpetualPixel() {
-    const pixels = {
-      mercadolivre: 'https://www.mercadolivre.com.br/jm/ml.track.me?go=',
-      amazon: 'https://www.amazon.com.br/gp/ss/handlers/impression-tracking.html?tag=',
-      magazine: 'https://www.magazineluiza.com.br/pixel?ref='
-    };
-
-    Object.entries(pixels).forEach(([platform, baseUrl]) => {
-      const tag = this.affiliateTags[platform];
-
-      // Criar pixel invisível
-      const pixel = document.createElement('img');
-      pixel.src = `${baseUrl}${tag}&t=${Date.now()}`;
-      pixel.style.cssText = 'position:absolute;width:1px;height:1px;left:-9999px;';
-      pixel.setAttribute('data-platform', platform);
-
-      document.body.appendChild(pixel);
-
-      // Recarregar pixel a cada 30 segundos para manter sessão
-      setInterval(() => {
-        pixel.src = `${baseUrl}${tag}&t=${Date.now()}&refresh=1`;
-      }, 30000);
-    });
-
-    // Pixel especial que injeta cookie via redirect
-    this.createRedirectPixel();
-
-    console.log('📡 Pixels perpétuos criados e ativos');
+    console.log('⚠️ Pixel tracking DESABILITADO (não funciona via pixel)');
+    console.log('✅ Tag de afiliado é aplicada no REDIRECT final');
+    return; // ❌ DESABILITADO
   }
 
   createRedirectPixel() {
-    // Técnica avançada: usar redirect para setar cookies first-party
-    const redirectUrls = {
-      mercadolivre: `https://mercadolivre.com.br/jm/mltrck?go=${this.affiliateTags.mercadolivre}`,
-      amazon: `https://www.amazon.com.br/gp/redirect.html?tag=${this.affiliateTags.amazon}`
-    };
-
-    Object.entries(redirectUrls).forEach(([platform, url]) => {
-      const iframe = document.createElement('iframe');
-      iframe.src = url;
-      iframe.style.cssText = 'display:none;width:0;height:0;border:0;';
-      iframe.setAttribute('data-platform', platform);
-      iframe.sandbox = 'allow-same-origin allow-scripts';
-
-      document.body.appendChild(iframe);
-
-      // Remover após carregar para não deixar rastros
-      setTimeout(() => iframe.remove(), 5000);
-    });
+    // ❌ DESABILITADO - Causa erros 404 e X-Frame-Options bloqueados
+    console.log('⚠️ Redirect pixel DESABILITADO (URLs não existem)');
+    return; // ❌ DESABILITADO
   }
 
   /**
@@ -174,29 +136,11 @@ export class UltimateCookieSync {
 
   /**
    * 4. IFRAME INVISÍVEL CROSS-DOMAIN
-   * Técnica poderosa para sincronizar cookies entre domínios
+   * ❌ DESABILITADO - Causa erros 404 e X-Frame-Options bloqueados
    */
   createInvisibleIframe() {
-    // URLs especiais que aceitam e sincronizam cookies
-    const syncUrls = [
-      `https://www.mercadolivre.com.br/gz/home/session/sync?ref=${this.affiliateTags.mercadolivre}`,
-      `https://www.amazon.com.br/gp/ss/ajax/sync.html?tag=${this.affiliateTags.amazon}`
-    ];
-
-    syncUrls.forEach(url => {
-      const iframe = document.createElement('iframe');
-      iframe.src = url;
-      iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;';
-      iframe.setAttribute('aria-hidden', 'true');
-
-      document.body.appendChild(iframe);
-
-      // PostMessage para sincronizar dados
-      iframe.onload = () => {
-        try {
-          iframe.contentWindow.postMessage({
-            type: 'AFFILIATE_SYNC',
-            tags: this.affiliateTags,
+    console.log('⚠️ Iframe sync DESABILITADO (URLs não existem / X-Frame-Options)');
+    return; // ❌ DESABILITADO
             fingerprint: this.getFingerprint()
           }, '*');
         } catch (e) {
@@ -357,34 +301,11 @@ export class UltimateCookieSync {
   }
 
   sendFingerprintToServer(fingerprint) {
-    // Enviar para múltiplos endpoints para garantir
-    const endpoints = [
-      'https://tracking.mercadolivre.com.br/event',
-      'https://fls-na.amazon.com.br/1/batch/1/OE/',
-      'https://www.google-analytics.com/collect'
-    ];
-
-    endpoints.forEach(endpoint => {
-      try {
-        // Usar sendBeacon para garantir envio mesmo ao sair da página
-        navigator.sendBeacon(endpoint, JSON.stringify({
-          fp: fingerprint,
-          tags: this.affiliateTags,
-          timestamp: Date.now(),
-          source: 'bbb_ultimate'
-        }));
-      } catch (e) {
-        // Fallback com fetch
-        fetch(endpoint, {
-          method: 'POST',
-          body: JSON.stringify({
-            fp: fingerprint,
-            tags: this.affiliateTags
-          }),
-          keepalive: true
-        }).catch(() => {});
-      }
-    });
+    // ❌ DESABILITADO - Causa erros POST 500/404
+    // Esses endpoints não são nossos e rejeitam requests externos
+    console.log('⚠️ Fingerprint server sync DESABILITADO (não são nossos endpoints)');
+    console.log('✅ Fingerprint salvo localmente:', fingerprint.substring(0, 10) + '...');
+    return; // ❌ DESABILITADO
   }
 
   /**

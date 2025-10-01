@@ -83,6 +83,12 @@ export function addAffiliateTag(url, platform, useRotation = false) {
 
   switch(platform) {
     case 'amazon':
+      // ✅ IMPORTANTE: Preservar links amzn.to (já podem ter tag embutida)
+      if (url.includes('amzn.to')) {
+        console.log('✅ Link amzn.to da Amazon detectado - preservando formato original');
+        return url; // Link curto oficial da Amazon - NÃO MODIFICAR!
+      }
+
       // Verificar se já tem tag de afiliado
       if (url.includes('tag=')) {
         // Extrair a tag existente

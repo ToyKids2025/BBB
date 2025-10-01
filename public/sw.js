@@ -1,95 +1,155 @@
 /**
  * Service Worker PWA - BuscaBuscaBrasil
- * Cache assets, offline support, background sync
+ * APENAS AMAZON E MERCADO LIVRE
+ * Cache limpo - Sem erros de mixed content
  */
 
-const CACHE_VERSION = 'bbb-v2.0.0'; // Incrementado para forçar update
+const CACHE_VERSION = 'bbb-v3.0.0-clean';
 const CACHE_NAME = `${CACHE_VERSION}-static`;
-const DATA_CACHE_NAME = `${CACHE_VERSION}-data`;
 
-// Assets para cache
+// Assets LOCAIS para cache (apenas nosso domínio)
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
   '/favicon.ico'
+];
+
+// ✅ DOMÍNIOS PERMITIDOS - APENAS AMAZON E MERCADO LIVRE
+const ALLOWED_DOMAINS = [
+  'buscabuscabrasil.com.br',
+  'www.buscabuscabrasil.com.br',
+  // Amazon
+  'amazon.com.br',
+  'www.amazon.com.br',
+  'amzn.to',
+  // Mercado Livre
+  'mercadolivre.com.br',
+  'www.mercadolivre.com.br',
+  'mercadolibre.com',
+  // Firebase
+  'firebaseapp.com',
+  'firestore.googleapis.com',
+  'firebase.googleapis.com'
 ];
 
 // Instalação
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing...');
+  console.log('[SW] Installing v3.0.0 - Clean version');
 
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[SW] Caching static assets');
-      return cache.addAll(STATIC_ASSETS);
+      return cache.addAll(STATIC_ASSETS).catch(err => {
+        console.log('[SW] Cache add failed (non-critical):', err);
+      });
+    }).then(() => {
+      console.log('[SW] Install complete');
+      // Skip waiting para atualizar imediatamente
+      return self.skipWaiting();
     })
-    // Não fazer skipWaiting() automaticamente - aguardar confirmação do usuário
   );
 });
 
 // Ativação
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating...');
+  console.log('[SW] Activating v3.0.0 - Cleaning old caches...');
 
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== DATA_CACHE_NAME) {
+          if (cacheName !== CACHE_NAME) {
             console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      console.log('[SW] Activation complete - Taking control');
+      return self.clients.claim();
+    })
   );
 });
 
-// Fetch - Network First com fallback para cache
+// Função para verificar se domínio é permitido
+function isAllowedDomain(url) {
+  try {
+    const hostname = new URL(url).hostname;
+    return ALLOWED_DOMAINS.some(domain =>
+      hostname === domain || hostname.endsWith('.' + domain)
+    );
+  } catch (e) {
+    return false;
+  }
+}
+
+// Fetch - APENAS domínios permitidos
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+
+  // Ignorar requisições não-HTTP/HTTPS
+  if (!request.url.startsWith('http')) {
+    return;
+  }
+
+  // ❌ BLOQUEAR domínios não permitidos (evita mixed content)
+  if (!isAllowedDomain(request.url)) {
+    console.log('[SW] Blocked domain:', request.url);
+    return; // Deixa o browser lidar (vai bloquear mixed content)
+  }
+
   const url = new URL(request.url);
 
-  // Ignorar requisições não-HTTP
-  if (!url.protocol.startsWith('http')) return;
+  // ✅ APENAS nosso domínio + Firebase
+  if (url.hostname.includes('buscabuscabrasil') ||
+      url.hostname.includes('firebase') ||
+      url.hostname.includes('firestore')) {
 
-  // API do Firebase - Network First
-  if (url.hostname.includes('firebase') || url.hostname.includes('firestore')) {
-    event.respondWith(networkFirstStrategy(request, DATA_CACHE_NAME));
+    // Firebase - Network First
+    if (url.hostname.includes('firebase') || url.hostname.includes('firestore')) {
+      event.respondWith(networkFirstStrategy(request));
+      return;
+    }
+
+    // Assets estáticos do nosso site - Cache First
+    if (request.destination === 'script' ||
+        request.destination === 'style' ||
+        request.destination === 'image' ||
+        request.destination === 'font') {
+      event.respondWith(cacheFirstStrategy(request));
+      return;
+    }
+
+    // Páginas HTML - Network First
+    if (request.destination === 'document') {
+      event.respondWith(networkFirstStrategy(request));
+      return;
+    }
+  }
+
+  // ✅ Amazon e Mercado Livre - APENAS PASSAR (não cachear)
+  if (url.hostname.includes('amazon') ||
+      url.hostname.includes('amzn') ||
+      url.hostname.includes('mercado')) {
+    console.log('[SW] Passing through to affiliate:', url.hostname);
+    // NÃO interceptar - deixar o browser fazer a requisição normal
     return;
   }
 
-  // Assets estáticos - Cache First
-  if (request.destination === 'script' ||
-      request.destination === 'style' ||
-      request.destination === 'image' ||
-      request.destination === 'font') {
-    event.respondWith(cacheFirstStrategy(request, CACHE_NAME));
-    return;
-  }
-
-  // Páginas HTML - Network First
-  if (request.destination === 'document') {
-    event.respondWith(networkFirstStrategy(request, CACHE_NAME));
-    return;
-  }
-
-  // Default: Network First
-  event.respondWith(networkFirstStrategy(request, CACHE_NAME));
+  // Default: Network only (sem cache)
+  event.respondWith(fetch(request));
 });
 
-// Estratégia: Network First
-async function networkFirstStrategy(request, cacheName) {
+// Estratégia: Network First (apenas para nosso domínio + Firebase)
+async function networkFirstStrategy(request) {
   try {
     const networkResponse = await fetch(request);
 
-    // Salvar no cache se for sucesso E método GET (POST não pode ser cacheado)
+    // Salvar no cache se for sucesso E método GET
     if (networkResponse.ok && request.method === 'GET') {
-      const cache = await caches.open(cacheName);
-      cache.put(request, networkResponse.clone());
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone()).catch(() => {});
     }
 
     return networkResponse;
@@ -103,26 +163,31 @@ async function networkFirstStrategy(request, cacheName) {
 
     // Se não tiver cache, retornar página offline
     if (request.destination === 'document') {
-      return caches.match('/index.html');
+      const offlineCache = await caches.match('/index.html');
+      if (offlineCache) return offlineCache;
     }
 
-    throw error;
+    // Retornar erro de rede
+    return new Response('Offline', {
+      status: 503,
+      statusText: 'Service Unavailable'
+    });
   }
 }
 
-// Estratégia: Cache First
-async function cacheFirstStrategy(request, cacheName) {
+// Estratégia: Cache First (apenas para assets locais)
+async function cacheFirstStrategy(request) {
   const cachedResponse = await caches.match(request);
 
   if (cachedResponse) {
-    // Atualizar cache em background
+    // Atualizar cache em background (silent)
     fetch(request).then((networkResponse) => {
       if (networkResponse.ok) {
-        caches.open(cacheName).then((cache) => {
+        caches.open(CACHE_NAME).then((cache) => {
           cache.put(request, networkResponse);
         });
       }
-    }).catch(() => {});
+    }).catch(() => {}); // Ignorar erros de atualização
 
     return cachedResponse;
   }
@@ -132,108 +197,19 @@ async function cacheFirstStrategy(request, cacheName) {
     const networkResponse = await fetch(request);
 
     if (networkResponse.ok) {
-      const cache = await caches.open(cacheName);
-      cache.put(request, networkResponse.clone());
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone()).catch(() => {});
     }
 
     return networkResponse;
   } catch (error) {
-    throw error;
+    // Retornar erro
+    return new Response('Resource not available', {
+      status: 404,
+      statusText: 'Not Found'
+    });
   }
 }
-
-// Background Sync - Para salvar links offline
-self.addEventListener('sync', (event) => {
-  console.log('[SW] Background sync:', event.tag);
-
-  if (event.tag === 'sync-links') {
-    event.waitUntil(syncLinks());
-  }
-});
-
-async function syncLinks() {
-  try {
-    // Buscar dados pendentes do IndexedDB
-    const pendingData = await getPendingData();
-
-    if (pendingData.length === 0) return;
-
-    // Enviar para Firebase
-    for (const data of pendingData) {
-      await fetch('/api/links', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-    }
-
-    // Limpar dados pendentes
-    await clearPendingData();
-
-    console.log('[SW] Background sync completed');
-  } catch (error) {
-    console.error('[SW] Background sync failed:', error);
-    throw error;
-  }
-}
-
-// Helpers para IndexedDB
-function getPendingData() {
-  return new Promise((resolve) => {
-    // Implementar leitura do IndexedDB
-    resolve([]);
-  });
-}
-
-function clearPendingData() {
-  return new Promise((resolve) => {
-    // Implementar limpeza do IndexedDB
-    resolve();
-  });
-}
-
-// Push Notifications
-self.addEventListener('push', (event) => {
-  console.log('[SW] Push notification received');
-
-  const options = {
-    body: event.data ? event.data.text() : 'Você tem uma nova notificação!',
-    icon: '/icon-192.png',
-    badge: '/icon-96.png',
-    vibrate: [200, 100, 200],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
-    },
-    actions: [
-      {
-        action: 'explore',
-        title: 'Ver agora'
-      },
-      {
-        action: 'close',
-        title: 'Fechar'
-      }
-    ]
-  };
-
-  event.waitUntil(
-    self.registration.showNotification('BuscaBuscaBrasil', options)
-  );
-});
-
-// Notification Click
-self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Notification clicked:', event.action);
-
-  event.notification.close();
-
-  if (event.action === 'explore') {
-    event.waitUntil(
-      clients.openWindow('/')
-    );
-  }
-});
 
 // Message handler para comunicação com app
 self.addEventListener('message', (event) => {
@@ -249,9 +225,11 @@ self.addEventListener('message', (event) => {
         return Promise.all(
           cacheNames.map((cacheName) => caches.delete(cacheName))
         );
+      }).then(() => {
+        console.log('[SW] All caches cleared');
       })
     );
   }
 });
 
-console.log('[SW] Service Worker loaded');
+console.log('[SW] Service Worker v3.0.0 loaded - Clean Amazon + ML only');

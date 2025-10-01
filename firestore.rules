@@ -2,9 +2,13 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permitir leitura/escrita para usuários autenticados em seus próprios dados
+    // ✅ LINKS: Leitura pública (usuários precisam ler para serem redirecionados)
+    // Mas escrita/edição/deleção apenas para usuários autenticados
     match /links/{document=**} {
-      allow read: if request.auth != null;
+      // ✅ LEITURA PÚBLICA - Qualquer um pode ler (necessário para /r/:linkId)
+      allow read: if true;
+
+      // ✅ ESCRITA RESTRITA - Apenas usuários autenticados
       allow create: if request.auth != null;
       allow update: if request.auth != null && request.auth.uid == resource.data.userId;
       allow delete: if request.auth != null && request.auth.uid == resource.data.userId;

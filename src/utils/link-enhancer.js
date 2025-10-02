@@ -263,10 +263,15 @@ export class LinkEnhancer {
       url = await this.expandMercadoLivreShortLink(url);
     }
 
-    // 2. Se link já tem tags ML (expandido para /social/ com tags), retornar
+    // 2. Se link já tem tags ML (expandido para /social/ com tags), retornar direto
     if (url.includes('/social/') && url.includes('matt_word=')) {
-      console.log('✅ [ML] Link /social/ já contém tags, usando como está');
-      return this.addBasicMLTag(url); // Garante nossas tags
+      console.log('✅ [ML] Link /social/ já contém tags, retornando sem modificar');
+      // Verificar se tem nossas tags específicas
+      if (url.includes('matt_word=wa20250726131129') && url.includes('matt_tool=88344921')) {
+        return url; // Já tem nossas tags, retornar como está
+      }
+      // Tem tags de outro afiliado, substituir
+      return this.addBasicMLTag(url);
     }
 
     // 3. Extrair MLB ID

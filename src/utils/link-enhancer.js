@@ -263,7 +263,13 @@ export class LinkEnhancer {
       url = await this.expandMercadoLivreShortLink(url);
     }
 
-    // 2. Extrair MLB ID
+    // 2. Se link já tem tags ML (expandido para /social/ com tags), retornar
+    if (url.includes('/social/') && url.includes('matt_word=')) {
+      console.log('✅ [ML] Link /social/ já contém tags, usando como está');
+      return this.addBasicMLTag(url); // Garante nossas tags
+    }
+
+    // 3. Extrair MLB ID
     const mlbId = this.extractMLBId(url);
     if (!mlbId) {
       console.warn('⚠️ [ML] MLB ID não encontrado, usando URL original');
@@ -272,7 +278,7 @@ export class LinkEnhancer {
 
     console.log('📦 [ML] MLB ID extraído:', mlbId);
 
-    // 3. Construir URL com tags
+    // 4. Construir URL com tags
     const enhancedUrl = this.buildModernMLUrl(mlbId, url);
 
     return enhancedUrl;
@@ -284,27 +290,44 @@ export class LinkEnhancer {
   async expandMercadoLivreShortLink(shortUrl) {
     // Verificar cache
     if (this.cache.has(shortUrl)) {
+      console.log('💾 [Cache] Link ML encontrado no cache');
       return this.cache.get(shortUrl);
     }
 
     try {
-      console.log('🌐 [ML] Expandindo link curto...');
+      console.log('🌐 [ML] Expandindo via unshorten.me API...');
 
-      // Fazer request para obter redirect
-      const response = await fetch(shortUrl, {
-        method: 'HEAD',
-        redirect: 'manual',
-        mode: 'no-cors'
+      // Usar API pública de unshorten (suporta CORS)
+      const apiUrl = `https://unshorten.me/json/${encodeURIComponent(shortUrl)}`;
+
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
       });
 
-      const fullUrl = response.headers.get('Location') || shortUrl;
-      this.cache.set(shortUrl, fullUrl);
+      if (!response.ok) {
+        throw new Error('API unshorten falhou');
+      }
 
-      console.log('✅ [ML] Link expandido:', fullUrl.substring(0, 80));
-      return fullUrl;
+      const data = await response.json();
+
+      // A API retorna { success: true, resolved_url: "full_url" }
+      if (data.success && data.resolved_url) {
+        const fullUrl = data.resolved_url;
+
+        // Salvar no cache
+        this.cache.set(shortUrl, fullUrl);
+
+        console.log('✅ [ML] Link expandido:', fullUrl.substring(0, 80));
+        return fullUrl;
+      }
+
+      throw new Error('API não retornou URL válida');
 
     } catch (error) {
-      console.warn('⚠️ [ML] Não foi possível expandir, usando fallback');
+      console.warn('⚠️ [ML] Não foi possível expandir via API, usando fallback');
       return this.addBasicMLTag(shortUrl);
     }
   }

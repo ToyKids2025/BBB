@@ -348,11 +348,13 @@ export class LinkEnhancer {
    * EXTRAIR MLB ID
    */
   extractMLBId(url) {
-    // Padrões: MLB-1234567890 ou MLB1234567890
+    // Padrões prioritários (mais específicos primeiro)
     const patterns = [
-      /MLB-?(\d{10,12})/i,
-      /\/p\/MLB-?(\d{10,12})/i,
-      /produto\/MLB-?(\d{10,12})/i
+      /\/p\/MLB-?(\d{8,12})/i,           // /p/MLB45972548 (PRIORIDADE 1)
+      /\/produto\/MLB-?(\d{8,12})/i,     // /produto/MLB... (PRIORIDADE 2)
+      /\/MLB-(\d{8,12})(?:[?&#]|$)/i,    // /MLB-123... (PRIORIDADE 3)
+      /[?&]item_id=MLB-?(\d{8,12})/i,    // ?item_id=MLB... (PRIORIDADE 4)
+      /MLB-?(\d{8,12})/i                 // MLB... genérico (ÚLTIMO)
     ];
 
     for (const pattern of patterns) {

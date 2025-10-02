@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { FiInstagram, FiLock } from 'react-icons/fi';
 import { FaAmazon } from 'react-icons/fa';
 import { SiMercadopago } from 'react-icons/si';
-import { fetchAmazonBestSellers } from './utils/amazon-bestsellers';
 
 /**
  * 🏠 HOMEPAGE PÚBLICA - BuscaBuscaBrasil
@@ -11,9 +10,6 @@ import { fetchAmazonBestSellers } from './utils/amazon-bestsellers';
  */
 const PublicHomePage = () => {
   const navigate = useNavigate();
-  const [hoveredCard, setHoveredCard] = React.useState(null);
-  const [products, setProducts] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
 
   // SEO - Atualizar meta tags
   React.useEffect(() => {
@@ -36,147 +32,8 @@ const PublicHomePage = () => {
     };
   }, []);
 
-  const loadAmazonProducts = React.useCallback(async () => {
-    setLoading(true);
-    try {
-      const amazonProducts = await fetchAmazonBestSellers();
-
-      // Produtos ML fixos
-      const mlProducts = [
-        {
-          id: 7,
-          title: 'Smartphone Xiaomi Redmi Note 13 Pro',
-          price: 'R$ 1.899,00',
-          discount: '32% OFF',
-          image: 'https://http2.mlstatic.com/D_NQ_NP_649609-MLA54490401156_032023-O.webp',
-          mlbId: '4197838585',
-          platform: 'mercadolivre',
-          category: 'Celulares'
-        },
-        {
-          id: 8,
-          title: 'Tênis Nike Air Max Excee Masculino',
-          price: 'R$ 349,00',
-          discount: '42% OFF',
-          image: 'https://http2.mlstatic.com/D_NQ_NP_795890-MLB51377909651_092022-O.webp',
-          mlbId: '3986547821',
-          platform: 'mercadolivre',
-          category: 'Calçados'
-        },
-        {
-          id: 9,
-          title: 'Cafeteira Nespresso Essenza Mini',
-          price: 'R$ 299,00',
-          discount: '50% OFF',
-          image: 'https://http2.mlstatic.com/D_NQ_NP_990246-MLB40604816937_022020-O.webp',
-          mlbId: '4581209387',
-          platform: 'mercadolivre',
-          category: 'Eletrodomésticos'
-        }
-      ];
-
-      if (amazonProducts && amazonProducts.length > 0) {
-        // Misturar produtos Amazon reais com ML
-        const combined = [...amazonProducts.slice(0, 3), ...mlProducts];
-        setProducts(combined);
-        console.log(`✅ ${amazonProducts.length} produtos Amazon + ${mlProducts.length} ML carregados!`);
-      } else {
-        // Fallback se Amazon falhar
-        setProducts(mlProducts);
-      }
-    } catch (error) {
-      console.error('❌ Erro ao carregar Amazon:', error);
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Buscar produtos reais da Amazon ao carregar
-  React.useEffect(() => {
-    loadAmazonProducts();
-  }, [loadAmazonProducts]);
-
   // Instagram do projeto
   const INSTAGRAM_URL = 'https://www.instagram.com/buscabuscabr/';
-
-  // Produtos Amazon em destaque (estáticos por enquanto - pode conectar API depois)
-  const featuredProducts = [
-    {
-      id: 1,
-      title: 'Echo Dot 5ª Geração com Alexa',
-      price: 'R$ 349,00',
-      discount: '30% OFF',
-      image: 'https://m.media-amazon.com/images/I/71IQ5Jd3vNL._AC_SL1500_.jpg',
-      asin: 'B0FKP5K7VM',
-      platform: 'amazon',
-      category: 'Eletrônicos'
-    },
-    {
-      id: 2,
-      title: 'Kindle 11ª Geração - Leitor de eBooks',
-      price: 'R$ 399,00',
-      discount: '25% OFF',
-      image: 'https://m.media-amazon.com/images/I/61yrtAHf2rL._AC_SL1000_.jpg',
-      asin: 'B0BDKKS5TM',
-      platform: 'amazon',
-      category: 'Livros e eReaders'
-    },
-    {
-      id: 3,
-      title: 'Fire TV Stick 4K Max',
-      price: 'R$ 449,00',
-      discount: '35% OFF',
-      image: 'https://m.media-amazon.com/images/I/51s8E3PYl7L._AC_SL1000_.jpg',
-      asin: 'B08XVJBB68',
-      platform: 'amazon',
-      category: 'Streaming'
-    },
-    // MERCADO LIVRE
-    {
-      id: 7,
-      title: 'Smartphone Xiaomi Redmi Note 13 Pro',
-      price: 'R$ 1.899,00',
-      discount: '32% OFF',
-      image: 'https://http2.mlstatic.com/D_NQ_NP_649609-MLA54490401156_032023-O.webp',
-      mlbId: '4197838585',
-      platform: 'mercadolivre',
-      category: 'Celulares'
-    },
-    {
-      id: 8,
-      title: 'Tênis Nike Air Max Excee Masculino',
-      price: 'R$ 349,00',
-      discount: '42% OFF',
-      image: 'https://http2.mlstatic.com/D_NQ_NP_795890-MLB51377909651_092022-O.webp',
-      mlbId: '3986547821',
-      platform: 'mercadolivre',
-      category: 'Calçados'
-    },
-    {
-      id: 9,
-      title: 'Cafeteira Nespresso Essenza Mini',
-      price: 'R$ 299,00',
-      discount: '50% OFF',
-      image: 'https://http2.mlstatic.com/D_NQ_NP_990246-MLB40604816937_022020-O.webp',
-      mlbId: '4581209387',
-      platform: 'mercadolivre',
-      category: 'Eletrodomésticos'
-    }
-  ];
-
-  // Ao clicar no produto, redireciona para Amazon ou ML com nossa tag de afiliado
-  const handleProductClick = (product) => {
-    if (product.platform === 'mercadolivre') {
-      // Mercado Livre
-      const mlUrl = `https://www.mercadolivre.com.br/MLB-${product.mlbId}?matt_word=wa20250726131129&matt_tool=88344921`;
-      window.open(mlUrl, '_blank');
-    } else {
-      // Amazon
-      const amazonUrl = `https://www.amazon.com.br/dp/${product.asin}?tag=buscabusca0f-20&ascsubtag=bbb_${Date.now()}_homepage&ref_=bbb_landing`;
-      window.open(amazonUrl, '_blank');
-    }
-  };
 
   return (
     <div style={styles.container}>
@@ -254,61 +111,26 @@ const PublicHomePage = () => {
         </div>
       </section>
 
-      {/* Produtos em Destaque */}
+      {/* Coming Soon Section */}
       <section style={styles.productsSection}>
-        <div style={styles.sectionHeader}>
-          <h2 style={styles.sectionTitle}>🔥 Ofertas em Destaque</h2>
-          <p style={styles.sectionSubtitle}>Atualizadas diariamente</p>
+        <div style={styles.comingSoonBox}>
+          <div style={styles.comingSoonIcon}>🚀</div>
+          <h2 style={styles.comingSoonTitle}>Ofertas em Breve</h2>
+          <p style={styles.comingSoonText}>
+            Estamos preparando as melhores ofertas da Amazon e Mercado Livre para você.
+            <br />
+            Acompanhe no Instagram para não perder nenhuma promoção!
+          </p>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={styles.comingSoonButton}
+          >
+            <FiInstagram size={20} style={{ marginRight: '8px' }} />
+            Seguir @buscabuscabr
+          </a>
         </div>
-
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#718096' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
-            <p>Carregando ofertas da Amazon...</p>
-          </div>
-        ) : (
-          <div style={styles.productGrid}>
-            {(products.length > 0 ? products : featuredProducts).map(product => (
-              <div
-              key={product.id}
-              style={{
-                ...styles.productCard,
-                transform: hoveredCard === product.id ? 'translateY(-8px)' : 'translateY(0)',
-                boxShadow: hoveredCard === product.id
-                  ? '0 12px 40px rgba(102, 126, 234, 0.3)'
-                  : '0 4px 20px rgba(0,0,0,0.08)'
-              }}
-              onMouseEnter={() => setHoveredCard(product.id)}
-              onMouseLeave={() => setHoveredCard(null)}
-              onClick={() => handleProductClick(product)}
-            >
-              <div style={styles.productImageWrapper}>
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  style={styles.productImage}
-                />
-                {product.discount && (
-                  <div style={styles.discountBadge}>{product.discount}</div>
-                )}
-              </div>
-
-              <div style={styles.productInfo}>
-                <div style={styles.productCategory}>{product.category}</div>
-                <h3 style={styles.productTitle}>{product.title}</h3>
-                <div style={styles.productPrice}>{product.price}</div>
-                <button style={styles.productButton}>
-                  Ver Oferta {product.platform === 'mercadolivre' ? (
-                    <SiMercadopago style={{ marginLeft: '8px' }} />
-                  ) : (
-                    <FaAmazon style={{ marginLeft: '8px' }} />
-                  )}
-                </button>
-              </div>
-            </div>
-          ))}
-          </div>
-        )}
       </section>
 
       {/* CTA Section */}
@@ -503,6 +325,44 @@ const styles = {
     maxWidth: '1200px',
     margin: '0 auto',
     padding: '60px 20px',
+  },
+  comingSoonBox: {
+    background: 'white',
+    borderRadius: '24px',
+    padding: '80px 40px',
+    textAlign: 'center',
+    boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+  },
+  comingSoonIcon: {
+    fontSize: '80px',
+    marginBottom: '20px',
+  },
+  comingSoonTitle: {
+    fontSize: '36px',
+    fontWeight: '700',
+    color: '#2d3748',
+    marginBottom: '20px',
+  },
+  comingSoonText: {
+    fontSize: '18px',
+    color: '#718096',
+    lineHeight: '1.6',
+    marginBottom: '30px',
+    maxWidth: '600px',
+    margin: '0 auto 30px',
+  },
+  comingSoonButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '16px 32px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    textDecoration: 'none',
+    borderRadius: '50px',
+    fontSize: '16px',
+    fontWeight: '600',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
   },
   sectionHeader: {
     textAlign: 'center',

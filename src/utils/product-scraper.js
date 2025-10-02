@@ -18,21 +18,21 @@ export async function fetchProductTitle(url, platform) {
   console.log('🔍 [Product Scraper] Buscando título...', { url: url.substring(0, 50), platform });
 
   try {
-    // Estratégia 1: Scraping via CORS proxy
+    // Estratégia 1: Scraping via CORS proxy (MÚLTIPLAS TENTATIVAS)
     const scrapedTitle = await scrapeProductTitle(url, platform);
-    if (scrapedTitle && scrapedTitle !== 'Produto') {
+    if (scrapedTitle && scrapedTitle !== 'Produto' && scrapedTitle.length > 5) {
       console.log('✅ [Product Scraper] Título encontrado via scraping:', scrapedTitle);
       return scrapedTitle;
     }
 
     // Estratégia 2: Extrair da URL
-    console.log('⚠️ [Product Scraper] Scraping falhou, extraindo da URL...');
+    console.warn('⚠️ [Product Scraper] Scraping retornou vazio ou inválido, extraindo da URL...');
     const urlTitle = extractTitleFromUrl(url, platform);
     console.log('✅ [Product Scraper] Título extraído da URL:', urlTitle);
     return urlTitle;
 
   } catch (error) {
-    console.error('❌ [Product Scraper] Erro:', error);
+    console.error('❌ [Product Scraper] Erro crítico:', error);
 
     // Estratégia 3: Fallback genérico
     return extractTitleFromUrl(url, platform);
@@ -41,141 +41,241 @@ export async function fetchProductTitle(url, platform) {
 
 /**
  * Scraping do título via CORS proxy
+ * Tenta múltiplas APIs de proxy em cascata
  */
 async function scrapeProductTitle(url, platform) {
-  try {
-    // Usar API pública AllOrigins (suporta CORS)
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+  // Lista de proxies CORS públicos (em ordem de prioridade)
+  const proxies = [
+    {
+      name: 'AllOrigins',
+      url: (targetUrl) => `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
+      extractHtml: (data) => data.contents
+    },
+    {
+      name: 'CORS Anywhere (backup)',
+      url: (targetUrl) => `https://cors-anywhere.herokuapp.com/${targetUrl}`,
+      extractHtml: (data) => data // Retorna HTML direto
+    }
+  ];
 
-    // Timeout com fallback para navegadores antigos
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
+  // Tentar cada proxy em ordem
+  for (const proxy of proxies) {
     try {
-      const response = await fetch(proxyUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json'
-        },
-        signal: controller.signal
-      });
+      console.log(`🔍 [Scraper] Tentando proxy: ${proxy.name}`);
 
-      clearTimeout(timeoutId);
+      const proxyUrl = proxy.url(url);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+      try {
+        const response = await fetch(proxyUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json, text/html, */*'
+          },
+          signal: controller.signal
+        });
 
-      const data = await response.json();
-      const html = data.contents;
+        clearTimeout(timeoutId);
 
-      if (!html) {
-        throw new Error('HTML vazio retornado');
-      }
-
-      // Parse HTML
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-
-      let title = null;
-
-      // Amazon - seletores específicos
-      if (platform === 'amazon') {
-        title =
-          doc.querySelector('#productTitle')?.textContent.trim() ||
-          doc.querySelector('.product-title-word-break')?.textContent.trim() ||
-          doc.querySelector('h1.a-size-large')?.textContent.trim() ||
-          doc.querySelector('title')?.textContent.split('|')[0].trim().split(':')[0].trim();
-      }
-
-      // Mercado Livre - seletores específicos
-      if (platform === 'mercadolivre') {
-        title =
-          doc.querySelector('h1.ui-pdp-title')?.textContent.trim() ||
-          doc.querySelector('.item-title__primary')?.textContent.trim() ||
-          doc.querySelector('h1')?.textContent.trim() ||
-          doc.querySelector('title')?.textContent.split('|')[0].trim();
-      }
-
-      // Outras plataformas - tentar genérico
-      if (!title) {
-        title =
-          doc.querySelector('h1')?.textContent.trim() ||
-          doc.querySelector('title')?.textContent.split('|')[0].trim().split('-')[0].trim();
-      }
-
-      // Limpar título
-      if (title) {
-        title = cleanTitle(title);
-
-        // Validar tamanho (não pode ser muito curto ou muito longo)
-        if (title.length < 5 || title.length > 200) {
-          throw new Error('Título inválido (tamanho)');
+        if (!response.ok) {
+          console.warn(`⚠️ [Scraper] ${proxy.name} retornou HTTP ${response.status}`);
+          continue; // Tentar próximo proxy
         }
 
-        return title;
+        // Extrair HTML baseado no formato do proxy
+        let html;
+        if (proxy.name === 'AllOrigins') {
+          const data = await response.json();
+          html = proxy.extractHtml(data);
+        } else {
+          html = await response.text();
+        }
+
+        if (!html || html.length < 100) {
+          console.warn(`⚠️ [Scraper] ${proxy.name} retornou HTML vazio/inválido`);
+          continue;
+        }
+
+        console.log(`✅ [Scraper] ${proxy.name} funcionou! Parseando HTML...`);
+
+        // Parse HTML
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        let title = null;
+
+        // Amazon - seletores específicos (ATUALIZADOS 2025)
+        if (platform === 'amazon') {
+          console.log('🔍 [Scraper] Buscando seletores Amazon...');
+
+          title =
+            doc.querySelector('#productTitle')?.textContent.trim() ||
+            doc.querySelector('.product-title-word-break')?.textContent.trim() ||
+            doc.querySelector('h1.a-size-large')?.textContent.trim() ||
+            doc.querySelector('h1 span')?.textContent.trim() ||
+            doc.querySelector('[data-feature-name="title"]')?.textContent.trim() ||
+            doc.querySelector('title')?.textContent.split('|')[0].trim().split(':')[0].trim().replace('Amazon.com.br:', '').trim();
+
+          console.log('🔍 [Amazon] Título extraído:', title?.substring(0, 50) || 'null');
+        }
+
+        // Mercado Livre - seletores específicos (ATUALIZADOS 2025)
+        if (platform === 'mercadolivre') {
+          console.log('🔍 [Scraper] Buscando seletores Mercado Livre...');
+
+          title =
+            doc.querySelector('h1.ui-pdp-title')?.textContent.trim() ||
+            doc.querySelector('.item-title__primary')?.textContent.trim() ||
+            doc.querySelector('.ui-pdp-title')?.textContent.trim() ||
+            doc.querySelector('h1')?.textContent.trim() ||
+            doc.querySelector('title')?.textContent.split('|')[0].trim().split(' - ')[0].trim();
+
+          console.log('🔍 [ML] Título extraído:', title?.substring(0, 50) || 'null');
+        }
+
+        // Outras plataformas - tentar genérico
+        if (!title) {
+          console.log('🔍 [Scraper] Tentando seletores genéricos...');
+          title =
+            doc.querySelector('h1')?.textContent.trim() ||
+            doc.querySelector('title')?.textContent.split('|')[0].trim().split('-')[0].trim();
+        }
+
+        // Limpar título
+        if (title) {
+          title = cleanTitle(title);
+
+          // Validar tamanho (não pode ser muito curto ou muito longo)
+          if (title.length < 5 || title.length > 200) {
+            console.warn(`⚠️ [Scraper] Título inválido (tamanho: ${title.length})`);
+            continue; // Tentar próximo proxy
+          }
+
+          console.log(`✅ [Scraper] Título válido encontrado: "${title.substring(0, 50)}..."`);
+          return title;
+        }
+
+        console.warn(`⚠️ [Scraper] ${proxy.name} não conseguiu extrair título`);
+
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        console.warn(`⚠️ [Scraper] ${proxy.name} erro de rede:`, fetchError.message);
+        continue; // Tentar próximo proxy
       }
 
-      return null;
-
-    } catch (fetchError) {
-      clearTimeout(timeoutId);
-      throw fetchError;
+    } catch (proxyError) {
+      console.warn(`⚠️ [Scraper] ${proxy.name} falhou:`, proxyError.message);
+      continue;
     }
-
-  } catch (error) {
-    console.warn('⚠️ [Product Scraper] Scraping falhou:', error.message);
-    return null;
   }
+
+  // Se todos os proxies falharam
+  console.error('❌ [Scraper] Todos os proxies falharam, usando fallback da URL');
+  return null;
 }
 
 /**
  * Extrair título inteligente da URL (fallback)
+ * Última linha de defesa quando scraping falha
  */
 function extractTitleFromUrl(url, platform) {
   try {
+    console.log('🔍 [Fallback] Extraindo título da URL:', url.substring(0, 80));
+
     // Amazon: /dp/ASIN ou /product-name/dp/ASIN
     if (platform === 'amazon') {
-      // Padrão: amazon.com.br/Echo-Dot-5-Alexa/dp/B0FKP5K7VM
-      const match = url.match(/\/([^/]+)\/dp\//);
-      if (match && match[1]) {
-        const title = match[1]
+      // Padrão completo: amazon.com.br/Echo-Dot-5-Alexa/dp/B0FKP5K7VM
+      const dpMatch = url.match(/\/([^/]+)\/dp\/([A-Z0-9]{10})/);
+      if (dpMatch && dpMatch[1] && dpMatch[1] !== 'dp') {
+        const rawTitle = dpMatch[1];
+        const asin = dpMatch[2];
+
+        // Limpar e formatar
+        let title = rawTitle
           .replace(/-/g, ' ')
           .replace(/_/g, ' ')
+          .replace(/\+/g, ' ')
           .trim();
 
+        // Remover palavras de stopwords comuns
+        title = title.replace(/\b(com|de|da|do|para|amazon|br)\b/gi, '').trim();
+
         // Capitalizar primeira letra de cada palavra
-        return title.split(' ')
+        title = title.split(' ')
+          .filter(word => word.length > 0)
           .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
           .join(' ');
+
+        console.log(`✅ [Fallback] Título Amazon extraído: "${title}" (ASIN: ${asin})`);
+        return title || 'Produto Amazon';
       }
 
+      // Se não encontrou padrão /dp/, tentar extrair do path
+      const pathMatch = url.match(/amazon\.com\.br\/([^/?]+)/);
+      if (pathMatch && pathMatch[1] && pathMatch[1] !== 's' && pathMatch[1] !== 'dp') {
+        const title = pathMatch[1]
+          .replace(/-/g, ' ')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+
+        console.log(`✅ [Fallback] Título Amazon do path: "${title}"`);
+        return title || 'Produto Amazon';
+      }
+
+      console.warn('⚠️ [Fallback] Não conseguiu extrair título da URL Amazon');
       return 'Produto Amazon';
     }
 
-    // Mercado Livre: /produto-nome-MLB123
+    // Mercado Livre: /produto-nome-MLB123 ou /produto-nome/p/
     if (platform === 'mercadolivre') {
-      // Padrão: mercadolivre.com.br/produto-exemplo-MLB123
-      const match = url.match(/\/([^/]+)-MLB/);
-      if (match && match[1]) {
-        const title = match[1]
+      // Padrão 1: /produto-exemplo-MLB123456789
+      const mlbMatch = url.match(/\/([^/]+)-MLB\d+/);
+      if (mlbMatch && mlbMatch[1]) {
+        const rawTitle = mlbMatch[1];
+
+        let title = rawTitle
           .replace(/-/g, ' ')
           .replace(/_/g, ' ')
           .trim();
 
-        return title.split(' ')
+        // Remover stopwords
+        title = title.replace(/\b(com|de|da|do|para|ml|mercado|livre)\b/gi, '').trim();
+
+        // Capitalizar
+        title = title.split(' ')
+          .filter(word => word.length > 0)
           .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
           .join(' ');
+
+        console.log(`✅ [Fallback] Título ML extraído: "${title}"`);
+        return title || 'Produto Mercado Livre';
       }
 
+      // Padrão 2: /produto/p/ ou /produto-nome/p/
+      const pMatch = url.match(/\/([^/]+)\/p\//);
+      if (pMatch && pMatch[1]) {
+        const title = pMatch[1]
+          .replace(/-/g, ' ')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+
+        console.log(`✅ [Fallback] Título ML do path: "${title}"`);
+        return title || 'Produto Mercado Livre';
+      }
+
+      console.warn('⚠️ [Fallback] Não conseguiu extrair título da URL ML');
       return 'Produto Mercado Livre';
     }
 
-    // Outras plataformas
+    // Outras plataformas - tentar genérico
+    console.warn('⚠️ [Fallback] Plataforma desconhecida, retornando genérico');
     return 'Produto';
 
   } catch (error) {
-    console.error('❌ [Product Scraper] Erro ao extrair da URL:', error);
+    console.error('❌ [Fallback] Erro ao extrair da URL:', error);
     return platform === 'amazon' ? 'Produto Amazon' :
            platform === 'mercadolivre' ? 'Produto Mercado Livre' :
            'Produto';

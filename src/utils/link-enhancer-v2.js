@@ -297,10 +297,10 @@ export class LinkEnhancerV2 {
 
         const data = await response.json();
 
-        // A API retorna { success: true, url: "full_url" }
-        if (data.success && data.url && data.url !== shortUrl) {
+        // A API retorna { success: true, resolved_url: "full_url" }
+        if (data.success && data.resolved_url && data.resolved_url !== shortUrl) {
           console.log(`✅ [Retry ${attempt}] Sucesso! Link expandido`);
-          return data.url;
+          return data.resolved_url;
         }
 
         throw new Error('API não retornou URL válida');

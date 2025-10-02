@@ -149,9 +149,9 @@ export class LinkEnhancer {
 
       const data = await response.json();
 
-      // A API retorna { success: true, url: "full_url" }
-      if (data.success && data.url) {
-        const fullUrl = data.url;
+      // A API retorna { success: true, resolved_url: "full_url" }
+      if (data.success && data.resolved_url) {
+        const fullUrl = data.resolved_url;
 
         // Salvar no cache
         this.cache.set(shortUrl, fullUrl);

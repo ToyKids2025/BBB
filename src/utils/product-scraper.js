@@ -47,70 +47,81 @@ async function scrapeProductTitle(url, platform) {
     // Usar API pública AllOrigins (suporta CORS)
     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
 
-    const response = await fetch(proxyUrl, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json'
-      },
-      // Timeout de 5 segundos
-      signal: AbortSignal.timeout(5000)
-    });
+    // Timeout com fallback para navegadores antigos
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
+    try {
+      const response = await fetch(proxyUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        },
+        signal: controller.signal
+      });
 
-    const data = await response.json();
-    const html = data.contents;
+      clearTimeout(timeoutId);
 
-    if (!html) {
-      throw new Error('HTML vazio retornado');
-    }
-
-    // Parse HTML
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-
-    let title = null;
-
-    // Amazon - seletores específicos
-    if (platform === 'amazon') {
-      title =
-        doc.querySelector('#productTitle')?.textContent.trim() ||
-        doc.querySelector('.product-title-word-break')?.textContent.trim() ||
-        doc.querySelector('h1.a-size-large')?.textContent.trim() ||
-        doc.querySelector('title')?.textContent.split('|')[0].trim().split(':')[0].trim();
-    }
-
-    // Mercado Livre - seletores específicos
-    if (platform === 'mercadolivre') {
-      title =
-        doc.querySelector('h1.ui-pdp-title')?.textContent.trim() ||
-        doc.querySelector('.item-title__primary')?.textContent.trim() ||
-        doc.querySelector('h1')?.textContent.trim() ||
-        doc.querySelector('title')?.textContent.split('|')[0].trim();
-    }
-
-    // Outras plataformas - tentar genérico
-    if (!title) {
-      title =
-        doc.querySelector('h1')?.textContent.trim() ||
-        doc.querySelector('title')?.textContent.split('|')[0].trim().split('-')[0].trim();
-    }
-
-    // Limpar título
-    if (title) {
-      title = cleanTitle(title);
-
-      // Validar tamanho (não pode ser muito curto ou muito longo)
-      if (title.length < 5 || title.length > 200) {
-        throw new Error('Título inválido (tamanho)');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
 
-      return title;
-    }
+      const data = await response.json();
+      const html = data.contents;
 
-    return null;
+      if (!html) {
+        throw new Error('HTML vazio retornado');
+      }
+
+      // Parse HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      let title = null;
+
+      // Amazon - seletores específicos
+      if (platform === 'amazon') {
+        title =
+          doc.querySelector('#productTitle')?.textContent.trim() ||
+          doc.querySelector('.product-title-word-break')?.textContent.trim() ||
+          doc.querySelector('h1.a-size-large')?.textContent.trim() ||
+          doc.querySelector('title')?.textContent.split('|')[0].trim().split(':')[0].trim();
+      }
+
+      // Mercado Livre - seletores específicos
+      if (platform === 'mercadolivre') {
+        title =
+          doc.querySelector('h1.ui-pdp-title')?.textContent.trim() ||
+          doc.querySelector('.item-title__primary')?.textContent.trim() ||
+          doc.querySelector('h1')?.textContent.trim() ||
+          doc.querySelector('title')?.textContent.split('|')[0].trim();
+      }
+
+      // Outras plataformas - tentar genérico
+      if (!title) {
+        title =
+          doc.querySelector('h1')?.textContent.trim() ||
+          doc.querySelector('title')?.textContent.split('|')[0].trim().split('-')[0].trim();
+      }
+
+      // Limpar título
+      if (title) {
+        title = cleanTitle(title);
+
+        // Validar tamanho (não pode ser muito curto ou muito longo)
+        if (title.length < 5 || title.length > 200) {
+          throw new Error('Título inválido (tamanho)');
+        }
+
+        return title;
+      }
+
+      return null;
+
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      throw fetchError;
+    }
 
   } catch (error) {
     console.warn('⚠️ [Product Scraper] Scraping falhou:', error.message);

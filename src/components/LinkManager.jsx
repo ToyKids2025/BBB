@@ -58,26 +58,10 @@ const LinkManager = () => {
     return 'other';
   };
 
-  // Efeito para detectar a plataforma E buscar título quando a URL muda
-  useEffect(() => {
-    if (url) {
-      const detected = detectPlatform(url);
-      setPlatform(detected);
-
-      // Auto-buscar título se for Amazon ou Mercado Livre
-      if (detected === 'amazon' || detected === 'mercadolivre') {
-        autoFetchTitle(url, detected);
-      }
-    } else {
-      setPlatform('');
-      setTitle('');
-    }
-  }, [url]);
-
   /**
    * Buscar título do produto automaticamente
    */
-  const autoFetchTitle = async (productUrl, productPlatform) => {
+  const autoFetchTitle = React.useCallback(async (productUrl, productPlatform) => {
     try {
       setFetchingTitle(true);
       console.log('🔍 Buscando título do produto automaticamente...');
@@ -94,7 +78,23 @@ const LinkManager = () => {
     } finally {
       setFetchingTitle(false);
     }
-  };
+  }, []);
+
+  // Efeito para detectar a plataforma E buscar título quando a URL muda
+  useEffect(() => {
+    if (url) {
+      const detected = detectPlatform(url);
+      setPlatform(detected);
+
+      // Auto-buscar título se for Amazon ou Mercado Livre
+      if (detected === 'amazon' || detected === 'mercadolivre') {
+        autoFetchTitle(url, detected);
+      }
+    } else {
+      setPlatform('');
+      setTitle('');
+    }
+  }, [url, autoFetchTitle]);
   /**
    * Manipulador do evento de colar no campo de URL.
    * Limpa a URL colada antes de inseri-la no campo.

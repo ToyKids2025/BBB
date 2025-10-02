@@ -9,6 +9,28 @@ import { FaAmazon } from 'react-icons/fa';
  */
 const PublicHomePage = () => {
   const navigate = useNavigate();
+  const [hoveredCard, setHoveredCard] = React.useState(null);
+
+  // SEO - Atualizar meta tags
+  React.useEffect(() => {
+    document.title = 'BuscaBuscaBrasil - Melhores Ofertas da Amazon e Mercado Livre';
+
+    // Meta description
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute('content', 'Encontre as melhores ofertas da Amazon e Mercado Livre com descontos de até 45%. Produtos selecionados diariamente pela nossa equipe.');
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = 'Encontre as melhores ofertas da Amazon e Mercado Livre com descontos de até 45%. Produtos selecionados diariamente pela nossa equipe.';
+      document.head.appendChild(meta);
+    }
+
+    // Cleanup ao desmontar
+    return () => {
+      document.title = 'BuscaBuscaBrasil';
+    };
+  }, []);
 
   // Instagram do projeto
   const INSTAGRAM_URL = 'https://instagram.com/buscabuscabrasil'; // SUBSTITUIR pelo seu Instagram real
@@ -154,7 +176,15 @@ const PublicHomePage = () => {
           {featuredProducts.map(product => (
             <div
               key={product.id}
-              style={styles.productCard}
+              style={{
+                ...styles.productCard,
+                transform: hoveredCard === product.id ? 'translateY(-8px)' : 'translateY(0)',
+                boxShadow: hoveredCard === product.id
+                  ? '0 12px 40px rgba(102, 126, 234, 0.3)'
+                  : '0 4px 20px rgba(0,0,0,0.08)'
+              }}
+              onMouseEnter={() => setHoveredCard(product.id)}
+              onMouseLeave={() => setHoveredCard(null)}
               onClick={() => handleProductClick(product.asin)}
             >
               <div style={styles.productImageWrapper}>

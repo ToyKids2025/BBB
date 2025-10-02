@@ -49,7 +49,8 @@
       "Bash(GENERATE_SOURCEMAP=false CI=true npm run build)",
       "WebFetch(domain:www.instagram.com)",
       "Bash(convert:*)",
-      "Bash(magick:*)"
+      "Bash(magick:*)",
+      "Read(//home/aawilske/**)"
     ],
     "deny": [],
     "ask": []

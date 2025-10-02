@@ -4,7 +4,7 @@
  * Cache limpo - Sem erros de mixed content
  */
 
-const CACHE_VERSION = 'bbb-v3.0.0-clean';
+const CACHE_VERSION = 'bbb-v3.0.1-fix-images';
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 
 // Assets LOCAIS para cache (apenas nosso domínio)
@@ -25,12 +25,14 @@ const ALLOWED_DOMAINS = [
   'amzn.to',
   'm.media-amazon.com',            // Imagens Amazon CDN
   'images-na.ssl-images-amazon.com', // Imagens Amazon CDN alternativo
+  'images-amazon.com',             // Imagens Amazon CDN genérico
   // Mercado Livre
   'mercadolivre.com.br',
   'www.mercadolivre.com.br',
   'mercadolibre.com',
   'http2.mlstatic.com',            // Imagens Mercado Livre CDN
   // Firebase
+  'afiliador-inteligente.web.app', // Nossa URL Firebase
   'firebaseapp.com',
   'firestore.googleapis.com',
   'firebase.googleapis.com'
@@ -38,7 +40,7 @@ const ALLOWED_DOMAINS = [
 
 // Instalação
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing v3.0.0 - Clean version');
+  console.log('[SW] Installing v3.0.1 - Fix images');
 
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -56,7 +58,7 @@ self.addEventListener('install', (event) => {
 
 // Ativação
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating v3.0.0 - Cleaning old caches...');
+  console.log('[SW] Activating v3.0.1 - Cleaning old caches...');
 
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -235,4 +237,4 @@ self.addEventListener('message', (event) => {
   }
 });
 
-console.log('[SW] Service Worker v3.0.0 loaded - Clean Amazon + ML only');
+console.log('[SW] Service Worker v3.0.1 loaded - Images fix');

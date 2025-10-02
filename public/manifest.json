@@ -1,7 +1,7 @@
 {
-  "short_name": "BBB Links",
-  "name": "BuscaBuscaBrasil - Gerador de Links",
-  "description": "Sistema de geração e gerenciamento de links de afiliados com analytics completo",
+  "short_name": "BuscaBusca",
+  "name": "BuscaBusca Brasil - Encontre o Melhor Preço",
+  "description": "Encontre os melhores preços e ofertas do Brasil. Sistema de links inteligentes com economia garantida.",
   "icons": [
     {
       "src": "icon-96.png",
@@ -39,8 +39,8 @@
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "#667eea",
-  "background_color": "#ffffff",
+  "theme_color": "#32CD32",
+  "background_color": "#32CD32",
   "scope": "/",
   "categories": ["business", "productivity"],
   "screenshots": [],

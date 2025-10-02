@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiInstagram, FiLock } from 'react-icons/fi';
 import { FaAmazon } from 'react-icons/fa';
 import { SiMercadopago } from 'react-icons/si';
+import { fetchAmazonBestSellers } from './utils/amazon-bestsellers';
 
 /**
  * 🏠 HOMEPAGE PÚBLICA - BuscaBuscaBrasil
@@ -11,6 +12,8 @@ import { SiMercadopago } from 'react-icons/si';
 const PublicHomePage = () => {
   const navigate = useNavigate();
   const [hoveredCard, setHoveredCard] = React.useState(null);
+  const [products, setProducts] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
 
   // SEO - Atualizar meta tags
   React.useEffect(() => {
@@ -32,6 +35,67 @@ const PublicHomePage = () => {
       document.title = 'BuscaBuscaBrasil';
     };
   }, []);
+
+  const loadAmazonProducts = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const amazonProducts = await fetchAmazonBestSellers();
+
+      // Produtos ML fixos
+      const mlProducts = [
+        {
+          id: 7,
+          title: 'Smartphone Xiaomi Redmi Note 13 Pro',
+          price: 'R$ 1.899,00',
+          discount: '32% OFF',
+          image: 'https://http2.mlstatic.com/D_NQ_NP_649609-MLA54490401156_032023-O.webp',
+          mlbId: '4197838585',
+          platform: 'mercadolivre',
+          category: 'Celulares'
+        },
+        {
+          id: 8,
+          title: 'Tênis Nike Air Max Excee Masculino',
+          price: 'R$ 349,00',
+          discount: '42% OFF',
+          image: 'https://http2.mlstatic.com/D_NQ_NP_795890-MLB51377909651_092022-O.webp',
+          mlbId: '3986547821',
+          platform: 'mercadolivre',
+          category: 'Calçados'
+        },
+        {
+          id: 9,
+          title: 'Cafeteira Nespresso Essenza Mini',
+          price: 'R$ 299,00',
+          discount: '50% OFF',
+          image: 'https://http2.mlstatic.com/D_NQ_NP_990246-MLB40604816937_022020-O.webp',
+          mlbId: '4581209387',
+          platform: 'mercadolivre',
+          category: 'Eletrodomésticos'
+        }
+      ];
+
+      if (amazonProducts && amazonProducts.length > 0) {
+        // Misturar produtos Amazon reais com ML
+        const combined = [...amazonProducts.slice(0, 3), ...mlProducts];
+        setProducts(combined);
+        console.log(`✅ ${amazonProducts.length} produtos Amazon + ${mlProducts.length} ML carregados!`);
+      } else {
+        // Fallback se Amazon falhar
+        setProducts(mlProducts);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar Amazon:', error);
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Buscar produtos reais da Amazon ao carregar
+  React.useEffect(() => {
+    loadAmazonProducts();
+  }, [loadAmazonProducts]);
 
   // Instagram do projeto
   const INSTAGRAM_URL = 'https://www.instagram.com/buscabuscabr/';
@@ -197,9 +261,15 @@ const PublicHomePage = () => {
           <p style={styles.sectionSubtitle}>Atualizadas diariamente</p>
         </div>
 
-        <div style={styles.productGrid}>
-          {featuredProducts.map(product => (
-            <div
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#718096' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
+            <p>Carregando ofertas da Amazon...</p>
+          </div>
+        ) : (
+          <div style={styles.productGrid}>
+            {(products.length > 0 ? products : featuredProducts).map(product => (
+              <div
               key={product.id}
               style={{
                 ...styles.productCard,
@@ -237,7 +307,8 @@ const PublicHomePage = () => {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </section>
 
       {/* CTA Section */}
@@ -275,6 +346,9 @@ const PublicHomePage = () => {
             </a>
             <a href="https://www.amazon.com.br/?tag=buscabusca0f-20" target="_blank" rel="noopener noreferrer" style={styles.footerLink}>
               <FaAmazon /> Amazon
+            </a>
+            <a href="https://www.mercadolivre.com.br/?matt_word=wa20250726131129&matt_tool=88344921" target="_blank" rel="noopener noreferrer" style={styles.footerLink}>
+              <SiMercadopago /> Mercado Livre
             </a>
           </div>
 

@@ -320,7 +320,14 @@ export class LinkEnhancer {
 
       // A API retorna { success: true, resolved_url: "full_url" }
       if (data.success && data.resolved_url) {
-        const fullUrl = data.resolved_url;
+        let fullUrl = data.resolved_url;
+
+        // 🔧 FIX: Corrigir URLs ML malformadas pela API
+        // Exemplo: /social/wa123&forceInApp → /social/wa123?forceInApp
+        if (fullUrl.includes('/social/') && fullUrl.match(/\/social\/[^?]+&/)) {
+          fullUrl = fullUrl.replace(/\/social\/([^&]+)&/, '/social/$1?');
+          console.log('🔧 [ML] URL corrigida (& → ?)');
+        }
 
         // Salvar no cache
         this.cache.set(shortUrl, fullUrl);

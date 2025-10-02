@@ -6,21 +6,15 @@
 
 import { sha256 } from './crypto-utils';
 
-// Configurações de persistência
+// Configurações de persistência (REDUZIDO para evitar header 494)
 const PERSISTENCE_CONFIG = {
   cookieDurations: [
-    { name: 'bb_ref', days: 90 },
-    { name: 'bb_ref_backup', days: 180 },
-    { name: 'bb_ref_eternal', days: 365 },
-    { name: 'bb_ref_lifetime', days: 3650 }, // 10 anos
-    { name: '_bbb', days: 120 },
-    { name: 'bref', days: 150 },
-    { name: 'src_ref', days: 200 },
-    { name: 'uid_bb', days: 365 }
+    { name: 'bb_ref', days: 90 },      // Cookie principal
+    { name: 'bb_session', days: 30 },   // Sessão curta
+    { name: 'bb_eternal', days: 365 }   // Backup longo prazo
   ],
   storageKeys: [
-    'bb_ref', '_bbb', 'utm_ref', 'user_ref', 'click_data',
-    'attribution', 'fingerprint', 'device_id', 'session_ref'
+    'bb_ref', 'bb_session', 'click_data', 'fingerprint'
   ]
 };
 
@@ -44,25 +38,12 @@ export class CookieChain {
       timestamp: Date.now()
     });
 
-    // Criar múltiplos cookies com durações diferentes
+    // Criar apenas 3 cookies essenciais (evita header 494)
     PERSISTENCE_CONFIG.cookieDurations.forEach(config => {
       this.setCookie(config.name, data, config.days);
-
-      // Versão encoded
-      this.setCookie(`${config.name}_enc`, btoa(data), config.days);
-
-      // Versão com hash
-      this.setCookie(`${config.name}_h`, this.hashData(data), config.days);
     });
 
-    // Cookies com nomes aleatórios (dificulta bloqueio)
-    const randomNames = this.generateRandomCookieNames(10);
-    randomNames.forEach(name => {
-      this.setCookie(name, this.clickId, 180);
-    });
-
-    // Super cookie com todos os dados
-    this.createSuperCookie(data);
+    console.log(`✅ [Cookie Chain] ${PERSISTENCE_CONFIG.cookieDurations.length} cookies criados`);
   }
 
   setCookie(name, value, days) {
@@ -78,46 +59,8 @@ export class CookieChain {
     ];
 
     document.cookie = cookieOptions.join('; ');
-
-    // Backup com diferentes configurações
-    document.cookie = `${name}_backup=${value}; max-age=${days * 24 * 60 * 60}; path=/`;
   }
 
-  createSuperCookie(data) {
-    // Cookie que se regenera automaticamente
-    const superCookieScript = `
-      (function() {
-        const data = '${data}';
-        const check = setInterval(() => {
-          if (!document.cookie.includes('bb_super')) {
-            document.cookie = 'bb_super=' + data + '; max-age=31536000; path=/';
-          }
-        }, 60000); // Verifica a cada minuto
-      })();
-    `;
-
-    const script = document.createElement('script');
-    script.textContent = superCookieScript;
-    document.head.appendChild(script);
-  }
-
-  generateRandomCookieNames(count) {
-    const prefixes = ['_', 's_', 'u_', 'ref_', 'id_', 'tk_', 'data_'];
-    const suffixes = ['bb', 'ref', 'id', 'uid', 'sid', 'tid', 'cid'];
-    const names = [];
-
-    for (let i = 0; i < count; i++) {
-      const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-      const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-      names.push(`${prefix}${suffix}${i}`);
-    }
-
-    return names;
-  }
-
-  hashData(data) {
-    return btoa(data).replace(/[^a-zA-Z0-9]/g, '').substr(0, 32);
-  }
 }
 
 /**

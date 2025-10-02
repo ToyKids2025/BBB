@@ -299,8 +299,17 @@ export class LinkEnhancerV2 {
 
         // A API retorna { success: true, resolved_url: "full_url" }
         if (data.success && data.resolved_url && data.resolved_url !== shortUrl) {
+          let fullUrl = data.resolved_url;
+
+          // 🔧 FIX: Corrigir URLs ML malformadas pela API
+          // Exemplo: /social/wa123&forceInApp → /social/wa123?forceInApp
+          if (fullUrl.includes('/social/') && fullUrl.match(/\/social\/[^?]+&/)) {
+            fullUrl = fullUrl.replace(/\/social\/([^&]+)&/, '/social/$1?');
+            console.log(`🔧 [Retry ${attempt}] URL ML corrigida (& → ?)`);
+          }
+
           console.log(`✅ [Retry ${attempt}] Sucesso! Link expandido`);
-          return data.resolved_url;
+          return fullUrl;
         }
 
         throw new Error('API não retornou URL válida');

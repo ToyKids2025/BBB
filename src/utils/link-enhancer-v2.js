@@ -279,20 +279,31 @@ export class LinkEnhancerV2 {
   async expandWithRetry(shortUrl, platform) {
     for (let attempt = 1; attempt <= CONFIG_V2.RETRY_ATTEMPTS; attempt++) {
       try {
-        console.log(`🔄 [Retry ${attempt}/${CONFIG_V2.RETRY_ATTEMPTS}] Tentando expandir...`);
+        console.log(`🔄 [Retry ${attempt}/${CONFIG_V2.RETRY_ATTEMPTS}] Tentando expandir via unshorten.me...`);
 
-        const response = await fetch(shortUrl, {
-          method: 'HEAD',
-          redirect: 'manual',
-          mode: 'no-cors'
+        // Usar API pública de unshorten (suporta CORS)
+        const apiUrl = `https://unshorten.me/json/${encodeURIComponent(shortUrl)}`;
+
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
         });
 
-        const fullUrl = response.headers.get('Location') || shortUrl;
-
-        if (fullUrl !== shortUrl) {
-          console.log(`✅ [Retry ${attempt}] Sucesso!`);
-          return fullUrl;
+        if (!response.ok) {
+          throw new Error(`API retornou status ${response.status}`);
         }
+
+        const data = await response.json();
+
+        // A API retorna { success: true, url: "full_url" }
+        if (data.success && data.url && data.url !== shortUrl) {
+          console.log(`✅ [Retry ${attempt}] Sucesso! Link expandido`);
+          return data.url;
+        }
+
+        throw new Error('API não retornou URL válida');
 
       } catch (error) {
         console.warn(`⚠️ [Retry ${attempt}] Falhou:`, error.message);

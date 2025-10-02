@@ -131,30 +131,42 @@ export class LinkEnhancer {
     }
 
     try {
-      console.log('🌐 [Amazon] Expandindo via fetch...');
+      console.log('🌐 [Amazon] Expandindo via unshorten.me API...');
 
-      // Fazer request HEAD para obter redirect
-      const response = await fetch(shortUrl, {
-        method: 'HEAD',
-        redirect: 'manual', // Não seguir redirect automaticamente
-        mode: 'no-cors' // Evitar CORS issues
+      // Usar API pública de unshorten (suporta CORS)
+      const apiUrl = `https://unshorten.me/json/${encodeURIComponent(shortUrl)}`;
+
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
       });
 
-      // Tentar pegar Location header
-      const fullUrl = response.headers.get('Location') || shortUrl;
+      if (!response.ok) {
+        throw new Error('API unshorten falhou');
+      }
 
-      // Salvar no cache
-      this.cache.set(shortUrl, fullUrl);
+      const data = await response.json();
 
-      console.log('✅ [Amazon] Link expandido:', fullUrl.substring(0, 80));
-      return fullUrl;
+      // A API retorna { success: true, url: "full_url" }
+      if (data.success && data.url) {
+        const fullUrl = data.url;
+
+        // Salvar no cache
+        this.cache.set(shortUrl, fullUrl);
+
+        console.log('✅ [Amazon] Link expandido:', fullUrl.substring(0, 80));
+        return fullUrl;
+      }
+
+      throw new Error('API não retornou URL válida');
 
     } catch (error) {
-      console.warn('⚠️ [Amazon] Não foi possível expandir via fetch, usando fallback');
+      console.warn('⚠️ [Amazon] Não foi possível expandir via API, usando fallback');
 
-      // FALLBACK: Extrair código do amzn.to e construir URL direta
-      // Exemplo: amzn.to/3XYZ -> amazon.com.br/dp/ASIN (se conseguirmos inferir)
-      // Como fallback, adicionar tag ao link curto mesmo
+      // FALLBACK: Adicionar tag ao link curto mesmo
+      // O redirect do amzn.to vai preservar nossa tag
       return this.addBasicAmazonTag(shortUrl);
     }
   }

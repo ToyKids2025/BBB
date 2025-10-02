@@ -23,10 +23,13 @@ const ALLOWED_DOMAINS = [
   'amazon.com.br',
   'www.amazon.com.br',
   'amzn.to',
+  'm.media-amazon.com',            // Imagens Amazon CDN
+  'images-na.ssl-images-amazon.com', // Imagens Amazon CDN alternativo
   // Mercado Livre
   'mercadolivre.com.br',
   'www.mercadolivre.com.br',
   'mercadolibre.com',
+  'http2.mlstatic.com',            // Imagens Mercado Livre CDN
   // Firebase
   'firebaseapp.com',
   'firestore.googleapis.com',

@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiInstagram, FiLock } from 'react-icons/fi';
 import { FaAmazon } from 'react-icons/fa';
+import { SiMercadopago } from 'react-icons/si';
 
 /**
  * 🏠 HOMEPAGE PÚBLICA - BuscaBuscaBrasil
@@ -33,7 +34,7 @@ const PublicHomePage = () => {
   }, []);
 
   // Instagram do projeto
-  const INSTAGRAM_URL = 'https://instagram.com/buscabuscabrasil'; // SUBSTITUIR pelo seu Instagram real
+  const INSTAGRAM_URL = 'https://www.instagram.com/buscabuscabr/';
 
   // Produtos Amazon em destaque (estáticos por enquanto - pode conectar API depois)
   const featuredProducts = [
@@ -44,6 +45,7 @@ const PublicHomePage = () => {
       discount: '30% OFF',
       image: 'https://m.media-amazon.com/images/I/71IQ5Jd3vNL._AC_SL1500_.jpg',
       asin: 'B0FKP5K7VM',
+      platform: 'amazon',
       category: 'Eletrônicos'
     },
     {
@@ -53,6 +55,7 @@ const PublicHomePage = () => {
       discount: '25% OFF',
       image: 'https://m.media-amazon.com/images/I/61yrtAHf2rL._AC_SL1000_.jpg',
       asin: 'B0BDKKS5TM',
+      platform: 'amazon',
       category: 'Livros e eReaders'
     },
     {
@@ -62,41 +65,53 @@ const PublicHomePage = () => {
       discount: '35% OFF',
       image: 'https://m.media-amazon.com/images/I/51s8E3PYl7L._AC_SL1000_.jpg',
       asin: 'B08XVJBB68',
+      platform: 'amazon',
       category: 'Streaming'
     },
+    // MERCADO LIVRE
     {
-      id: 4,
-      title: 'Fone de Ouvido JBL Tune 510BT',
-      price: 'R$ 179,00',
-      discount: '40% OFF',
-      image: 'https://m.media-amazon.com/images/I/51JtNV2d4nL._AC_SL1500_.jpg',
-      asin: 'B08WS6Z7JT',
-      category: 'Áudio'
+      id: 7,
+      title: 'Smartphone Xiaomi Redmi Note 13 Pro',
+      price: 'R$ 1.899,00',
+      discount: '32% OFF',
+      image: 'https://http2.mlstatic.com/D_NQ_NP_649609-MLA54490401156_032023-O.webp',
+      mlbId: '4197838585',
+      platform: 'mercadolivre',
+      category: 'Celulares'
     },
     {
-      id: 5,
-      title: 'Smart Watch Xiaomi Mi Band 7',
-      price: 'R$ 249,00',
-      discount: '20% OFF',
-      image: 'https://m.media-amazon.com/images/I/61U0-lDnCUL._AC_SL1500_.jpg',
-      asin: 'B0B4WJXCP5',
-      category: 'Wearables'
+      id: 8,
+      title: 'Tênis Nike Air Max Excee Masculino',
+      price: 'R$ 349,00',
+      discount: '42% OFF',
+      image: 'https://http2.mlstatic.com/D_NQ_NP_795890-MLB51377909651_092022-O.webp',
+      mlbId: '3986547821',
+      platform: 'mercadolivre',
+      category: 'Calçados'
     },
     {
-      id: 6,
-      title: 'SSD Kingston A400 480GB',
-      price: 'R$ 219,00',
-      discount: '45% OFF',
-      image: 'https://m.media-amazon.com/images/I/71DJQ-J3W0L._AC_SL1500_.jpg',
-      asin: 'B01N5IB20Q',
-      category: 'Informática'
+      id: 9,
+      title: 'Cafeteira Nespresso Essenza Mini',
+      price: 'R$ 299,00',
+      discount: '50% OFF',
+      image: 'https://http2.mlstatic.com/D_NQ_NP_990246-MLB40604816937_022020-O.webp',
+      mlbId: '4581209387',
+      platform: 'mercadolivre',
+      category: 'Eletrodomésticos'
     }
   ];
 
-  // Ao clicar no produto, redireciona para Amazon com nossa tag de afiliado
-  const handleProductClick = (asin) => {
-    const amazonUrl = `https://www.amazon.com.br/dp/${asin}?tag=buscabusca0f-20&ascsubtag=bbb_${Date.now()}_homepage&ref_=bbb_landing`;
-    window.open(amazonUrl, '_blank');
+  // Ao clicar no produto, redireciona para Amazon ou ML com nossa tag de afiliado
+  const handleProductClick = (product) => {
+    if (product.platform === 'mercadolivre') {
+      // Mercado Livre
+      const mlUrl = `https://www.mercadolivre.com.br/MLB-${product.mlbId}?matt_word=wa20250726131129&matt_tool=88344921`;
+      window.open(mlUrl, '_blank');
+    } else {
+      // Amazon
+      const amazonUrl = `https://www.amazon.com.br/dp/${product.asin}?tag=buscabusca0f-20&ascsubtag=bbb_${Date.now()}_homepage&ref_=bbb_landing`;
+      window.open(amazonUrl, '_blank');
+    }
   };
 
   return (
@@ -161,6 +176,16 @@ const PublicHomePage = () => {
               <FaAmazon size={20} />
               Ver Amazon
             </a>
+
+            <a
+              href="https://www.mercadolivre.com.br/?matt_word=wa20250726131129&matt_tool=88344921"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.secondaryButton}
+            >
+              <SiMercadopago size={20} />
+              Ver Mercado Livre
+            </a>
           </div>
         </div>
       </section>
@@ -185,7 +210,7 @@ const PublicHomePage = () => {
               }}
               onMouseEnter={() => setHoveredCard(product.id)}
               onMouseLeave={() => setHoveredCard(null)}
-              onClick={() => handleProductClick(product.asin)}
+              onClick={() => handleProductClick(product)}
             >
               <div style={styles.productImageWrapper}>
                 <img
@@ -203,7 +228,11 @@ const PublicHomePage = () => {
                 <h3 style={styles.productTitle}>{product.title}</h3>
                 <div style={styles.productPrice}>{product.price}</div>
                 <button style={styles.productButton}>
-                  Ver Oferta <FaAmazon style={{ marginLeft: '8px' }} />
+                  Ver Oferta {product.platform === 'mercadolivre' ? (
+                    <SiMercadopago style={{ marginLeft: '8px' }} />
+                  ) : (
+                    <FaAmazon style={{ marginLeft: '8px' }} />
+                  )}
                 </button>
               </div>
             </div>

@@ -2,10 +2,11 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import App from './App';
 import RedirectPage from './RedirectPage';
+import PublicHomePage from './PublicHomePage';
 
 /**
  * Router Principal
- * Define rotas da aplicação incluindo página de redirecionamento
+ * Define rotas da aplicação incluindo página pública e admin
  */
 function AppRouter() {
   return (
@@ -14,8 +15,11 @@ function AppRouter() {
         {/* Rota de redirecionamento - /r/:linkId */}
         <Route path="/r/:linkId" element={<RedirectPage />} />
 
-        {/* Rota principal - Dashboard Admin */}
-        <Route path="/*" element={<App />} />
+        {/* Rota PÚBLICA - Homepage (NOVA!) */}
+        <Route path="/" element={<PublicHomePage />} />
+
+        {/* Rota ADMIN - Dashboard privado */}
+        <Route path="/admin/*" element={<App />} />
       </Routes>
     </Router>
   );

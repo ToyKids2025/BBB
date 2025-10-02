@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { saveLink } from '../firebase';
-import { FiLink, FiClipboard, FiCheck, FiZap, FiX } from 'react-icons/fi';
+import { FiLink, FiClipboard, FiCheck, FiZap, FiX, FiLoader } from 'react-icons/fi';
 import { FaAmazon, FaShopify } from 'react-icons/fa';
 import { SiMercadopago } from 'react-icons/si';
+import { fetchProductTitle } from '../utils/product-scraper';
 
 /**
  * Componente LinkManager
@@ -18,6 +19,7 @@ const LinkManager = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [fetchingTitle, setFetchingTitle] = useState(false);
 
   // Mapeamento de plataformas para ícones
   const platformIcons = {
@@ -56,15 +58,43 @@ const LinkManager = () => {
     return 'other';
   };
 
-  // Efeito para detectar a plataforma quando a URL muda
+  // Efeito para detectar a plataforma E buscar título quando a URL muda
   useEffect(() => {
     if (url) {
       const detected = detectPlatform(url);
       setPlatform(detected);
+
+      // Auto-buscar título se for Amazon ou Mercado Livre
+      if (detected === 'amazon' || detected === 'mercadolivre') {
+        autoFetchTitle(url, detected);
+      }
     } else {
       setPlatform('');
+      setTitle('');
     }
   }, [url]);
+
+  /**
+   * Buscar título do produto automaticamente
+   */
+  const autoFetchTitle = async (productUrl, productPlatform) => {
+    try {
+      setFetchingTitle(true);
+      console.log('🔍 Buscando título do produto automaticamente...');
+
+      const productTitle = await fetchProductTitle(productUrl, productPlatform);
+
+      setTitle(productTitle);
+      console.log('✅ Título encontrado:', productTitle);
+
+    } catch (error) {
+      console.error('❌ Erro ao buscar título:', error);
+      // Não mostrar erro ao usuário, apenas deixar vazio
+      setTitle('');
+    } finally {
+      setFetchingTitle(false);
+    }
+  };
   /**
    * Manipulador do evento de colar no campo de URL.
    * Limpa a URL colada antes de inseri-la no campo.
@@ -196,6 +226,53 @@ const LinkManager = () => {
           color: var(--text-secondary);
           font-size: 1.2rem;
         }
+        .fetching-title-indicator {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px;
+          background: rgba(102, 126, 234, 0.1);
+          border-radius: 8px;
+          border: 1px solid rgba(102, 126, 234, 0.3);
+          color: var(--accent-color);
+          font-size: 14px;
+          font-weight: 500;
+          animation: fadeIn 0.3s ease;
+        }
+        .spinner-icon {
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .title-preview {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px;
+          background: rgba(76, 175, 80, 0.1);
+          border-radius: 8px;
+          border: 1px solid rgba(76, 175, 80, 0.3);
+          animation: fadeIn 0.3s ease;
+        }
+        .title-label {
+          font-weight: 600;
+          color: var(--success);
+          font-size: 14px;
+        }
+        .title-text {
+          flex: 1;
+          color: var(--text-primary);
+          font-size: 14px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
 
       <div className="form-header">
@@ -225,24 +302,20 @@ const LinkManager = () => {
             )}
           </div>
         </div>
-        <div className="input-group">
-          <label htmlFor="title-input">Título do Link (Opcional)</label>
-          <div className="input-wrapper">
-            <input
-              id="title-input"
-              type="text"
-              placeholder="Ex: Echo Dot 5ª Geração com 30% OFF"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="input"
-            />
-            {title && (
-              <button type="button" className="clear-btn" onClick={() => setTitle('')} title="Limpar Título">
-                <FiX />
-              </button>
-            )}
+        {/* Campo de título escondido - preenchido automaticamente */}
+        {fetchingTitle && (
+          <div className="fetching-title-indicator">
+            <FiLoader className="spinner-icon" />
+            <span>🔍 Buscando nome do produto...</span>
           </div>
-        </div>
+        )}
+
+        {title && !fetchingTitle && (
+          <div className="title-preview">
+            <span className="title-label">📦 Produto:</span>
+            <span className="title-text">{title}</span>
+          </div>
+        )}
         <button type="submit" className="btn btn-primary" disabled={loading}>
           {loading ? 'Gerando...' : 'Gerar Link'}
         </button>

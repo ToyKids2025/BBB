@@ -12,6 +12,8 @@ import { log, isDebugMode, isPauseMode } from './utils/debug-logger';
 import DebugPanel from './components/DebugPanel';
 import { enhanceLinkV2 } from './utils/link-enhancer-v2';
 import { guardian } from './utils/commission-guardian';
+import { FaAmazon } from 'react-icons/fa';
+import { SiMercadopago } from 'react-icons/si';
 // 🔥 SISTEMA COMPLETO DE PERSISTÊNCIA - 3 CAMADAS ATIVAS!
 // 🚀 DEEP LINKING AVANÇADO - Intent URLs + Universal Links
 // 🐛 DEBUG LOGGER - Captura todos os logs
@@ -20,11 +22,41 @@ import { guardian } from './utils/commission-guardian';
  * Página de Redirecionamento
  * Busca o link no Firebase e redireciona preservando parâmetros de afiliado
  */
+// Mensagens motivacionais por plataforma
+const getMotivationalMessage = (platform) => {
+  const messages = {
+    amazon: [
+      "🎉 Economia garantida na Amazon!",
+      "🔥 Oferta especial encontrada!",
+      "💰 Você está economizando agora!",
+      "⚡ Melhor preço garantido!",
+      "🎁 Produto selecionado especialmente pra você!"
+    ],
+    mercadolivre: [
+      "🚀 Direcionando para a melhor oferta!",
+      "💚 Frete grátis te esperando!",
+      "🎁 Oferta exclusiva selecionada!",
+      "⭐ Produto com melhor avaliação!",
+      "🔥 Promoção imperdível encontrada!"
+    ],
+    default: [
+      "✨ Redirecionando com segurança!",
+      "🎯 Levando você ao melhor preço!",
+      "💎 Oferta verificada e aprovada!"
+    ]
+  };
+
+  const platformMessages = messages[platform] || messages.default;
+  return platformMessages[Math.floor(Math.random() * platformMessages.length)];
+};
+
 const RedirectPage = () => {
   const { linkId } = useParams();
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
   const [redirectUrl, setRedirectUrl] = useState(null);
+  const [platform, setPlatform] = useState(null);
+  const [motivationalMsg, setMotivationalMsg] = useState('');
   const debugMode = isDebugMode();
   const pauseMode = isPauseMode();
 
@@ -64,6 +96,10 @@ const RedirectPage = () => {
           url: linkData.url?.substring(0, 50) + '...',
           active: linkData.active !== false
         });
+
+        // Configurar platform e mensagem motivacional
+        setPlatform(linkData.platform);
+        setMotivationalMsg(getMotivationalMessage(linkData.platform));
 
         // Verificar se o link está ativo
         if (linkData.active === false) {
@@ -235,14 +271,14 @@ const RedirectPage = () => {
           }
         }, 100); // Executar depois de 100ms em background
 
-        // 🧪 A/B TESTING - Delay otimizado
+        // 🧪 A/B TESTING - Delay ULTRA-RÁPIDO otimizado (300-500ms)
         const randomValue = Math.random();
-        let testDelay = 1000; // padrão
-        if (randomValue < 0.25) testDelay = 800; // fast
-        else if (randomValue < 0.75) testDelay = 1000; // medium
-        else testDelay = 1200; // slow
+        let testDelay = 400; // padrão 400ms (UX perfeita)
+        if (randomValue < 0.3) testDelay = 300;  // super fast
+        else if (randomValue < 0.7) testDelay = 400;  // fast
+        else testDelay = 500;  // medium
 
-        console.log('🧪 A/B Test - Delay:', testDelay, 'ms');
+        console.log('🚀 Delay ultra-rápido:', testDelay, 'ms');
 
         // 🚀 SISTEMA AVANÇADO DE DEEP LINKING
         log.device('Detectando dispositivo...');
@@ -275,8 +311,10 @@ const RedirectPage = () => {
           finalDelay = 999999999; // Infinito - nunca redireciona automaticamente
           log.warning('⏸️ PAUSE MODE ATIVO - Redirect automático DESABILITADO');
           log.info('Use o botão 🚀 REDIRECT no painel para redirecionar manualmente');
-        } else if (debugMode) {
-          finalDelay = 60000; // 60s em debug mode normal
+        } else if (debugMode && process.env.NODE_ENV === 'development') {
+          // Debug mode apenas em development (5s suficiente)
+          finalDelay = 5000;
+          log.warning('🐛 DEBUG MODE: Delay de 5s (development only)');
         }
 
         log.info(`Aguardando ${pauseMode ? 'MANUAL (PAUSE MODE)' : (debugMode ? '60000ms (DEBUG MODE)' : testDelay + 'ms')} antes de redirecionar`);
@@ -356,7 +394,10 @@ const RedirectPage = () => {
       <div style={styles.content}>
         {status === 'loading' && (
           <>
-            <div style={styles.logo}>BBB</div>
+            <div style={styles.logoBounce}>
+              <span style={styles.logoEmoji}>🔍</span>
+              <span style={styles.logoText}>BBB</span>
+            </div>
             <h1 style={styles.title}>Carregando...</h1>
             <p style={styles.subtitle}>Buscando seu link</p>
             <div style={styles.spinner}></div>
@@ -365,11 +406,43 @@ const RedirectPage = () => {
 
         {status === 'redirecting' && (
           <>
-            <div style={styles.logo}>BBB</div>
-            <h1 style={styles.title}>Redirecionando...</h1>
-            <p style={styles.subtitle}>Você está sendo direcionado com segurança</p>
-            <div style={styles.spinner}></div>
-            <p style={styles.wait}>Aguarde um momento...</p>
+            {/* Logo animado com ícone da plataforma */}
+            <div style={styles.logoBounce}>
+              <span style={styles.logoEmoji}>
+                {platform === 'amazon' ? '📦' : platform === 'mercadolivre' ? '🛒' : '✨'}
+              </span>
+              <span style={styles.logoText}>BBB</span>
+            </div>
+
+            {/* Mensagem motivacional */}
+            <h1 style={styles.titleGradient}>{motivationalMsg}</h1>
+
+            {/* Platform badge */}
+            <div style={styles.platformBadge}>
+              {platform === 'amazon' ? (
+                <>
+                  <FaAmazon style={styles.platformIcon} />
+                  <span>Direcionando para Amazon...</span>
+                </>
+              ) : platform === 'mercadolivre' ? (
+                <>
+                  <SiMercadopago style={styles.platformIcon} />
+                  <span>Direcionando para Mercado Livre...</span>
+                </>
+              ) : (
+                <span>Redirecionando com segurança...</span>
+              )}
+            </div>
+
+            {/* Progress bar animado */}
+            <div style={styles.progressBar}>
+              <div style={styles.progressFill}></div>
+            </div>
+
+            {/* Footer discreto */}
+            <p style={styles.footerText}>
+              💎 Sua comissão está protegida por 90 dias
+            </p>
           </>
         )}
 
@@ -395,6 +468,18 @@ const RedirectPage = () => {
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-10px) scale(1.05); }
+        }
+        @keyframes progress {
+          from { width: 0%; }
+          to { width: 100%; }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.6; }
         }
       `}</style>
     </div>
@@ -432,6 +517,30 @@ const styles = {
     fontWeight: 'bold',
     color: '#667eea',
   },
+  logoBounce: {
+    width: '100px',
+    height: '100px',
+    background: 'white',
+    borderRadius: '50%',
+    margin: '0 auto 24px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '20px',
+    fontWeight: 'bold',
+    color: '#667eea',
+    animation: 'bounce 0.8s ease',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+    gap: '8px',
+  },
+  logoEmoji: {
+    fontSize: '32px',
+  },
+  logoText: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#667eea',
+  },
   logoError: {
     fontSize: '64px',
     marginBottom: '24px',
@@ -441,6 +550,17 @@ const styles = {
     marginBottom: '16px',
     fontWeight: '600',
     margin: '0 0 16px 0',
+  },
+  titleGradient: {
+    fontSize: '26px',
+    marginBottom: '24px',
+    fontWeight: '700',
+    margin: '0 0 24px 0',
+    background: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    animation: 'pulse 2s ease-in-out infinite',
   },
   subtitle: {
     fontSize: '16px',
@@ -476,6 +596,44 @@ const styles = {
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
+  },
+  platformBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    background: 'rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(10px)',
+    padding: '12px 24px',
+    borderRadius: '30px',
+    fontSize: '15px',
+    fontWeight: '500',
+    marginBottom: '32px',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+  },
+  platformIcon: {
+    fontSize: '20px',
+  },
+  progressBar: {
+    width: '100%',
+    maxWidth: '300px',
+    height: '4px',
+    background: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: '2px',
+    overflow: 'hidden',
+    margin: '0 auto 24px',
+  },
+  progressFill: {
+    height: '100%',
+    background: 'linear-gradient(90deg, #4CAF50 0%, #81C784 100%)',
+    animation: 'progress 0.5s ease forwards',
+    borderRadius: '2px',
+  },
+  footerText: {
+    fontSize: '13px',
+    opacity: 0.8,
+    marginTop: '16px',
+    fontWeight: '500',
   },
 };
 

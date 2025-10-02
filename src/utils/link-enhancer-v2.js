@@ -207,6 +207,12 @@ export class LinkEnhancerV2 {
       url = await this.expandWithRetry(url, 'mercadolivre');
     }
 
+    // 1.1. 🔧 FIX: Corrigir URLs /social/ malformadas (mesmo se não expandiu)
+    if (url.includes('/social/') && url.match(/\/social\/[^?]+&/)) {
+      url = url.replace(/\/social\/([^&]+)&/, '/social/$1?');
+      console.log('🔧 [ML V2] URL /social/ corrigida (& → ?)');
+    }
+
     // 2. Extrair MLB ID
     const mlbId = this.extractMLBId(url);
     if (!mlbId) {

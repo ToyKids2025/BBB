@@ -20,7 +20,7 @@ if ('serviceWorker' in navigator) {
       const isRedirectPage = window.location.pathname.startsWith('/r/');
 
       // Registrar SW principal
-      const registration = await navigator.serviceWorker.register('/sw.js', {
+      const registration = await navigator.serviceWorker.register('/service-worker.js', {
         scope: '/',
         updateViaCache: 'none' // Forçar verificação de atualizações
       });

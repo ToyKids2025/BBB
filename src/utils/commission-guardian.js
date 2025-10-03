@@ -56,10 +56,10 @@ export class CommissionGuardian {
     // 3. Salvar sessão em múltiplos locais
     this.saveSessionEverywhere();
 
-    // 4. Ativar email capture (após 30s)
-    if (GUARDIAN_CONFIG.ENABLE_EMAIL) {
-      setTimeout(() => this.activateEmailCapture(), GUARDIAN_CONFIG.EMAIL_CAPTURE_DELAY);
-    }
+    // 4. Ativar email capture (DESABILITADO - popup irritante)
+    // if (GUARDIAN_CONFIG.ENABLE_EMAIL) {
+    //   setTimeout(() => this.activateEmailCapture(), GUARDIAN_CONFIG.EMAIL_CAPTURE_DELAY);
+    // }
 
     // 5. Ativar price drop monitoring
     if (GUARDIAN_CONFIG.ENABLE_PRICE_DROP) {
@@ -80,46 +80,27 @@ export class CommissionGuardian {
    * ==========================================
    */
   activateCookieChain() {
-    console.log('🍪 [Cookie Chain] Criando cadeia de cookies de 90 dias...');
+    console.log('🍪 [Cookie Chain] Criando cadeia de cookies otimizada...');
 
+    // ⚡ OTIMIZADO: Apenas dados essenciais (reduzir headers 494)
     const cookieData = {
-      sessionId: this.sessionId,
-      fingerprint: this.fingerprint,
-      timestamp: Date.now(),
-      affiliate: {
-        amazon: 'buscabusca0f-20',
-        ml: 'wa20250726131129'
-      }
+      s: this.sessionId.substring(0, 16), // Session ID reduzido
+      t: Date.now(),
+      a: 'buscabusca0f-20' // Apenas Amazon tag
     };
 
-    // Criar 10 cookies diferentes com nomes variados
-    const cookieNames = [
-      'bb_ref',
-      'bb_session',
-      'bb_track',
-      'bb_affiliate',
-      'bb_source',
-      '_bbb_id',
-      'user_ref',
-      'click_id',
-      'aff_session',
-      'tracking_ref'
-    ];
+    // ⚡ REDUZIDO: Apenas 2 cookies essenciais (antes eram 30!)
+    const cookieNames = ['bb_ref', 'bb_s'];
 
     const days90 = 90 * 24 * 60 * 60; // 90 dias em segundos
 
     cookieNames.forEach(name => {
-      // Cookie normal
-      document.cookie = `${name}=${JSON.stringify(cookieData)}; max-age=${days90}; path=/; SameSite=Lax; Secure`;
-
-      // Cookie encoded (backup)
-      document.cookie = `${name}_enc=${btoa(JSON.stringify(cookieData))}; max-age=${days90}; path=/; SameSite=Lax; Secure`;
-
-      // Cookie hash (backup do backup)
-      document.cookie = `${name}_h=${this.hashData(cookieData)}; max-age=${days90}; path=/; SameSite=Lax; Secure`;
+      // Cookie compacto (sem JSON, apenas string)
+      const compactValue = `${cookieData.s}_${cookieData.t}_${cookieData.a}`;
+      document.cookie = `${name}=${compactValue}; max-age=${days90}; path=/; SameSite=Lax; Secure`;
     });
 
-    console.log('✅ [Cookie Chain] 30 cookies criados (10 nomes x 3 formatos)');
+    console.log('✅ [Cookie Chain] 2 cookies compactos criados (otimizado para evitar erro 494)');
 
     // Auto-renovação: verificar cookies a cada 1h e renovar
     setInterval(() => {

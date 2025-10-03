@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, query, where, orderBy, deleteDoc } from 'firebase/firestore';
 import { getAnalytics, logEvent } from 'firebase/analytics';
 import { detectPlatform, addAffiliateTag } from './config';
@@ -20,6 +20,11 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+
+// 🔐 CONFIGURAR PERSISTÊNCIA LOCAL (LOGIN PERMANENTE NO CELULAR)
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error('❌ Erro ao configurar persistência:', error);
+});
 
 /**
  * Realiza o login de um usuário com email e senha.

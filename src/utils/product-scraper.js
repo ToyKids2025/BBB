@@ -44,135 +44,10 @@ export async function fetchProductTitle(url, platform) {
  * Tenta múltiplas APIs de proxy em cascata
  */
 async function scrapeProductTitle(url, platform) {
-  // Lista de proxies CORS públicos (em ordem de prioridade)
-  const proxies = [
-    {
-      name: 'AllOrigins',
-      url: (targetUrl) => `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
-      extractHtml: (data) => data.contents
-    },
-    {
-      name: 'CORS Anywhere (backup)',
-      url: (targetUrl) => `https://cors-anywhere.herokuapp.com/${targetUrl}`,
-      extractHtml: (data) => data // Retorna HTML direto
-    }
-  ];
-
-  // Tentar cada proxy em ordem
-  for (const proxy of proxies) {
-    try {
-      console.log(`🔍 [Scraper] Tentando proxy: ${proxy.name}`);
-
-      const proxyUrl = proxy.url(url);
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
-
-      try {
-        const response = await fetch(proxyUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json, text/html, */*'
-          },
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          console.warn(`⚠️ [Scraper] ${proxy.name} retornou HTTP ${response.status}`);
-          continue; // Tentar próximo proxy
-        }
-
-        // Extrair HTML baseado no formato do proxy
-        let html;
-        if (proxy.name === 'AllOrigins') {
-          const data = await response.json();
-          html = proxy.extractHtml(data);
-        } else {
-          html = await response.text();
-        }
-
-        if (!html || html.length < 100) {
-          console.warn(`⚠️ [Scraper] ${proxy.name} retornou HTML vazio/inválido`);
-          continue;
-        }
-
-        console.log(`✅ [Scraper] ${proxy.name} funcionou! Parseando HTML...`);
-
-        // Parse HTML
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-
-        let title = null;
-
-        // Amazon - seletores específicos (ATUALIZADOS 2025)
-        if (platform === 'amazon') {
-          console.log('🔍 [Scraper] Buscando seletores Amazon...');
-
-          title =
-            doc.querySelector('#productTitle')?.textContent.trim() ||
-            doc.querySelector('.product-title-word-break')?.textContent.trim() ||
-            doc.querySelector('h1.a-size-large')?.textContent.trim() ||
-            doc.querySelector('h1 span')?.textContent.trim() ||
-            doc.querySelector('[data-feature-name="title"]')?.textContent.trim() ||
-            doc.querySelector('title')?.textContent.split('|')[0].trim().split(':')[0].trim().replace('Amazon.com.br:', '').trim();
-
-          console.log('🔍 [Amazon] Título extraído:', title?.substring(0, 50) || 'null');
-        }
-
-        // Mercado Livre - seletores específicos (ATUALIZADOS 2025)
-        if (platform === 'mercadolivre') {
-          console.log('🔍 [Scraper] Buscando seletores Mercado Livre...');
-
-          title =
-            doc.querySelector('h1.ui-pdp-title')?.textContent.trim() ||
-            doc.querySelector('.item-title__primary')?.textContent.trim() ||
-            doc.querySelector('.ui-pdp-title')?.textContent.trim() ||
-            doc.querySelector('h1')?.textContent.trim() ||
-            doc.querySelector('title')?.textContent.split('|')[0].trim().split(' - ')[0].trim();
-
-          console.log('🔍 [ML] Título extraído:', title?.substring(0, 50) || 'null');
-        }
-
-        // Outras plataformas - tentar genérico
-        if (!title) {
-          console.log('🔍 [Scraper] Tentando seletores genéricos...');
-          title =
-            doc.querySelector('h1')?.textContent.trim() ||
-            doc.querySelector('title')?.textContent.split('|')[0].trim().split('-')[0].trim();
-        }
-
-        // Limpar título
-        if (title) {
-          title = cleanTitle(title);
-
-          // Validar tamanho (não pode ser muito curto ou muito longo)
-          if (title.length < 5 || title.length > 200) {
-            console.warn(`⚠️ [Scraper] Título inválido (tamanho: ${title.length})`);
-            continue; // Tentar próximo proxy
-          }
-
-          console.log(`✅ [Scraper] Título válido encontrado: "${title.substring(0, 50)}..."`);
-          return title;
-        }
-
-        console.warn(`⚠️ [Scraper] ${proxy.name} não conseguiu extrair título`);
-
-      } catch (fetchError) {
-        clearTimeout(timeoutId);
-        console.warn(`⚠️ [Scraper] ${proxy.name} erro de rede:`, fetchError.message);
-        continue; // Tentar próximo proxy
-      }
-
-    } catch (proxyError) {
-      console.warn(`⚠️ [Scraper] ${proxy.name} falhou:`, proxyError.message);
-      continue;
-    }
-  }
-
-  // Se todos os proxies falharam
-  console.error('❌ [Scraper] Todos os proxies falharam, usando fallback da URL');
-  return null;
+  // ⚡ SOLUÇÃO SIMPLIFICADA: Usar apenas extração da URL
+  // Proxies CORS públicos são instáveis, lentos e causam problemas
+  console.log('⚡ [Scraper] Modo rápido: extraindo título da URL diretamente');
+  return null; // Retorna null para forçar uso do fallback (extractTitleFromUrl)
 }
 
 /**
@@ -284,7 +159,9 @@ function extractTitleFromUrl(url, platform) {
 
 /**
  * Limpar e normalizar título
+ * DESABILITADO: Função não usada (scraper simplificado)
  */
+// eslint-disable-next-line no-unused-vars
 function cleanTitle(title) {
   if (!title) return '';
 

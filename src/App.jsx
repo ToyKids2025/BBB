@@ -17,8 +17,8 @@ import LinkList from './LinkList'; // CORREÇÃO: Importando da pasta correta
 import { deviceFingerprint } from './utils/device-fingerprint';
 import { notifications } from './utils/notifications';
 import { abTesting } from './utils/ab-testing';
-// eslint-disable-next-line no-unused-vars
-import { guardian } from './utils/commission-guardian'; // 💎 Commission Guardian global (auto-init)
+// DESABILITADO: Commission Guardian causava erro 494 (headers muito grandes) e bloqueio no Instagram
+// import { guardian } from './utils/commission-guardian';
 
 // Estilos e tema
 import './styles/theme.css';

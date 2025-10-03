@@ -665,7 +665,7 @@ body {
   color: var(--info);
 }
 
-/* Mobile Responsive */
+/* Mobile Responsive - Otimizado */
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
@@ -690,6 +690,32 @@ body {
 
   .table-container {
     overflow-x: auto;
+  }
+
+  /* ⚡ UX MOBILE MELHORADA */
+  .btn {
+    padding: 14px 20px; /* Botões maiores para toque */
+    font-size: 1rem;
+    min-height: 48px; /* Tamanho mínimo recomendado para mobile */
+  }
+
+  .form-group input {
+    padding: 14px 16px; /* Inputs maiores */
+    font-size: 16px; /* Evita zoom no iOS */
+    min-height: 48px;
+  }
+
+  .login-box {
+    padding: var(--spacing-xl); /* Mais espaço no mobile */
+  }
+
+  .card {
+    padding: var(--spacing-md); /* Cards mais compactos */
+  }
+
+  /* Melhor espaçamento em listas */
+  .link-item {
+    padding: 16px 12px;
   }
 }
 

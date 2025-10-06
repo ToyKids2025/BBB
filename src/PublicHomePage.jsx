@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiInstagram, FiLock } from 'react-icons/fi';
 import { FaAmazon } from 'react-icons/fa';
 import { SiMercadopago } from 'react-icons/si';
+import Footer from './components/Footer';
 
 /**
  * 🏠 HOMEPAGE PÚBLICA - BuscaBuscaBrasil
@@ -46,6 +47,13 @@ const PublicHomePage = () => {
           </div>
 
           <div style={styles.navActions}>
+            <button
+              onClick={() => navigate('/sobre')}
+              style={styles.sobreBtn}
+            >
+              Sobre
+            </button>
+
             <a
               href={INSTAGRAM_URL}
               target="_blank"
@@ -154,31 +162,8 @@ const PublicHomePage = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={styles.footer}>
-        <div style={styles.footerContent}>
-          <div style={styles.footerLogo}>
-            <span style={styles.logoIcon}>🔍</span>
-            <span style={styles.logoText}>BuscaBuscaBrasil</span>
-          </div>
-
-          <div style={styles.footerLinks}>
-            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" style={styles.footerLink}>
-              <FiInstagram /> Instagram
-            </a>
-            <a href="https://www.amazon.com.br/?tag=buscabusca0f-20" target="_blank" rel="noopener noreferrer" style={styles.footerLink}>
-              <FaAmazon /> Amazon
-            </a>
-            <a href="https://www.mercadolivre.com.br/?matt_word=wa20250726131129&matt_tool=88344921" target="_blank" rel="noopener noreferrer" style={styles.footerLink}>
-              <SiMercadopago /> Mercado Livre
-            </a>
-          </div>
-
-          <p style={styles.footerCopy}>
-            © 2025 BuscaBuscaBrasil. Todos os direitos reservados.
-          </p>
-        </div>
-      </footer>
+      {/* Footer Global com Avisos SEO */}
+      <Footer />
     </div>
   );
 };
@@ -225,6 +210,17 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '15px',
+  },
+  sobreBtn: {
+    padding: '10px 20px',
+    background: 'transparent',
+    color: '#667eea',
+    border: '2px solid #667eea',
+    borderRadius: '25px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
   },
   instagramBtn: {
     display: 'flex',

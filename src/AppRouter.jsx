@@ -4,6 +4,7 @@ import App from './App';
 import RedirectPage from './RedirectPage';
 import PublicHomePage from './PublicHomePage';
 import About from './pages/About';
+import FAQ from './pages/FAQ';
 
 /**
  * Router Principal
@@ -22,6 +23,9 @@ function AppRouter() {
         {/* Rota SOBRE NÓS - Informações institucionais */}
         <Route path="/sobre" element={<About />} />
         <Route path="/about" element={<About />} />
+
+        {/* Rota FAQ - Perguntas Frequentes */}
+        <Route path="/faq" element={<FAQ />} />
 
         {/* Rota ADMIN - Dashboard privado */}
         <Route path="/admin/*" element={<App />} />

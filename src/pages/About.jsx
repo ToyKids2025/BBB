@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiLink, FiShield, FiTarget, FiZap, FiAlertCircle } from 'react-icons/fi';
+import Footer from '../components/Footer';
 
 /**
  * Página SOBRE NÓS
@@ -300,24 +301,10 @@ const About = () => {
         </div>
       </div>
 
-      {/* RODAPÉ SEO */}
-      <div style={{
-        textAlign: 'center',
-        padding: '2rem',
-        color: 'var(--text-secondary)',
-        fontSize: '0.9rem',
-        borderTop: '1px solid var(--border-color)',
-        marginTop: '2rem'
-      }}>
-        <p>
-          BuscaBusca Brasil - Plataforma de Gestão de Links de Afiliados<br/>
-          Serviço de Tecnologia | Marketing Digital | Affiliate Links Manager
-        </p>
-        <p style={{ fontSize: '0.85rem', marginTop: '1rem' }}>
-          © 2025 BuscaBusca Brasil. Todos os direitos reservados.<br/>
-          Este site não possui relação com estabelecimentos físicos ou lojas de mesmo nome.
-        </p>
       </div>
+
+      {/* Footer Global com Avisos SEO */}
+      <Footer />
     </div>
   );
 };

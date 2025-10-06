@@ -50,7 +50,15 @@
       "WebFetch(domain:www.instagram.com)",
       "Bash(convert:*)",
       "Bash(magick:*)",
-      "Read(//home/aawilske/**)"
+      "Read(//home/aawilske/**)",
+      "Bash(cd:*)",
+      "Bash(pip3 install:*)",
+      "Bash(cmd.exe /c start generate-all-pwa-assets.html)",
+      "Bash(explorer.exe generate-all-pwa-assets.html)",
+      "Read(//mnt/c/Users/CARLA/Downloads/**)",
+      "Bash(xxd:*)",
+      "Bash(git reset:*)",
+      "Bash(git rev-list:*)"
     ],
     "deny": [],
     "ask": []

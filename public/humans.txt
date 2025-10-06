@@ -1,0 +1,81 @@
+/* TEAM */
+Project: BuscaBusca Brasil
+Type: Affiliate Link Management Platform
+Nature: Technology Service / SaaS
+Role: Software for Digital Marketing Professionals
+Email: contato@buscabuscabrasil.com.br
+Location: Brazil
+
+/* SITE */
+Standards: HTML5, CSS3, JavaScript ES6+
+Components: React.js, Firebase, Vercel
+Software: Visual Studio Code, Git
+Language: Portuguese / English
+
+/* PURPOSE */
+This is a TECHNOLOGY PLATFORM for affiliate marketing professionals.
+
+We provide:
+- Affiliate link optimization
+- URL shortening with tracking
+- Commission protection
+- Analytics dashboard
+- Integration with Amazon Associates and Mercado Livre
+
+/* IMPORTANT DISCLAIMER */
+⚠️ WE ARE NOT A PHYSICAL STORE ⚠️
+
+We are NOT:
+- The physical store "Busca Busca" located in Shopping Plaza Polo (Brás, São Paulo)
+- @buscabuscaoficial on Instagram
+- A retail store (online or physical)
+- A marketplace or e-commerce platform
+- A product seller
+
+We ARE:
+- A SOFTWARE platform for affiliate marketers
+- A link management and optimization tool
+- A technology service for digital marketing
+- A professional tool for influencers and content creators
+
+/* TECHNOLOGY STACK */
+Frontend: React.js 18+
+Backend: Firebase (Firestore, Auth, Hosting)
+Deployment: Vercel Edge Network
+Cache: Service Worker API
+Analytics: Custom tracking system
+Security: HTTPS/SSL, Firebase Security Rules
+
+/* SEO & STRUCTURED DATA */
+Schema.org: WebApplication + SoftwareApplication
+Open Graph: Enabled
+Twitter Cards: Enabled
+Sitemap: Available at /sitemap.xml
+Robots: See /robots.txt
+
+/* AFFILIATE INTEGRATIONS */
+Amazon Associates: ✓ Supported
+Mercado Livre: ✓ Supported
+Custom Tags: ✓ Preserved
+Deep Linking: ✓ Optimized
+UTM Parameters: ✓ Maintained
+
+/* FEATURES */
+✓ Link enhancer V2 with retry logic
+✓ Product title scraper
+✓ Click analytics
+✓ Commission protection
+✓ Fast redirects (<100ms)
+✓ Mobile-optimized
+✓ PWA support
+
+/* CONTACT */
+Website: https://www.buscabuscabrasil.com.br
+Instagram: @buscabuscabr
+Email: contato@buscabuscabrasil.com.br
+
+/* COPYRIGHT */
+© 2025 BuscaBusca Brasil
+All rights reserved.
+
+This website has NO RELATION to physical stores or businesses with similar names.

@@ -566,7 +566,12 @@ export class LinkEnhancerV2 {
   }
 
   async initGeo() {
-    // Obter geolocalização do usuário (não-bloqueante)
+    // ❌ DESABILITADO: ipapi.co está falhando e causando erros no SW
+    console.log('⚠️ [Geo] Geolocalização desabilitada (API indisponível)');
+    this.userGeo = null;
+    return;
+
+    /* CÓDIGO ORIGINAL (desabilitado):
     try {
       const response = await fetch('https://ipapi.co/json/');
       this.userGeo = await response.json();
@@ -574,6 +579,7 @@ export class LinkEnhancerV2 {
     } catch (e) {
       console.log('⚠️ [Geo] Não foi possível obter localização');
     }
+    */
   }
 
   clearCache() {

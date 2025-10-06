@@ -1,8 +1,8 @@
 // public/service-worker.js
-// 🔥 FIX ERRO 494: Cache invalidado após otimização de headers
+// 🔥 FIX SW CLONE ERROR: Response validation + API exclusion
 
-const STATIC_CACHE_NAME = 'bbb-static-cache-v4'; // ✅ BUMPED: Invalida cache antigo
-const DYNAMIC_CACHE_NAME = 'bbb-dynamic-cache-v4'; // ✅ BUMPED: Invalida cache antigo
+const STATIC_CACHE_NAME = 'bbb-static-cache-v5'; // ✅ BUMPED: Fix clone() error
+const DYNAMIC_CACHE_NAME = 'bbb-dynamic-cache-v5'; // ✅ BUMPED: Fix clone() error
 // Lista de arquivos essenciais para o funcionamento offline do app shell.
 // O '.' representa a raiz (index.html).
 const FILES_TO_CACHE = [
@@ -54,16 +54,32 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // 🔧 FIX: Ignorar APIs externas que causam erro
+  const urlString = event.request.url;
+  if (urlString.includes('ipapi.co') ||
+      urlString.includes('unshorten.me') ||
+      urlString.includes('firebaseinstallations') ||
+      urlString.includes('firebaselogging')) {
+    // Deixar passar sem cachear
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   // Estratégia: Stale-While-Revalidate para o App Shell (HTML)
   if (event.request.mode === 'navigate') {
     event.respondWith(
       caches.match(event.request).then(response => {
         const fetchPromise = fetch(event.request).then(networkResponse => {
-          const cacheToOpen = caches.open(STATIC_CACHE_NAME);
-          cacheToOpen.then(cache => {
-            cache.put(event.request, networkResponse.clone());
-          });
+          // ✅ FIX: Verificar se response é válida antes de clonar
+          if (networkResponse && networkResponse.ok) {
+            caches.open(STATIC_CACHE_NAME).then(cache => {
+              cache.put(event.request, networkResponse.clone());
+            }).catch(() => {}); // Ignorar erros de cache
+          }
           return networkResponse;
+        }).catch(err => {
+          // Se network falhar, retornar cache (se existir)
+          return response || new Response('Offline', { status: 503 });
         });
         return response || fetchPromise;
       })
@@ -79,10 +95,17 @@ self.addEventListener('fetch', (event) => {
       }
       // Se não, busca na rede, salva no cache dinâmico e retorna
       return fetch(event.request).then(networkResponse => {
-        return caches.open(DYNAMIC_CACHE_NAME).then(cache => {
-          cache.put(event.request.url, networkResponse.clone());
+        // ✅ FIX: Verificar se response é válida e clonável
+        if (!networkResponse || !networkResponse.ok) {
           return networkResponse;
-        });
+        }
+        return caches.open(DYNAMIC_CACHE_NAME).then(cache => {
+          cache.put(event.request.url, networkResponse.clone()).catch(() => {});
+          return networkResponse;
+        }).catch(() => networkResponse);
+      }).catch(() => {
+        // Fallback se tudo falhar
+        return new Response('Resource not available', { status: 404 });
       });
     })
   );

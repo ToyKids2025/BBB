@@ -301,8 +301,6 @@ const About = () => {
         </div>
       </div>
 
-      </div>
-
       {/* Footer Global com Avisos SEO */}
       <Footer />
     </div>

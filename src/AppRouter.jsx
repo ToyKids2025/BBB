@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import App from './App';
 import RedirectPage from './RedirectPage';
 import PublicHomePage from './PublicHomePage';
+import About from './pages/About';
 
 /**
  * Router Principal
@@ -17,6 +18,10 @@ function AppRouter() {
 
         {/* Rota PÚBLICA - Homepage (NOVA!) */}
         <Route path="/" element={<PublicHomePage />} />
+
+        {/* Rota SOBRE NÓS - Informações institucionais */}
+        <Route path="/sobre" element={<About />} />
+        <Route path="/about" element={<About />} />
 
         {/* Rota ADMIN - Dashboard privado */}
         <Route path="/admin/*" element={<App />} />

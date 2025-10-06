@@ -1,11 +1,31 @@
+# robots.txt - BuscaBusca Brasil
+# Plataforma de Gestão de Links de Afiliados (NÃO é loja física)
+
 User-agent: *
 Allow: /
+Allow: /sobre
+Allow: /about
+Allow: /static/
+
+# Bloquear rotas administrativas e APIs
 Disallow: /api/
 Disallow: /admin/
 Disallow: /.env
 Disallow: /config/
 
-Sitemap: https://admin.bbbrasil.com/sitemap.xml
+# Bloquear rotas de redirect dinâmico (não indexar)
+Disallow: /r/
 
-# Performance
+# Googlebot específico
+User-agent: Googlebot
+Allow: /
+Allow: /sobre
+Allow: /about
+Disallow: /admin/
+Disallow: /r/
+
+# Sitemap atualizado
+Sitemap: https://www.buscabuscabrasil.com.br/sitemap.xml
+
+# Performance - respeitar servidor
 Crawl-delay: 1

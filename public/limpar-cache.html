@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧹 Limpar Cache - BBB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        .status {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status div {
+            padding: 5px 0;
+        }
+        .success { color: #4CAF50; }
+        .info { color: #2196F3; }
+        .warning { color: #FF9800; }
+        .error { color: #f44336; }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.02);
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Limpeza de Cache</h1>
+        <p class="subtitle">Fix para erro 494 - REQUEST_HEADER_TOO_LARGE</p>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="cacheCount">-</div>
+                <div class="stat-label">Caches</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="localStorageCount">-</div>
+                <div class="stat-label">localStorage</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="cookieCount">-</div>
+                <div class="stat-label">Cookies</div>
+            </div>
+        </div>
+
+        <div class="status" id="log"></div>
+
+        <button onclick="cleanEverything()" id="cleanBtn">
+            🔥 Limpar Tudo Agora
+        </button>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        const cleanBtn = document.getElementById('cleanBtn');
+
+        function addLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        async function updateStats() {
+            // Caches
+            if ('caches' in window) {
+                const names = await caches.keys();
+                document.getElementById('cacheCount').textContent = names.length;
+            } else {
+                document.getElementById('cacheCount').textContent = '0';
+            }
+
+            // localStorage
+            document.getElementById('localStorageCount').textContent = localStorage.length;
+
+            // Cookies
+            const cookies = document.cookie.split(';').filter(c => c.trim());
+            document.getElementById('cookieCount').textContent = cookies.length;
+        }
+
+        async function cleanEverything() {
+            cleanBtn.disabled = true;
+            addLog('🚀 Iniciando limpeza profunda...', 'info');
+
+            let totalCleaned = 0;
+
+            // 1. Limpar Service Worker Caches
+            if ('caches' in window) {
+                addLog('🗂️ Verificando caches do Service Worker...', 'info');
+                try {
+                    const names = await caches.keys();
+                    addLog(`Encontrados ${names.length} caches`, 'info');
+
+                    for (const name of names) {
+                        await caches.delete(name);
+                        addLog(`✅ Cache deletado: ${name}`, 'success');
+                        totalCleaned++;
+                    }
+                } catch (err) {
+                    addLog(`❌ Erro ao limpar caches: ${err.message}`, 'error');
+                }
+            } else {
+                addLog('⚠️ Cache API não disponível', 'warning');
+            }
+
+            // 2. Desregistrar Service Workers
+            if ('serviceWorker' in navigator) {
+                addLog('⚙️ Desregistrando Service Workers...', 'info');
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const registration of registrations) {
+                        await registration.unregister();
+                        addLog(`✅ Service Worker desregistrado: ${registration.scope}`, 'success');
+                        totalCleaned++;
+                    }
+                } catch (err) {
+                    addLog(`❌ Erro ao desregistrar SW: ${err.message}`, 'error');
+                }
+            }
+
+            // 3. Limpar localStorage
+            addLog('💾 Limpando localStorage...', 'info');
+            const lsKeys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                lsKeys.push(localStorage.key(i));
+            }
+            addLog(`Encontradas ${lsKeys.length} chaves no localStorage`, 'info');
+
+            lsKeys.forEach(key => {
+                if (key && (
+                    key.startsWith('bb_') ||
+                    key.startsWith('cookie_') ||
+                    key.includes('fingerprint') ||
+                    key.includes('eternal') ||
+                    key.includes('tracking') ||
+                    key.includes('guardian') ||
+                    key.includes('device') ||
+                    key.includes('sync')
+                )) {
+                    localStorage.removeItem(key);
+                    addLog(`✅ Removido: ${key}`, 'success');
+                    totalCleaned++;
+                }
+            });
+
+            // 4. Limpar sessionStorage
+            addLog('🔄 Limpando sessionStorage...', 'info');
+            const ssCount = sessionStorage.length;
+            sessionStorage.clear();
+            addLog(`✅ ${ssCount} itens removidos do sessionStorage`, 'success');
+            totalCleaned += ssCount;
+
+            // 5. Limpar cookies
+            addLog('🍪 Limpando cookies...', 'info');
+            const cookies = document.cookie.split(';');
+            cookies.forEach(cookie => {
+                const name = cookie.split('=')[0].trim();
+                if (name && (
+                    name.startsWith('bb_') ||
+                    name.includes('ref') ||
+                    name.includes('session') ||
+                    name.includes('eternal') ||
+                    name.includes('fp')
+                )) {
+                    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+                    addLog(`✅ Cookie deletado: ${name}`, 'success');
+                    totalCleaned++;
+                }
+            });
+
+            // 6. Limpar IndexedDB
+            addLog('🗄️ Limpando IndexedDB...', 'info');
+            if ('indexedDB' in window) {
+                try {
+                    const databases = ['BBBTracking', 'BBB_Guardian', 'UserData', 'BBBEternal', 'BBBCrossDevice'];
+                    for (const dbName of databases) {
+                        try {
+                            await new Promise((resolve, reject) => {
+                                const req = indexedDB.deleteDatabase(dbName);
+                                req.onsuccess = () => {
+                                    addLog(`✅ IndexedDB deletado: ${dbName}`, 'success');
+                                    totalCleaned++;
+                                    resolve();
+                                };
+                                req.onerror = () => resolve(); // Ignorar erros
+                                req.onblocked = () => resolve();
+                            });
+                        } catch (e) {
+                            // Ignorar erros de DB que não existe
+                        }
+                    }
+                } catch (err) {
+                    addLog(`⚠️ Erro ao limpar IndexedDB: ${err.message}`, 'warning');
+                }
+            }
+
+            // Finalizar
+            addLog(`✅ LIMPEZA CONCLUÍDA!`, 'success');
+            addLog(`📊 Total de itens removidos: ${totalCleaned}`, 'success');
+            addLog(`🔄 Recarregando página em 3 segundos...`, 'info');
+
+            await updateStats();
+
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 3000);
+        }
+
+        // Executar ao carregar
+        window.addEventListener('DOMContentLoaded', () => {
+            addLog('✅ Página de limpeza carregada', 'info');
+            addLog('ℹ️ Clique no botão para iniciar limpeza profunda', 'info');
+            updateStats();
+        });
+    </script>
+</body>
+</html>

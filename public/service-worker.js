@@ -1,7 +1,8 @@
 // public/service-worker.js
+// 🔥 FIX ERRO 494: Cache invalidado após otimização de headers
 
-const STATIC_CACHE_NAME = 'bbb-static-cache-v2';
-const DYNAMIC_CACHE_NAME = 'bbb-dynamic-cache-v1';
+const STATIC_CACHE_NAME = 'bbb-static-cache-v4'; // ✅ BUMPED: Invalida cache antigo
+const DYNAMIC_CACHE_NAME = 'bbb-dynamic-cache-v4'; // ✅ BUMPED: Invalida cache antigo
 // Lista de arquivos essenciais para o funcionamento offline do app shell.
 // O '.' representa a raiz (index.html).
 const FILES_TO_CACHE = [

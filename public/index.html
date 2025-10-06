@@ -37,6 +37,57 @@
     <title>BBB Link Enhancer Premium</title>
 
     <script>
+        // 🔥 FIX ERRO 494: Limpeza forçada de cache após otimização
+        (function() {
+            const CACHE_VERSION = 'v4_clean_494'; // Versão pós-fix erro 494
+            const lastCacheClean = localStorage.getItem('cache_clean_version');
+
+            if (lastCacheClean !== CACHE_VERSION) {
+                console.log('🧹 Limpando cache antigo (fix erro 494)...');
+
+                // 1. Limpar Service Worker caches
+                if ('caches' in window) {
+                    caches.keys().then(function(names) {
+                        names.forEach(function(name) {
+                            console.log('Deletando cache:', name);
+                            caches.delete(name);
+                        });
+                    });
+                }
+
+                // 2. Limpar localStorage de tracking antigo
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (
+                        key.startsWith('bb_') ||
+                        key.startsWith('cookie_') ||
+                        key.includes('fingerprint') ||
+                        key.includes('eternal') ||
+                        key.includes('tracking')
+                    )) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(key => {
+                    console.log('Removendo localStorage:', key);
+                    localStorage.removeItem(key);
+                });
+
+                // 3. Limpar sessionStorage
+                sessionStorage.clear();
+
+                // 4. Marcar limpeza como concluída
+                localStorage.setItem('cache_clean_version', CACHE_VERSION);
+                console.log('✅ Cache limpo! Página será recarregada.');
+
+                // 5. Recarregar página para garantir versão limpa
+                setTimeout(function() {
+                    window.location.reload(true); // Hard reload
+                }, 500);
+            }
+        })();
+
         // Service Worker único será registrado via src/index.js
         // Não registrar aqui para evitar conflitos
 

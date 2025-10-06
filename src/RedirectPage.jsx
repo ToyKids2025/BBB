@@ -8,7 +8,7 @@ import { remarketingSystem } from './utils/remarketing-fomo';
 // ❌ DESABILITADO: Redundante com eternal-tracking
 // import { ultimateCookieSync } from './utils/ultimate-cookie-sync';
 import { persistence } from './utils/persistence';
-import { executeDeepLink, isDeepLinkSupported } from './utils/deep-linking';
+import { executeDeepLink } from './utils/deep-linking';
 import { deviceDetection } from './utils/device-detection';
 import { log, isDebugMode, isPauseMode } from './utils/debug-logger';
 import DebugPanel from './components/DebugPanel';

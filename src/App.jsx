@@ -362,44 +362,21 @@ function App() {
           position: relative;
           width: 80px;
           height: 80px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .rotating-circle {
-          position: absolute;
-          width: 80px;
-          height: 80px;
-          border: 3px solid transparent;
-          border-top: 3px solid var(--accent-color);
-          border-radius: 50%;
-          animation: rotate 2s linear infinite;
+          display: none; /* Removido: animação de bolinha */
         }
 
         .pulse-dot {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 20px;
-          height: 20px;
+          width: 60px;
+          height: 60px;
           background: var(--accent-gradient);
-          border-radius: 50%;
-          transform: translate(-50%, -50%);
-          animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        @keyframes pulse {
-          0%, 100% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-          }
-          50% {
-            transform: translate(-50%, -50%) scale(1.2);
-            opacity: 0.7;
-          }
+          border-radius: 12px; /* Forma quadrada arredondada */
+          animation: none; /* Removido: animação de pulso */
         }
 
         .login-title {
@@ -568,21 +545,31 @@ function App() {
         }
 
         .header-content {
-          padding: 20px;
+          padding: 20px 30px;
           display: flex;
           justify-content: space-between;
           align-items: center;
+          max-width: 1600px;
+          margin: 0 auto;
+          width: 100%;
         }
 
         .header-actions {
           display: flex;
           align-items: center;
           gap: 15px;
+          flex-wrap: wrap;
         }
 
         .user-info {
           color: var(--text-secondary);
           font-size: 14px;
+        }
+
+        @media (max-width: 1024px) {
+          .header-content {
+            padding: 15px 20px;
+          }
         }
 
         .theme-btn {
@@ -597,41 +584,72 @@ function App() {
         .app-nav {
           display: flex;
           gap: 10px;
-          padding: 0 20px 20px;
+          padding: 0 30px 20px;
           overflow-x: auto;
+          max-width: 1600px;
+          margin: 0 auto;
+          width: 100%;
+          scrollbar-width: thin;
         }
 
         .nav-btn {
-          padding: 10px 20px;
+          padding: 12px 24px;
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
           border-radius: 8px;
           cursor: pointer;
           transition: all 0.3s ease;
           white-space: nowrap;
+          font-size: 14px;
+          font-weight: 500;
         }
 
         .nav-btn:hover {
           background: var(--bg-tertiary);
+          transform: translateY(-2px);
         }
 
         .nav-btn.active {
           background: var(--accent-gradient);
           color: white;
           border-color: transparent;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        @media (max-width: 1024px) {
+          .app-nav {
+            padding: 0 20px 15px;
+          }
+
+          .nav-btn {
+            padding: 10px 18px;
+            font-size: 13px;
+          }
         }
 
         .app-main {
-          padding: 0 20px 20px;
-          max-width: 1400px;
+          padding: 20px;
+          max-width: 1600px;
           margin: 0 auto;
+          width: 100%;
         }
 
         .tab-content {
           background: var(--bg-primary);
           border-radius: 12px;
-          padding: 20px;
+          padding: 30px;
           box-shadow: var(--shadow-md);
+          width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+          .app-main {
+            padding: 15px;
+          }
+
+          .tab-content {
+            padding: 20px;
+          }
         }
 
         .monitoring-section {
@@ -640,18 +658,30 @@ function App() {
           gap: 30px;
         }
         .links-section {
-          display: grid;
+          display: flex;
+          flex-direction: column;
           gap: 30px;
-          grid-template-columns: 1fr; /* Garante que o guia ocupe a largura total */
+          width: 100%;
         }
 
         @media (min-width: 1024px) {
           .links-section {
+            display: grid;
             grid-template-columns: 1fr 1fr;
+            gap: 30px;
           }
-        }
-        .links-section > *:nth-child(3) { /* Estilo para o LinkList ocupar a largura toda */
-          grid-column: 1 / -1;
+
+          .links-section > *:first-child {
+            grid-column: 1;
+          }
+
+          .links-section > *:nth-child(2) {
+            grid-column: 2;
+          }
+
+          .links-section > *:nth-child(3) {
+            grid-column: 1 / -1;
+          }
         }
 
         @media (max-width: 768px) {

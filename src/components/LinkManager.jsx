@@ -302,20 +302,30 @@ const LinkManager = () => {
             )}
           </div>
         </div>
-        {/* Campo de título escondido - preenchido automaticamente */}
-        {fetchingTitle && (
-          <div className="fetching-title-indicator">
-            <FiLoader className="spinner-icon" />
-            <span>🔍 Buscando nome do produto...</span>
-          </div>
-        )}
-
-        {title && !fetchingTitle && (
-          <div className="title-preview">
-            <span className="title-label">📦 Produto:</span>
-            <span className="title-text">{title}</span>
-          </div>
-        )}
+        {/* 📝 CAMPO MANUAL DE TÍTULO */}
+        <div className="input-group">
+          <label htmlFor="title-input">
+            📦 Título do Produto
+            {fetchingTitle && (
+              <span style={{ marginLeft: '10px', color: 'var(--accent-color)', fontSize: '14px' }}>
+                <FiLoader className="spinner-icon" style={{ display: 'inline-block', marginRight: '5px' }} />
+                Buscando automaticamente...
+              </span>
+            )}
+          </label>
+          <input
+            id="title-input"
+            type="text"
+            placeholder="Digite ou edite o nome do produto"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="input"
+            style={{ paddingLeft: '10px' }}
+          />
+          <small style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '5px', display: 'block' }}>
+            💡 O título é preenchido automaticamente, mas você pode editar se quiser
+          </small>
+        </div>
         <button type="submit" className="btn btn-primary" disabled={loading}>
           {loading ? 'Gerando...' : 'Gerar Link'}
         </button>

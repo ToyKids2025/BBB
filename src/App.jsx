@@ -146,12 +146,12 @@ function App() {
     return (
       <div className="login-container animate-fadeIn">
         <div className="theme-toggle">
-          <button onClick={toggleTheme} className="toggle-switch" aria-label="Toggle theme">
+          <button onClick={toggleTheme} className="toggle-switch hover-glow" aria-label="Toggle theme">
             {theme === 'light' ? '🌙' : '☀️'}
           </button>
         </div>
 
-        <div className="login-card card glass">
+        <div className="login-card card glass animate-float">
           {/* Logo animado */}
           <div className="logo-container">
             <div className="logo-animation">
@@ -160,8 +160,8 @@ function App() {
             </div>
           </div>
 
-          <h1 className="login-title">BuscaBuscaBrasil</h1>
-          <p className="login-subtitle">Plataforma Empresarial</p>
+          <h1 className="login-title gradient-text animate-gradient">BuscaBusca Brasil</h1>
+          <p className="login-subtitle neon-text">🚀 WEB3 AFFILIATE PLATFORM</p>
 
           <form onSubmit={handleLogin} className="login-form">
             {error && (
@@ -194,8 +194,8 @@ function App() {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary hover-lift">
-              {loading ? 'Autenticando...' : 'Acessar Plataforma'}
+            <button type="submit" className="btn btn-primary hover-lift animate-neon-pulse">
+              {loading ? '⚡ Autenticando...' : '🔐 ACESSAR PLATAFORMA WEB3'}
             </button>
           </form>
 
@@ -213,16 +213,16 @@ function App() {
                 Plataforma em fase de testes e aprimoramentos contínuos
               </p>
               <div className="dev-features">
-                <span className="feature-tag">🔒 Acesso Restrito</span>
-                <span className="feature-tag">⚡ Alta Performance</span>
-                <span className="feature-tag">🛡️ Segurança Avançada</span>
+                <span className="badge badge-neon">🔒 PRIVATE ACCESS</span>
+                <span className="badge badge-neon">⚡ LIGHTNING FAST</span>
+                <span className="badge badge-neon">🛡️ BLOCKCHAIN SECURE</span>
               </div>
             </div>
           </div>
 
           <div className="system-info-footer">
-            <p>Plataforma Corporativa</p>
-            <span>v2.0.0 • Beta</span>
+            <p className="gradient-text-2">⚡ WEB3 AFFILIATE TECHNOLOGY</p>
+            <span style={{color: 'var(--neon-green)'}}>v3.0.0 • NEXT-GEN</span>
           </div>
         </div>
       </div>
@@ -236,7 +236,7 @@ function App() {
       {/* Header */}
       <header className="app-header glass">
         <div className="header-content">
-          <h1 className="gradient-text">🚀 BuscaBuscaBrasil Premium</h1>
+          <h1 className="gradient-text animate-gradient">⚡ BuscaBusca WEB3</h1>
           <div className="header-actions">
             <span className="user-info">
               👤 {user.email} | 📱 Device: {deviceId?.substring(0, 8)}...

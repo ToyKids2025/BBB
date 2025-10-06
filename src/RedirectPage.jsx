@@ -2,19 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from './firebase';
-import { EternalTrackingSystem } from './utils/eternal-tracking';
+// ❌ DESABILITADO: Causa erro 494 (headers muito grandes)
+// import { EternalTrackingSystem } from './utils/eternal-tracking';
 import { remarketingSystem } from './utils/remarketing-fomo';
-import { ultimateCookieSync } from './utils/ultimate-cookie-sync';
+// ❌ DESABILITADO: Redundante com eternal-tracking
+// import { ultimateCookieSync } from './utils/ultimate-cookie-sync';
 import { persistence } from './utils/persistence';
 import { executeDeepLink, isDeepLinkSupported } from './utils/deep-linking';
 import { deviceDetection } from './utils/device-detection';
 import { log, isDebugMode, isPauseMode } from './utils/debug-logger';
 import DebugPanel from './components/DebugPanel';
-import { enhanceLinkV2 } from './utils/link-enhancer-v2';
-import { guardian } from './utils/commission-guardian';
+import { enhanceLinkV2 } from './utils/link-enhancer-v2'; // ✅ MANTIDO - Adiciona tags de afiliado
+// ❌ DESABILITADO: Redundante com eternal-tracking
+// import { guardian } from './utils/commission-guardian';
 import { FaAmazon } from 'react-icons/fa';
 import { SiMercadopago } from 'react-icons/si';
-// 🔥 SISTEMA COMPLETO DE PERSISTÊNCIA - 3 CAMADAS ATIVAS!
+// ✅ SISTEMA OTIMIZADO - TRACKING LEVE (resolve erro 494)
+// ✅ LINK ENHANCER V2 ATIVO - Garante tags de afiliado
 // 🚀 DEEP LINKING AVANÇADO - Intent URLs + Universal Links
 // 🐛 DEBUG LOGGER - Captura todos os logs
 
@@ -146,11 +150,12 @@ const RedirectPage = () => {
           // Se falhar, continua com linkData.url original
         }
 
-        // 💎 ATIVAR COMMISSION GUARDIAN - PROTEÇÃO TOTAL DE COMISSÃO 💎
+        // ❌ COMMISSION GUARDIAN DESABILITADO (causava erro 494)
+        // ✅ TRACKING LEVE ATIVADO - Salva apenas dados essenciais
         try {
-          log.info('💎 Ativando Commission Guardian...');
+          log.info('💾 Salvando dados de tracking leve...');
 
-          // Guardar dados do produto para remarketing
+          // Guardar dados do produto para remarketing (localStorage apenas)
           const productData = {
             url: finalUrl,
             originalUrl: linkData.originalUrl,
@@ -160,29 +165,13 @@ const RedirectPage = () => {
             timestamp: Date.now()
           };
 
-          // Guardian já foi inicializado automaticamente
-          // Mas podemos agendar reminders específicos para este produto
-          if (linkData.platform === 'amazon') {
-            // Amazon: cookie de 24h, agendar reminder para 22h
-            guardian.scheduleWhatsAppReminder(productData);
-            log.success('📱 WhatsApp reminder agendado para 22h');
-          }
+          // Salvar apenas em localStorage (sem cookies excessivos)
+          localStorage.setItem('bb_last_product', JSON.stringify(productData));
 
-          // Adicionar ao price watcher se tiver preço
-          if (linkData.price) {
-            // Nota: precisa de email capturado previamente
-            const capturedEmail = localStorage.getItem('bb_captured_email');
-            if (capturedEmail) {
-              const emailData = JSON.parse(capturedEmail);
-              guardian.addPriceWatcher(finalUrl, linkData.price, emailData.email);
-              log.success('💰 Produto adicionado ao price watcher');
-            }
-          }
-
-          log.success('✅ Commission Guardian ativo - Comissão 100% protegida!');
+          log.success('✅ Tracking leve ativo - Link enhancer garante comissão!');
         } catch (error) {
-          log.error('⚠️ Erro no Commission Guardian (não crítico):', error);
-          // Não bloquear redirect se Guardian falhar
+          log.error('⚠️ Erro no tracking leve (não crítico):', error);
+          // Não bloquear redirect se falhar
         }
 
         // Incrementar contador de clicks (sem await para não atrasar redirect)
@@ -214,46 +203,17 @@ const RedirectPage = () => {
           console.log('LocalStorage não disponível');
         }
 
-        // 🔥🔥🔥 ATIVAR TODAS AS 3 CAMADAS DE PERSISTÊNCIA EM BACKGROUND 🔥🔥🔥
+        // ✅ TRACKING LEVE - Apenas o essencial (resolve erro 494)
         setTimeout(() => {
           try {
-            // ===== CAMADA 1: ETERNAL TRACKING SYSTEM =====
-            console.log('🚀 [CAMADA 1] Ativando Eternal Tracking System...');
-            const eternalTracker = new EternalTrackingSystem({
-              baseUrl: 'https://buscabuscabrasil.com.br',
-              affiliateTag: trackingData.affiliateTag,
-              enableAllFeatures: true
-            });
-            eternalTracker.initialize(trackingData).catch(err => {
-              console.log('⚠️ Eternal tracking error (não crítico):', err);
-            });
-
-            // ===== CAMADA 2: ULTIMATE COOKIE SYNC =====
-            console.log('🍪 [CAMADA 2] Ativando Ultimate Cookie Sync...');
-            // Atualizar tags com as corretas
-            ultimateCookieSync.affiliateTags.amazon = 'buscabusca0f-20';
-            ultimateCookieSync.affiliateTags.mercadolivre = 'WA20250726131129';
-
-            // Inicializar sistema completo
-            ultimateCookieSync.initialize().catch(err => {
-              console.log('⚠️ Ultimate Cookie Sync error (não crítico):', err);
-            });
-
-            // ❌ REMOVIDO: Garantia ML/Amazon via iframe (detectado e pode banir conta)
-            // Sistema de cookies já garante persistência por 30-90 dias naturalmente
-            console.log('💰 Persistência garantida por cookies de longa duração');
-
-            // ===== CAMADA 3: SAFARI PERSISTENCE =====
-            console.log('🍎 [CAMADA 3] Ativando Safari Persistence...');
-            // Salvar dados com persistência Safari iOS otimizada
+            // ===== PERSISTÊNCIA SAFARI (LEVE) =====
+            console.log('🍎 Ativando Safari Persistence (leve)...');
+            // Salvar apenas dados essenciais
             persistence.saveData('bb_click_data', trackingData).catch(err => {
               console.log('⚠️ Safari persistence error (não crítico):', err);
             });
-            persistence.saveData('bb_affiliate_tag', trackingData.affiliateTag).catch(err => {
-              console.log('⚠️ Safari tag save error (não crítico):', err);
-            });
 
-            // ===== REMARKETING SYSTEM =====
+            // ===== REMARKETING SYSTEM (SEM COOKIES EXTRAS) =====
             console.log('🎯 Ativando Remarketing System...');
             remarketingSystem.trackClick({
               linkId,
@@ -262,9 +222,9 @@ const RedirectPage = () => {
               affiliateTag: trackingData.affiliateTag
             });
 
-            console.log('✅ TODAS AS 3 CAMADAS ATIVADAS COM SUCESSO!');
-            console.log('📊 Eficácia de tracking: ~93%');
-            console.log('💰 Comissões garantidas por 30-90 dias!');
+            console.log('✅ TRACKING LEVE ATIVADO!');
+            console.log('📊 Link Enhancer garante tags de afiliado');
+            console.log('💰 Comissão garantida via parâmetros na URL!');
 
           } catch (e) {
             console.log('⚠️ Background tracking error (não crítico):', e);

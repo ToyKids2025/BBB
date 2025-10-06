@@ -337,6 +337,12 @@ export class LinkEnhancerV2 {
         if (data.success && data.resolved_url && data.resolved_url !== shortUrl) {
           let fullUrl = data.resolved_url;
 
+          // 🔥 FIX CRÍTICO: Remover forceInApp da URL expandida
+          if (fullUrl.includes('forceInApp')) {
+            fullUrl = fullUrl.replace(/[?&]forceInApp=[^&]*/g, '');
+            console.log(`🔧 [Retry ${attempt}] Removido forceInApp da URL expandida`);
+          }
+
           // 🔧 FIX: Corrigir URLs ML malformadas pela API
           // Exemplo: /social/wa123&forceInApp → /social/wa123?forceInApp
           if (fullUrl.includes('/social/') && fullUrl.match(/\/social\/[^?]+&/)) {
@@ -344,7 +350,10 @@ export class LinkEnhancerV2 {
             console.log(`🔧 [Retry ${attempt}] URL ML corrigida (& → ?)`);
           }
 
-          console.log(`✅ [Retry ${attempt}] Sucesso! Link expandido`);
+          // 🔧 FIX: Limpar ? ou & sobrando no final
+          fullUrl = fullUrl.replace(/[?&]$/, '');
+
+          console.log(`✅ [Retry ${attempt}] Sucesso! Link expandido e limpo`);
           return fullUrl;
         }
 

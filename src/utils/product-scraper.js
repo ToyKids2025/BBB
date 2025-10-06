@@ -142,18 +142,30 @@ function extractTitleFromUrl(url, platform) {
       }
 
       console.warn('⚠️ [Fallback] Não conseguiu extrair título da URL ML');
-      return 'Produto Mercado Livre';
+      return 'Link Mercado Livre (expandir para ver título)';
+    }
+
+    // 🔥 FIX: Para links curtos ML, sugerir expansão
+    if (url.includes('/sec/') || url.includes('/social/')) {
+      console.warn('⚠️ [Fallback] Link curto ML - título aparecerá após expansão');
+      return 'Link Curto ML - Título será atualizado automaticamente';
+    }
+
+    // 🔥 FIX: Para links curtos Amazon
+    if (url.includes('amzn.to/')) {
+      console.warn('⚠️ [Fallback] Link curto Amazon - título aparecerá após expansão');
+      return 'Link Curto Amazon - Título será atualizado automaticamente';
     }
 
     // Outras plataformas - tentar genérico
     console.warn('⚠️ [Fallback] Plataforma desconhecida, retornando genérico');
-    return 'Produto';
+    return 'Produto (cole link completo para ver título)';
 
   } catch (error) {
     console.error('❌ [Fallback] Erro ao extrair da URL:', error);
-    return platform === 'amazon' ? 'Produto Amazon' :
-           platform === 'mercadolivre' ? 'Produto Mercado Livre' :
-           'Produto';
+    return platform === 'amazon' ? 'Produto Amazon (título não disponível)' :
+           platform === 'mercadolivre' ? 'Produto Mercado Livre (título não disponível)' :
+           'Produto (título não disponível)';
   }
 }
 

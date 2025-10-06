@@ -22,7 +22,7 @@ const CONFIG_V2 = {
   RETRY_ATTEMPTS: 3,           // Tentar 3x antes de fallback
   RETRY_DELAY: 1000,           // 1s entre tentativas
   CACHE_DURATION: 7200000,     // 2h de cache (ms)
-  ENABLE_DEEP_LINKS: true,     // Deep links nativos
+  ENABLE_DEEP_LINKS: false,    // ❌ DESABILITADO: Deep links causam loop em ML
   ENABLE_UTM: true,            // Parâmetros UTM
   ENABLE_ADD_TO_CART: true,    // Amazon add-to-cart
   ENABLE_GEO: true             // Geolocalização
@@ -201,16 +201,46 @@ export class LinkEnhancerV2 {
    * ===================================
    */
   async enhanceMercadoLivreLinkV2(url, options = {}) {
-    // 1. Expandir /sec/ com RETRY
-    if (url.includes('/sec/') || url.includes('/social/')) {
-      console.log('🔗 [ML V2] Expandindo link curto com retry...');
+    // 🔥 FIX CRÍTICO: Remover parâmetros problemáticos do ML
+    if (url.includes('forceInApp')) {
+      url = url.replace(/[?&]forceInApp=[^&]*/g, '');
+      console.log('🔧 [ML V2] Removido forceInApp (causava loop)');
+    }
+
+    // Remover esquema meli:// se presente
+    if (url.includes('meli://')) {
+      url = url.replace(/meli:\/\/[^?]+\?.*url=([^&]+)/, (match, encodedUrl) => {
+        try {
+          return decodeURIComponent(encodedUrl);
+        } catch {
+          return url;
+        }
+      });
+      console.log('🔧 [ML V2] Convertido meli:// para URL web');
+    }
+
+    // 1. Expandir /sec/ com RETRY (mas NÃO /social/ - causa loop)
+    if (url.includes('/sec/') && !url.includes('/social/')) {
+      console.log('🔗 [ML V2] Expandindo link /sec/ com retry...');
       url = await this.expandWithRetry(url, 'mercadolivre');
     }
 
-    // 1.1. 🔧 FIX: Corrigir URLs /social/ malformadas (mesmo se não expandiu)
-    if (url.includes('/social/') && url.match(/\/social\/[^?]+&/)) {
-      url = url.replace(/\/social\/([^&]+)&/, '/social/$1?');
-      console.log('🔧 [ML V2] URL /social/ corrigida (& → ?)');
+    // 1.1. 🔧 FIX: Converter /social/ direto para URL de produto
+    if (url.includes('/social/')) {
+      console.log('⚠️ [ML V2] Detectado /social/, convertendo para produto...');
+      // Tentar extrair MLB do próprio /social/
+      const mlbMatch = url.match(/MLB-?(\d{8,12})/i);
+      if (mlbMatch) {
+        const mlbId = mlbMatch[1];
+        url = `https://www.mercadolivre.com.br/MLB-${mlbId}`;
+        console.log(`✅ [ML V2] Convertido /social/ → /MLB-${mlbId}`);
+      }
+    }
+
+    // 1.2. 🔧 FIX: Corrigir URLs malformadas (& em vez de ?)
+    if (url.match(/\/social\/[^?]+&/) || url.match(/\/MLB-?\d+&/)) {
+      url = url.replace(/([^?]+)&/, '$1?');
+      console.log('🔧 [ML V2] URL corrigida (& → ?)');
     }
 
     // 2. Extrair MLB ID

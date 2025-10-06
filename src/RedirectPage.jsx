@@ -231,14 +231,10 @@ const RedirectPage = () => {
           }
         }, 100); // Executar depois de 100ms em background
 
-        // 🧪 A/B TESTING - Delay ULTRA-RÁPIDO otimizado (300-500ms)
-        const randomValue = Math.random();
-        let testDelay = 400; // padrão 400ms (UX perfeita)
-        if (randomValue < 0.3) testDelay = 300;  // super fast
-        else if (randomValue < 0.7) testDelay = 400;  // fast
-        else testDelay = 500;  // medium
+        // 🚀 REDIRECT INSTANTÂNEO - Otimizado após fix deep link
+        const testDelay = 100; // Apenas 100ms (quase instantâneo)
 
-        console.log('🚀 Delay ultra-rápido:', testDelay, 'ms');
+        console.log('⚡ Redirect instantâneo:', testDelay, 'ms');
 
         // 🚀 SISTEMA AVANÇADO DE DEEP LINKING
         log.device('Detectando dispositivo...');
@@ -251,10 +247,8 @@ const RedirectPage = () => {
           isMobile: device.isMobile
         });
 
-        // Verificar se deep linking é suportado
-        const deepLinkSupported = linkData.platform &&
-          device.isMobile &&
-          isDeepLinkSupported(linkData.platform, linkData.url);
+        // ❌ DEEP LINKING DESABILITADO: Causava loop infinito no ML
+        const deepLinkSupported = false; // Forçar desabilitado
 
         log.link('Deep Link suportado?', {
           supported: deepLinkSupported,

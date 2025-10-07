@@ -5,6 +5,18 @@
   box-sizing: border-box;
 }
 
+/* ⚡ FIX: Remover cursor de loading (bolinha do mouse) */
+html, body {
+  cursor: auto !important;
+}
+
+html[style*="cursor: wait"],
+body[style*="cursor: wait"],
+html[style*="cursor: progress"],
+body[style*="cursor: progress"] {
+  cursor: auto !important;
+}
+
 :root {
   /* Cores Light Theme */
   --primary: #667eea;

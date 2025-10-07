@@ -263,12 +263,23 @@ export class LinkEnhancer {
       url = await this.expandMercadoLivreShortLink(url);
     }
 
-    // 2. Se link já tem tags ML (expandido para /social/ com tags), retornar direto
+    // 2. Se link já tem tags ML (expandido para /social/ com tags), corrigir formato
     if (url.includes('/social/') && url.includes('matt_word=')) {
-      console.log('✅ [ML] Link /social/ já contém tags, retornando sem modificar');
+      console.log('✅ [ML] Link /social/ já contém tags, corrigindo separadores de parâmetros');
+
+      // 🔧 FIX CRÍTICO: Corrigir /social/ID&param → /social/ID?param
+      // Padrão: /social/wa123&matt_word → /social/wa123?matt_word
+      url = url.replace(/\/social\/([^?&]+)&/, '/social/$1?');
+
+      // 🔧 FIX: Corrigir &ref= que deveria ser ?ref= ou &ref= dependendo se já tem ?
+      if (url.includes('&ref=') && !url.includes('?')) {
+        // Se tem &ref= mas não tem ?, substituir primeiro & por ?
+        url = url.replace('&', '?');
+      }
+
       // Verificar se tem nossas tags específicas
       if (url.includes('matt_word=wa20250726131129') && url.includes('matt_tool=88344921')) {
-        return url; // Já tem nossas tags, retornar como está
+        return url; // Já tem nossas tags, retornar corrigido
       }
       // Tem tags de outro afiliado, substituir
       return this.addBasicMLTag(url);

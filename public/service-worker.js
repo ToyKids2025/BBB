@@ -1,29 +1,15 @@
 // public/service-worker.js
 // 🔥 FIX SW CLONE ERROR: Response validation + API exclusion
 
-const STATIC_CACHE_NAME = 'bbb-static-cache-v5'; // ✅ BUMPED: Fix clone() error
-const DYNAMIC_CACHE_NAME = 'bbb-dynamic-cache-v5'; // ✅ BUMPED: Fix clone() error
-// Lista de arquivos essenciais para o funcionamento offline do app shell.
-// O '.' representa a raiz (index.html).
-const FILES_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.ico',
-  '/icon-192.png',
-  '/icon-512.png'
-];
+const STATIC_CACHE_NAME = 'bbb-static-cache-v6'; // ⚡ FAST: No pre-caching
+const DYNAMIC_CACHE_NAME = 'bbb-dynamic-cache-v6'; // ⚡ FAST: No pre-caching
+
+// ⚡ OTIMIZAÇÃO: Removido pre-caching para carregar instantaneamente
+// Cache será feito sob demanda conforme usuário navega
 
 // Evento de instalação: é acionado quando o Service Worker é instalado pela primeira vez.
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Install');
-  // waitUntil() garante que o Service Worker não será instalado até que o código dentro dele seja executado com sucesso.
-  event.waitUntil(
-    caches.open(STATIC_CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Pre-caching App Shell');
-      return cache.addAll(FILES_TO_CACHE);
-    })
-  );
+  console.log('[Service Worker] Install (Fast Mode)');
   // Força o novo Service Worker a se tornar ativo imediatamente.
   self.skipWaiting();
 });

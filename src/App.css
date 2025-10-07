@@ -117,9 +117,25 @@ body {
   padding: 0 var(--spacing-md);
 }
 
-@media (min-width: 768px) {
+/* 🖥️ FIX: Layout desktop fixo - usar apenas largura da JANELA, ignorar DevTools */
+@media only screen and (min-width: 1024px) {
   .container {
     padding: 0 var(--spacing-lg);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Força layout desktop quando janela >= 1024px */
+  body {
+    min-width: 1024px;
+  }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 1023px) {
+  .container {
+    padding: 0 var(--spacing-md);
+    max-width: 960px;
+    margin: 0 auto;
   }
 }
 

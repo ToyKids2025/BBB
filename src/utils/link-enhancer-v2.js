@@ -59,11 +59,26 @@ export class LinkEnhancerV2 {
       v2: true
     });
 
+    // 🔧 FIX: Limpar cache se URL vier malformada (com & antes do ?)
+    if ((url.includes('/social/') || url.includes('/MLB')) && url.includes('&') && !url.includes('?')) {
+      console.log('🗑️ [Cache] URL malformada detectada, limpando cache e reprocessando');
+      this.cache.delete(url);
+      // Limpar também cache persistente
+      const persistentKey = `link_cache_${url}`;
+      localStorage.removeItem(persistentKey);
+    }
+
     // Verificar cache persistente primeiro
     const cached = this.getCachedLink(url);
     if (cached) {
-      console.log('💾 [Cache Hit] Link encontrado no cache');
-      return cached;
+      // Verificar se o cache não está corrompido também
+      if (cached.includes('/social/') && cached.includes('&') && !cached.includes('?')) {
+        console.log('🗑️ [Cache] Cache corrompido detectado, reprocessando');
+        this.cache.delete(url);
+      } else {
+        console.log('💾 [Cache Hit] Link encontrado no cache');
+        return cached;
+      }
     }
 
     try {
@@ -237,10 +252,18 @@ export class LinkEnhancerV2 {
       }
     }
 
-    // 1.2. 🔧 FIX: Corrigir URLs malformadas (& em vez de ?)
-    if (url.match(/\/social\/[^?]+&/) || url.match(/\/MLB-?\d+&/)) {
+    // 1.2. 🔧 FIX CRÍTICO: Corrigir URLs malformadas (& em vez de ?)
+    // Padrão: /social/wa123&ref= → /social/wa123?ref=
+    if (url.includes('/social/') && url.includes('&') && !url.includes('?')) {
+      // Se tem /social/ com & mas sem ?, trocar o primeiro & por ?
+      url = url.replace(/\/social\/([^?&]+)&/, '/social/$1?');
+      console.log('🔧 [ML V2] URL corrigida (/social/ID&param → /social/ID?param)');
+    }
+
+    // Casos gerais de MLB-ID&param
+    if (url.match(/\/MLB-?\d+&/) && !url.includes('?')) {
       url = url.replace(/([^?]+)&/, '$1?');
-      console.log('🔧 [ML V2] URL corrigida (& → ?)');
+      console.log('🔧 [ML V2] URL corrigida (MLB&param → MLB?param)');
     }
 
     // 2. Extrair MLB ID

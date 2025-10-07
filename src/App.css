@@ -117,17 +117,12 @@ body {
   padding: 0 var(--spacing-md);
 }
 
-/* 🖥️ FIX: Layout desktop fixo - usar apenas largura da JANELA, ignorar DevTools */
+/* 🖥️ FIX: Layout desktop responsivo sem quebrar com DevTools */
 @media only screen and (min-width: 1024px) {
   .container {
     padding: 0 var(--spacing-lg);
     max-width: 1400px;
     margin: 0 auto;
-  }
-
-  /* Força layout desktop quando janela >= 1024px */
-  body {
-    min-width: 1024px;
   }
 }
 
@@ -137,6 +132,13 @@ body {
     max-width: 960px;
     margin: 0 auto;
   }
+}
+
+/* Prevenir overflow horizontal */
+body, html {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 
 /* Login Premium */

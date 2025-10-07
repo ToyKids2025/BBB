@@ -58,7 +58,8 @@
       "Read(//mnt/c/Users/CARLA/Downloads/**)",
       "Bash(xxd:*)",
       "Bash(git reset:*)",
-      "Bash(git rev-list:*)"
+      "Bash(git rev-list:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []

@@ -58,13 +58,19 @@ const LinkList = () => {
     if (!editingLink) return;
 
     const { id, title, url } = editingLink;
+
+    console.log('📝 Atualizando link:', { id, title, url });
+
     const result = await updateLink(id, { title, url });
 
     if (result.success) {
+      console.log('✅ Link atualizado com sucesso!');
       await fetchLinks(); // Recarrega a lista para mostrar a alteração
       setIsEditModalOpen(false);
+      setEditingLink(null);
     } else {
-      alert('Erro ao atualizar o link.');
+      console.error('❌ Erro ao atualizar link:', result.error);
+      alert('Erro ao atualizar o link: ' + (result.error || 'Erro desconhecido'));
     }
   };
 
@@ -78,85 +84,6 @@ const LinkList = () => {
 
   return (
     <div className="link-list-container card glass">
-      <style jsx>{`
-        .link-list-container {
-          padding: 2rem;
-          margin-top: 2rem;
-        }
-        .list-header {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          margin-bottom: 1.5rem;
-        }
-        .list-header h2 {
-          margin: 0;
-        }
-        .links-table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        .links-table th, .links-table td {
-          padding: 12px 15px;
-          text-align: left;
-          border-bottom: 1px solid var(--border-color);
-        }
-        .links-table th {
-          font-size: 0.8rem;
-          text-transform: uppercase;
-          color: var(--text-secondary);
-        }
-        .links-table tr:last-child td {
-          border-bottom: none;
-        }
-        .link-title {
-          font-weight: 600;
-          display: block;
-        }
-        .link-url {
-          font-size: 0.8rem;
-          color: var(--text-secondary);
-          word-break: break-all;
-        }
-        .platform-badge {
-          display: inline-block;
-          padding: 4px 8px;
-          border-radius: 12px;
-          font-size: 0.75rem;
-          font-weight: 500;
-          text-transform: capitalize;
-        }
-        .platform-badge.amazon { background: #ff9900; color: white; }
-        .platform-badge.mercadolivre { background: #ffe600; color: #333; }
-        .platform-badge.magalu { background: #0086ff; color: white; }
-        .platform-badge.other { background: #666; color: white; }
-        .actions {
-          display: flex;
-          gap: 10px;
-        }
-        .action-btn {
-          background: transparent;
-          border: none;
-          cursor: pointer;
-          font-size: 1.1rem;
-          color: var(--text-secondary);
-          transition: color 0.2s;
-        }
-        .action-btn:hover {
-          color: var(--accent-color);
-        }
-        .action-btn.delete:hover {
-          color: var(--error);
-        }
-        .copied-feedback {
-          color: var(--success);
-        }
-        .no-links {
-          text-align: center;
-          padding: 3rem;
-          color: var(--text-secondary);
-        }
-      `}</style>
 
       <div className="list-header">
         <FiLink size={28} />
@@ -226,18 +153,22 @@ const LinkList = () => {
                   <label>Título</label>
                   <input
                     type="text"
-                    value={editingLink.title}
+                    value={editingLink.title || ''}
                     onChange={(e) => setEditingLink({ ...editingLink, title: e.target.value })}
                     className="input"
+                    placeholder="Digite o nome do link"
+                    required
                   />
                 </div>
                 <div className="form-group">
                   <label>URL de Destino</label>
                   <input
                     type="url"
-                    value={editingLink.url}
+                    value={editingLink.url || ''}
                     onChange={(e) => setEditingLink({ ...editingLink, url: e.target.value })}
                     className="input"
+                    placeholder="https://..."
+                    required
                   />
                 </div>
               </div>

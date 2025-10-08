@@ -25,7 +25,8 @@ const CONFIG_V2 = {
   ENABLE_DEEP_LINKS: false,    // ❌ DESABILITADO: Deep links causam loop em ML
   ENABLE_UTM: true,            // Parâmetros UTM
   ENABLE_ADD_TO_CART: true,    // Amazon add-to-cart
-  ENABLE_GEO: true             // Geolocalização
+  ENABLE_GEO: true,            // Geolocalização
+  CACHE_VERSION: 'v2.1'        // 🔥 Versão do cache (incrementar para invalidar)
 };
 
 /**
@@ -240,15 +241,20 @@ export class LinkEnhancerV2 {
       url = await this.expandWithRetry(url, 'mercadolivre');
     }
 
-    // 1.1. 🔧 FIX: Converter /social/ direto para URL de produto
+    // 1.1. 🔧 FIX: Processar /social/ - apenas adicionar tags
     if (url.includes('/social/')) {
-      console.log('⚠️ [ML V2] Detectado /social/, convertendo para produto...');
-      // Tentar extrair MLB do próprio /social/
+      console.log('⚠️ [ML V2] Detectado /social/, adicionando tags...');
+
+      // Tentar extrair MLB se estiver visível na URL ou parâmetros
       const mlbMatch = url.match(/MLB-?(\d{8,12})/i);
       if (mlbMatch) {
         const mlbId = mlbMatch[1];
         url = `https://www.mercadolivre.com.br/MLB-${mlbId}`;
-        console.log(`✅ [ML V2] Convertido /social/ → /MLB-${mlbId}`);
+        console.log(`✅ [ML V2] MLB encontrado! Convertido /social/ → /MLB-${mlbId}`);
+      } else {
+        // Não tem MLB visível - manter /social/ e apenas adicionar tags
+        console.log('ℹ️ [ML V2] /social/ sem MLB - mantendo link social com tags');
+        return this.addBasicMLTag(url);
       }
     }
 
@@ -455,6 +461,15 @@ export class LinkEnhancerV2 {
    */
   loadPersistentCache() {
     try {
+      // 🔥 Verificar versão do cache
+      const cacheVersion = localStorage.getItem('bbb_cache_version');
+      if (cacheVersion !== CONFIG_V2.CACHE_VERSION) {
+        console.log(`🗑️ [Cache] Versão antiga detectada (${cacheVersion} → ${CONFIG_V2.CACHE_VERSION}), limpando...`);
+        localStorage.removeItem('bbb_link_cache_v2');
+        localStorage.setItem('bbb_cache_version', CONFIG_V2.CACHE_VERSION);
+        return {};
+      }
+
       const cached = localStorage.getItem('bbb_link_cache_v2');
       if (cached) {
         const data = JSON.parse(cached);

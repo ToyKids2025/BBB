@@ -59,7 +59,8 @@
       "Bash(xxd:*)",
       "Bash(git reset:*)",
       "Bash(git rev-list:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(firebase firestore:query:*)"
     ],
     "deny": [],
     "ask": []

@@ -141,20 +141,25 @@ function extractTitleFromUrl(url, platform) {
         return title || 'Produto Mercado Livre';
       }
 
+      // 🔥 FIX: Padrão 3 - Links /social/ expandidos (podem ter MLB nos parâmetros)
+      // Exemplo: /social/wa20250726131129?matt_word=...&item_id=MLB123456789
+      if (url.includes('/social/')) {
+        console.log('🔍 [Fallback] Detectado link /social/, tentando extrair MLB dos parâmetros...');
+
+        // Tentar extrair item_id dos parâmetros
+        const itemIdMatch = url.match(/[?&]item_id=MLB-?(\d{8,12})/i);
+        if (itemIdMatch && itemIdMatch[1]) {
+          console.log(`✅ [Fallback] MLB encontrado em item_id: MLB${itemIdMatch[1]}`);
+          return `Produto MLB${itemIdMatch[1]}`;
+        }
+
+        // Se não tem item_id, é um link /social/ sem MLB visível
+        console.warn('⚠️ [Fallback] Link /social/ sem MLB nos parâmetros');
+        return 'Link Social Mercado Livre';
+      }
+
       console.warn('⚠️ [Fallback] Não conseguiu extrair título da URL ML');
       return 'Link Mercado Livre (expandir para ver título)';
-    }
-
-    // 🔥 FIX: Para links curtos ML, sugerir expansão
-    if (url.includes('/sec/') || url.includes('/social/')) {
-      console.warn('⚠️ [Fallback] Link curto ML - título aparecerá após expansão');
-      return 'Link Curto ML - Título será atualizado automaticamente';
-    }
-
-    // 🔥 FIX: Para links curtos Amazon
-    if (url.includes('amzn.to/')) {
-      console.warn('⚠️ [Fallback] Link curto Amazon - título aparecerá após expansão');
-      return 'Link Curto Amazon - Título será atualizado automaticamente';
     }
 
     // Outras plataformas - tentar genérico

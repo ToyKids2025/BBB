@@ -4,6 +4,7 @@ import { FiLink, FiClipboard, FiCheck, FiZap, FiX, FiLoader } from 'react-icons/
 import { FaAmazon, FaShopify } from 'react-icons/fa';
 import { SiMercadopago } from 'react-icons/si';
 import { fetchProductTitle } from '../utils/product-scraper';
+import { enhanceLink } from '../utils/link-enhancer';
 
 /**
  * Componente LinkManager
@@ -60,13 +61,27 @@ const LinkManager = () => {
 
   /**
    * Buscar título do produto automaticamente
+   * 🔥 FIX: Expande link ANTES de buscar título (resolve /sec/ e /social/)
    */
   const autoFetchTitle = React.useCallback(async (productUrl, productPlatform) => {
     try {
       setFetchingTitle(true);
       console.log('🔍 Buscando título do produto automaticamente...');
 
-      const productTitle = await fetchProductTitle(productUrl, productPlatform);
+      // 🔥 PASSO 1: Expandir link primeiro (amzn.to, /sec/, /social/)
+      let expandedUrl = productUrl;
+      if (productPlatform === 'amazon' || productPlatform === 'mercadolivre') {
+        try {
+          console.log('🔧 [Title Fetch] Expandindo link antes de buscar título...');
+          expandedUrl = await enhanceLink(productUrl, productPlatform);
+          console.log('✅ [Title Fetch] Link expandido:', expandedUrl.substring(0, 80));
+        } catch (error) {
+          console.warn('⚠️ [Title Fetch] Erro ao expandir, usando URL original:', error);
+        }
+      }
+
+      // 🔥 PASSO 2: Buscar título do link EXPANDIDO
+      const productTitle = await fetchProductTitle(expandedUrl, productPlatform);
 
       setTitle(productTitle);
       console.log('✅ Título encontrado:', productTitle);

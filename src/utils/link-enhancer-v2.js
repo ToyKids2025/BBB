@@ -217,10 +217,28 @@ export class LinkEnhancerV2 {
    * ===================================
    */
   async enhanceMercadoLivreLinkV2(url, options = {}) {
-    // 🔥 FIX CRÍTICO: Remover parâmetros problemáticos do ML
+    // 🔥 FIX CRÍTICO: Remover parâmetros problemáticos do ML (preservando ? inicial)
     if (url.includes('forceInApp')) {
-      url = url.replace(/[?&]forceInApp=[^&]*/g, '');
-      console.log('🔧 [ML V2] Removido forceInApp (causava loop)');
+      console.log('🔧 [ML V2] Detectado forceInApp, removendo...');
+
+      // CASO 1: forceInApp logo após ? (primeiro parâmetro)
+      // ?forceInApp=X&outros → ?outros
+      url = url.replace(/\?forceInApp=[^&]*&/gi, '?');
+
+      // CASO 2: forceInApp é o único parâmetro
+      // ?forceInApp=X → (sem parâmetros)
+      url = url.replace(/\?forceInApp=[^&]*$/gi, '');
+
+      // CASO 3: forceInApp no meio ou fim
+      // &forceInApp=X ou &forceInApp=X&
+      url = url.replace(/&forceInApp=[^&]*/gi, '');
+
+      // Limpar & duplicados ou órfãos que possam ter sobrado
+      url = url.replace(/&&+/g, '&');  // && → &
+      url = url.replace(/\?&/g, '?');   // ?& → ?
+      url = url.replace(/&$/g, '');     // remove & no final
+
+      console.log('🔧 [ML V2] forceInApp removido (causava loop)');
     }
 
     // Remover esquema meli:// se presente
@@ -241,9 +259,34 @@ export class LinkEnhancerV2 {
       url = await this.expandWithRetry(url, 'mercadolivre');
     }
 
-    // 1.1. 🔧 FIX: Processar /social/ - apenas adicionar tags
+    // 1.1. 🔧 FIX: Processar /social/ - verificar se já tem tags do ML
     if (url.includes('/social/')) {
-      console.log('⚠️ [ML V2] Detectado /social/, adicionando tags...');
+      console.log('⚠️ [ML V2] Detectado /social/, verificando tags...');
+
+      // 🆕 VERIFICAR SE JÁ TEM TAGS ML OFICIAIS (wa*)
+      const mattWordMatch = url.match(/matt_word=([^&]*)/i);
+      const currentWord = mattWordMatch ? mattWordMatch[1].toLowerCase() : '';
+
+      // Se já tem tag wa* (tag oficial do ML), PRESERVAR TUDO e retornar
+      if (currentWord.startsWith('wa')) {
+        console.log('✅ [ML V2] /social/ já tem tags ML oficiais (wa*), preservando URL completa');
+        // Apenas remover forceInApp se tiver (PRESERVANDO ? inicial)
+        if (url.includes('forceInApp')) {
+          // CASO 1: forceInApp logo após ? → ?forceInApp=X&outros → ?outros
+          url = url.replace(/\?forceInApp=[^&]*&/gi, '?');
+          // CASO 2: forceInApp único parâmetro → ?forceInApp=X → (vazio)
+          url = url.replace(/\?forceInApp=[^&]*$/gi, '');
+          // CASO 3: forceInApp no meio/fim → &forceInApp=X
+          url = url.replace(/&forceInApp=[^&]*/gi, '');
+
+          // Limpar & ou ? órfãos que possam ter sobrado
+          url = url.replace(/&&+/g, '&');
+          url = url.replace(/\?&/g, '?');
+          url = url.replace(/&$/g, '');
+          console.log('🔧 [ML V2] Removido apenas forceInApp, tags preservadas');
+        }
+        return url;
+      }
 
       // Tentar extrair MLB se estiver visível na URL ou parâmetros
       const mlbMatch = url.match(/MLB-?(\d{8,12})/i);
@@ -366,9 +409,14 @@ export class LinkEnhancerV2 {
         if (data.success && data.resolved_url && data.resolved_url !== shortUrl) {
           let fullUrl = data.resolved_url;
 
-          // 🔥 FIX CRÍTICO: Remover forceInApp da URL expandida
+          // 🔥 FIX CRÍTICO: Remover forceInApp da URL expandida (PRESERVANDO ? inicial)
           if (fullUrl.includes('forceInApp')) {
-            fullUrl = fullUrl.replace(/[?&]forceInApp=[^&]*/g, '');
+            // CASO 1: forceInApp logo após ? → ?forceInApp=X&outros → ?outros
+            fullUrl = fullUrl.replace(/\?forceInApp=[^&]*&/gi, '?');
+            // CASO 2: forceInApp único parâmetro → ?forceInApp=X → (vazio)
+            fullUrl = fullUrl.replace(/\?forceInApp=[^&]*$/gi, '');
+            // CASO 3: forceInApp no meio/fim → &forceInApp=X
+            fullUrl = fullUrl.replace(/&forceInApp=[^&]*/gi, '');
             console.log(`🔧 [Retry ${attempt}] Removido forceInApp da URL expandida`);
           }
 
@@ -576,8 +624,65 @@ export class LinkEnhancerV2 {
   }
 
   addBasicMLTag(url) {
-    url = url.replace(/[?&]matt_word=[^&]*/gi, '');
-    url = url.replace(/[?&]matt_tool=[^&]*/gi, '');
+    // 🔥 FIX CRÍTICO: Verificar se as tags JÁ EXISTEM (links /social/ já vêm com tags do ML)
+    const hasMattWord = url.includes('matt_word=');
+    const hasMattTool = url.includes('matt_tool=');
+
+    // Se JÁ TEM as tags corretas, apenas retornar (preservar URL original)
+    if (hasMattWord && hasMattTool) {
+      // Verificar se são NOSSAS tags (com valores exatos ou similares)
+      const ourWordTag = AFFILIATE_TAGS.ML_WORD.toLowerCase();
+
+      // Extrair o valor atual de matt_word da URL
+      const mattWordMatch = url.match(/matt_word=([^&]*)/i);
+      const mattToolMatch = url.match(/matt_tool=([^&]*)/i);
+
+      const currentWord = mattWordMatch ? mattWordMatch[1].toLowerCase() : '';
+      const currentTool = mattToolMatch ? mattToolMatch[1] : '';
+
+      // Se são NOSSAS tags OU tags do ML oficial (wa20250726131129), preservar URL
+      if (currentWord === ourWordTag && currentTool === AFFILIATE_TAGS.ML_TOOL) {
+        console.log('✅ [ML Tag] Nossas tags já presentes, preservando URL');
+        return url;
+      }
+
+      // 🆕 FIX: Se matt_word começa com "wa" (tag oficial ML), NÃO substituir
+      // Isso preserva a comissão já embutida no link
+      if (currentWord.startsWith('wa') && currentTool) {
+        console.log('✅ [ML Tag] Tags ML oficiais detectadas (wa*), preservando para não perder comissão');
+        return url;
+      }
+
+      // Tags de outro afiliado - substituir PRESERVANDO o separador ?
+      console.log('⚠️ [ML Tag] Tags de terceiro detectadas, substituindo');
+
+      // 🔧 FIX CRÍTICO: Preservar ? ao remover parâmetros
+      let hasQuestionMark = false;
+
+      // Se matt_word vier logo após ?, marcar para recolocar o ?
+      if (url.match(/\?matt_word=/i)) {
+        hasQuestionMark = true;
+        // Remover matt_word mas guardar que tinha ?
+        url = url.replace(/\?matt_word=[^&]*/i, '');
+      } else {
+        // Remover matt_word com & normalmente
+        url = url.replace(/&matt_word=[^&]*/gi, '');
+      }
+
+      // Remover matt_tool
+      url = url.replace(/[?&]matt_tool=[^&]*/gi, '');
+
+      // Limpar & ou ? órfãos no final
+      url = url.replace(/[?&]$/, '');
+
+      // Se tinha ?, garantir que a URL ainda tem um ?
+      // Se não tiver mais nenhum ?, adicionar antes das nossas tags
+      if (hasQuestionMark && !url.includes('?')) {
+        return `${url}?matt_word=${ourWordTag}&matt_tool=${AFFILIATE_TAGS.ML_TOOL}`;
+      }
+    }
+
+    // Adicionar nossas tags
     const separator = url.includes('?') ? '&' : '?';
     return `${url}${separator}matt_word=${AFFILIATE_TAGS.ML_WORD.toLowerCase()}&matt_tool=${AFFILIATE_TAGS.ML_TOOL}`;
   }

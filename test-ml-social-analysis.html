@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Análise ML Social URL</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #0f0;
+            padding: 30px;
+            line-height: 1.8;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #0ff;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #0ff;
+            padding-bottom: 15px;
+            font-size: 32px;
+        }
+        h2 {
+            color: #ff0;
+            margin: 40px 0 20px 0;
+            font-size: 20px;
+            border-left: 5px solid #ff0;
+            padding-left: 15px;
+        }
+        .test-case {
+            background: #111;
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .url-box {
+            background: #222;
+            border-left: 5px solid #0f0;
+            padding: 15px;
+            margin: 15px 0;
+            word-break: break-all;
+            font-size: 14px;
+            font-family: monospace;
+        }
+        .url-box.error {
+            border-left-color: #f00;
+            color: #faa;
+        }
+        .url-box.success {
+            border-left-color: #0f0;
+            color: #0f0;
+        }
+        .url-box.warning {
+            border-left-color: #fa0;
+            color: #fc6;
+        }
+        .label {
+            color: #aaa;
+            font-size: 13px;
+            margin: 15px 0 8px 0;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .highlight {
+            background: #ff0;
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .highlight.error {
+            background: #f00;
+            color: #fff;
+        }
+        .highlight.success {
+            background: #0f0;
+            color: #000;
+        }
+        .analysis {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .analysis-item {
+            margin: 12px 0;
+            padding: 10px;
+            border-left: 3px solid #666;
+            padding-left: 15px;
+        }
+        .code {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 ANÁLISE DETALHADA: ML SOCIAL URL PROBLEM</h1>
+
+        <div class="test-case">
+            <h2>📌 CASO FORNECIDO PELO USUÁRIO</h2>
+
+            <div class="label">1️⃣ Link Curto (gerado pela plataforma ML com ID embutido):</div>
+            <div class="url-box success">
+                https://mercadolivre.com/sec/16toDJv
+            </div>
+
+            <div class="label">2️⃣ Link após clique (expandido pelo ML - CORRETO):</div>
+            <div class="url-box success">
+                https://www.mercadolivre.com.br/social/wa20250726131129<span class="highlight success">?</span>matt_word=wa20250726131129&matt_tool=88344921&forceInApp=true&ref=BLfv9re2Ce3IHOCRy4UG4qLQv%2BSOYYLae7KgXRAiUimgJkdno1Fl8FFMzefGf7NzfIm1olr%2FifeGjSXKHfyUuWXQC6bi%2FsvbZpcRTAunalDzj5tlqfQ31eSWpuwfvdDYogV06Fswii3bbWEWMryswDwMkCFuYG3eIK%2BvamVGv6fmYraVnz04HSASnpJ48K937aez%2FQ%3D%3D
+            </div>
+            <div class="analysis">
+                <div class="analysis-item">
+                    ✅ <strong>Estrutura:</strong> /social/<span class="highlight success">ID</span><span class="highlight success">?</span><span class="highlight success">params</span><br>
+                    ✅ <strong>Tag oficial ML:</strong> matt_word=<span class="highlight success">wa20250726131129</span> (começa com "wa")<br>
+                    ✅ <strong>Separador correto:</strong> <span class="highlight success">?</span> entre ID e parâmetros
+                </div>
+            </div>
+
+            <div class="label">3️⃣ Link BBB gerado:</div>
+            <div class="url-box">
+                https://www.buscabuscabrasil.com.br/r/L30Qp7UdlPzedEKKgQSW
+            </div>
+
+            <div class="label">4️⃣ Link final após processamento BBB (ERRO - diz que não existe):</div>
+            <div class="url-box error">
+                https://www.mercadolivre.com.br/social/wa20250726131129<span class="highlight error">&</span>ref=BLfv9re2Ce3IHOCRy4UG4qLQv%2BSOYYLae7KgXRAiUimgJkdno1Fl8FFMzefGf7NzfIm1olr%2FifeGjSXKHfyUuWXQC6bi%2FsvbZpcRTAunalDzj5tlqfQ31eSWpuwfvdDYogV06Fswii3bbWEWMryswDwMkCFuYG3eIK%2BvamVGv6fmYraVnz04HSASnpJ48K937aez%2FQ%3D%3D?matt_word=wa20250726131129&matt_tool=88344921
+            </div>
+            <div class="analysis">
+                <div class="analysis-item" style="border-left-color: #f00; color: #faa;">
+                    ❌ <strong>Estrutura QUEBRADA:</strong> /social/<span class="highlight">ID</span><span class="highlight error">&</span><span class="highlight">ref=...</span><span class="highlight success">?</span><span class="highlight">matt_word=...</span><br>
+                    ❌ <strong>Problema:</strong> O <span class="highlight error">&</span> está sendo usado NO LUGAR do <span class="highlight success">?</span><br>
+                    ❌ <strong>Resultado:</strong> ML não reconhece os parâmetros ref=...<br>
+                    ❌ <strong>Tags no final:</strong> ?matt_word... adicionadas DEPOIS (errado!)
+                </div>
+            </div>
+        </div>
+
+        <div class="test-case">
+            <h2>🔍 DIAGNÓSTICO DO PROBLEMA</h2>
+
+            <div class="analysis">
+                <h3 style="color: #f00; margin-bottom: 15px;">❌ O QUE ESTÁ ACONTECENDO:</h3>
+                
+                <div class="analysis-item">
+                    <strong>1. URL ORIGINAL correta:</strong><br>
+                    <div class="code">/social/wa20250726131129<span style="color: #0f0;">?</span>matt_word=...&forceInApp=...&ref=...</div>
+                </div>
+
+                <div class="analysis-item">
+                    <strong>2. Link Enhancer V2 detecta tags "wa*" e tenta PRESERVAR</strong><br>
+                    → Linha 262-272 do link-enhancer-v2.js
+                </div>
+
+                <div class="analysis-item">
+                    <strong>3. Remove forceInApp (correto):</strong><br>
+                    <div class="code">
+url.replace(/[?&]forceInApp=[^&]*/gi, '')<br>
+// Remove: ?forceInApp=true<br>
+// <span style="color: #f00;">MAS também remove o "?" inicial!</span>
+                    </div>
+                </div>
+
+                <div class="analysis-item">
+                    <strong>4. Limpa & duplicados:</strong><br>
+                    <div class="code">
+url.replace(/&&+/g, '&')<br>
+url.replace(/\?&/g, '?')<br>
+url.replace(/&$/g, '')
+                    </div>
+                </div>
+
+                <div class="analysis-item" style="border-left-color: #f00; color: #faa;">
+                    <strong>5. PROBLEMA:</strong> Se forceInApp está logo após ?, ao removê-lo:<br>
+                    <div class="code" style="background: #1a0000;">
+<span style="color: #666;">// ANTES:</span><br>
+/social/wa20250726131129<span style="color: #0f0;">?</span>matt_word=...&forceInApp=true&ref=...<br>
+<br>
+<span style="color: #666;">// Remove forceInApp:</span><br>
+/social/wa20250726131129<span style="color: #0f0;">?</span>matt_word=...&<span style="color: #f00; text-decoration: line-through;">forceInApp=true&</span>ref=...<br>
+<br>
+<span style="color: #666;">// Resultado:</span><br>
+/social/wa20250726131129?matt_word=...&ref=... <span style="color: #0f0;">// ✅ CORRETO</span><br>
+<br>
+<span style="color: #666;">// MAS SE matt_word TAMBÉM É REMOVIDO (tags duplicadas):</span><br>
+/social/wa20250726131129<span style="color: #f00; text-decoration: line-through;">?matt_word=...&</span>ref=... <span style="color: #f00;">// ❌ SOBRA "&ref"</span><br>
+<br>
+<span style="color: #666;">// url.replace(/\?&/g, '?') transforma:</span><br>
+/social/wa20250726131129<span style="color: #f00;">&</span>ref=... <span style="color: #f00;">// ❌❌❌ ERRO!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-case">
+            <h2>💡 SOLUÇÃO IDENTIFICADA</h2>
+
+            <div class="analysis">
+                <div class="analysis-item" style="border-left-color: #0f0; color: #0f0;">
+                    <strong>PROBLEMA RAIZ:</strong> Ao remover parâmetros do início da query string, o código não preserva o "?"
+                </div>
+
+                <div class="analysis-item">
+                    <strong>CORREÇÃO NECESSÁRIA em link-enhancer-v2.js (linhas 606-667):</strong>
+                    <div class="code">
+<span style="color: #666;">// ❌ CÓDIGO ATUAL (problemático):</span><br>
+<span style="color: #f00;">url = url.replace(/[?&]forceInApp=[^&]*/gi, '');</span><br>
+<br>
+<span style="color: #666;">// ✅ CÓDIGO CORRETO:</span><br>
+<span style="color: #0f0;">// 1. Verificar se forceInApp está logo após ?</span><br>
+<span style="color: #0f0;">if (url.match(/\?forceInApp=/i)) {</span><br>
+<span style="color: #0f0;">  // Substituir ?forceInApp=...& por ?</span><br>
+<span style="color: #0f0;">  url = url.replace(/\?forceInApp=[^&]*&/i, '?');</span><br>
+<span style="color: #0f0;">  // Se forceInApp é o único param, substituir por vazio</span><br>
+<span style="color: #0f0;">  url = url.replace(/\?forceInApp=[^&]*$/i, '');</span><br>
+<span style="color: #0f0;">} else {</span><br>
+<span style="color: #0f0;">  // forceInApp está no meio ou fim, remover normalmente</span><br>
+<span style="color: #0f0;">  url = url.replace(/&forceInApp=[^&]*/gi, '');</span><br>
+<span style="color: #0f0;">}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-case">
+            <h2>🎯 CASOS DE TESTE</h2>
+
+            <div class="code">
+<span style="color: #0ff;">TESTE 1:</span> ?forceInApp=true&ref=XXX<br>
+<span style="color: #666;">Remove forceInApp → ?ref=XXX ✅</span><br>
+<br>
+<span style="color: #0ff;">TESTE 2:</span> ?matt_word=wa123&forceInApp=true&ref=XXX<br>
+<span style="color: #666;">Remove forceInApp → ?matt_word=wa123&ref=XXX ✅</span><br>
+<br>
+<span style="color: #0ff;">TESTE 3:</span> ?ref=XXX&forceInApp=true<br>
+<span style="color: #666;">Remove forceInApp → ?ref=XXX ✅</span><br>
+<br>
+<span style="color: #0ff;">TESTE 4:</span> ?forceInApp=true (único param)<br>
+<span style="color: #666;">Remove forceInApp → (vazio, sem ?) ✅</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

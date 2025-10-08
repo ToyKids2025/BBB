@@ -263,25 +263,46 @@ export class LinkEnhancer {
       url = await this.expandMercadoLivreShortLink(url);
     }
 
-    // 2. Se link já tem tags ML (expandido para /social/ com tags), corrigir formato
+    // 2. Se link já tem tags ML (expandido para /social/ com tags), PRESERVAR tags wa*
     if (url.includes('/social/') && url.includes('matt_word=')) {
-      console.log('✅ [ML] Link /social/ já contém tags, corrigindo separadores de parâmetros');
+      console.log('✅ [ML] Link /social/ já contém tags, verificando...');
 
-      // 🔧 FIX CRÍTICO: Corrigir /social/ID&param → /social/ID?param
-      // Padrão: /social/wa123&matt_word → /social/wa123?matt_word
-      url = url.replace(/\/social\/([^?&]+)&/, '/social/$1?');
+      // Verificar se tem tags ML oficiais (wa*)
+      const mattWordMatch = url.match(/matt_word=([^&]*)/i);
+      const currentWord = mattWordMatch ? mattWordMatch[1].toLowerCase() : '';
 
-      // 🔧 FIX: Corrigir &ref= que deveria ser ?ref= ou &ref= dependendo se já tem ?
-      if (url.includes('&ref=') && !url.includes('?')) {
-        // Se tem &ref= mas não tem ?, substituir primeiro & por ?
-        url = url.replace('&', '?');
+      // Se já tem tag wa* (tag oficial do ML), PRESERVAR TUDO
+      if (currentWord.startsWith('wa')) {
+        console.log('✅ [ML] Tags ML oficiais detectadas (wa*), preservando URL completa');
+
+        // Remover apenas forceInApp se tiver (PRESERVANDO ? inicial)
+        if (url.includes('forceInApp')) {
+          // CASO 1: forceInApp logo após ? → ?forceInApp=X&outros → ?outros
+          url = url.replace(/\?forceInApp=[^&]*&/gi, '?');
+          // CASO 2: forceInApp único parâmetro → ?forceInApp=X → (vazio)
+          url = url.replace(/\?forceInApp=[^&]*$/gi, '');
+          // CASO 3: forceInApp no meio/fim → &forceInApp=X
+          url = url.replace(/&forceInApp=[^&]*/gi, '');
+
+          // Limpar & ou ? órfãos que possam ter sobrado
+          url = url.replace(/&&+/g, '&');
+          url = url.replace(/\?&/g, '?');
+          url = url.replace(/&$/g, '');
+          console.log('🔧 [ML] Removido apenas forceInApp, tags preservadas');
+        }
+
+        // 🔧 FIX CRÍTICO: Corrigir /social/ID&param → /social/ID?param
+        // (caso ainda tenha ficado malformado)
+        if (url.match(/\/social\/[^?]+&/)) {
+          url = url.replace(/\/social\/([^?&]+)&/, '/social/$1?');
+          console.log('🔧 [ML] URL corrigida (/social/ID&... → /social/ID?...)');
+        }
+
+        return url;
       }
 
-      // Verificar se tem nossas tags específicas
-      if (url.includes('matt_word=wa20250726131129') && url.includes('matt_tool=88344921')) {
-        return url; // Já tem nossas tags, retornar corrigido
-      }
-      // Tem tags de outro afiliado, substituir
+      // Tem tags de outro afiliado, substituir pelas nossas
+      console.log('⚠️ [ML] Tags de terceiro detectadas, substituindo');
       return this.addBasicMLTag(url);
     }
 
@@ -333,12 +354,28 @@ export class LinkEnhancer {
       if (data.success && data.resolved_url) {
         let fullUrl = data.resolved_url;
 
+        // 🔥 FIX CRÍTICO: Remover forceInApp da URL expandida (PRESERVANDO ? inicial)
+        if (fullUrl.includes('forceInApp')) {
+          // CASO 1: forceInApp logo após ? → ?forceInApp=X&outros → ?outros
+          fullUrl = fullUrl.replace(/\?forceInApp=[^&]*&/gi, '?');
+          // CASO 2: forceInApp único parâmetro → ?forceInApp=X → (vazio)
+          fullUrl = fullUrl.replace(/\?forceInApp=[^&]*$/gi, '');
+          // CASO 3: forceInApp no meio/fim → &forceInApp=X
+          fullUrl = fullUrl.replace(/&forceInApp=[^&]*/gi, '');
+          console.log('🔧 [ML] Removido forceInApp da URL expandida');
+        }
+
         // 🔧 FIX: Corrigir URLs ML malformadas pela API
-        // Exemplo: /social/wa123&forceInApp → /social/wa123?forceInApp
+        // Exemplo: /social/wa123&ref → /social/wa123?ref
         if (fullUrl.includes('/social/') && fullUrl.match(/\/social\/[^?]+&/)) {
-          fullUrl = fullUrl.replace(/\/social\/([^&]+)&/, '/social/$1?');
+          fullUrl = fullUrl.replace(/\/social\/([^?&]+)&/, '/social/$1?');
           console.log('🔧 [ML] URL corrigida (& → ?)');
         }
+
+        // Limpar & ou ? órfãos
+        fullUrl = fullUrl.replace(/&&+/g, '&');
+        fullUrl = fullUrl.replace(/\?&/g, '?');
+        fullUrl = fullUrl.replace(/&$/g, '');
 
         // Salvar no cache
         this.cache.set(shortUrl, fullUrl);

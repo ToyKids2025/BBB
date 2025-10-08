@@ -120,6 +120,16 @@ export function addAffiliateTag(url, platform, useRotation = false) {
 
       // Verificar se já tem parâmetros de afiliado
       if (url.includes('matt_word=') || url.includes('matt_tool=')) {
+        // 🔥 VERIFICAR SE JÁ TEM TAGS ML OFICIAIS (wa*)
+        const mattWordMatch = url.match(/matt_word=([^&]*)/i);
+        const currentWord = mattWordMatch ? mattWordMatch[1].toLowerCase() : '';
+
+        // Se já tem tag wa* (tag oficial do ML), PRESERVAR TUDO
+        if (currentWord.startsWith('wa')) {
+          console.log('✅ [Config] Tags ML oficiais detectadas (wa*), preservando URL');
+          return url;
+        }
+
         // Verificar se já é nossa tag oficial (case insensitive)
         if (url.toLowerCase().includes(`matt_word=${mlWord}`)) {
           return url; // Já tem nossa tag oficial

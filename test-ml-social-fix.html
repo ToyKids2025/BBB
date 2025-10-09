@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste ML Social Link Fix</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background: #1a1a1a;
+      color: #00ff00;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #00ffff;
+      border-bottom: 2px solid #00ffff;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #ffff00;
+      margin-top: 30px;
+    }
+    .test-case {
+      background: #2a2a2a;
+      border: 1px solid #00ff00;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 5px;
+    }
+    .label {
+      color: #ffff00;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .url {
+      background: #0a0a0a;
+      padding: 10px;
+      margin: 5px 0;
+      border-left: 3px solid #00ff00;
+      word-break: break-all;
+      font-size: 12px;
+    }
+    .expected {
+      border-left-color: #00ff00;
+    }
+    .result {
+      border-left-color: #00ffff;
+    }
+    .error {
+      border-left-color: #ff0000;
+      color: #ff6666;
+    }
+    .success {
+      color: #00ff00;
+      font-weight: bold;
+    }
+    .failure {
+      color: #ff0000;
+      font-weight: bold;
+    }
+    button {
+      background: #00ff00;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #00ffff;
+    }
+    .stats {
+      background: #2a2a2a;
+      border: 2px solid #00ffff;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Teste ML Social Link Fix</h1>
+  <p>Teste completo para validar a correção de URLs /social/ do Mercado Livre</p>
+
+  <button onclick="runTests()">▶️ Executar Testes</button>
+  <button onclick="clearResults()">🗑️ Limpar Resultados</button>
+
+  <div id="stats" class="stats" style="display:none;">
+    <h2>📊 Estatísticas</h2>
+    <p>Total de Testes: <span id="total">0</span></p>
+    <p class="success">✅ Sucessos: <span id="success">0</span></p>
+    <p class="failure">❌ Falhas: <span id="failures">0</span></p>
+  </div>
+
+  <div id="results"></div>
+
+  <script type="module">
+    import { linkEnhancerV2 } from './src/utils/link-enhancer-v2.js';
+
+    window.linkEnhancerV2 = linkEnhancerV2;
+
+    window.runTests = async function() {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '<h2>🔄 Executando testes...</h2>';
+
+      const tests = [
+        {
+          name: 'Caso Real 1: Link /sec/ expandido com tags ML (wa*)',
+          input: 'https://www.mercadolivre.com.br/social/wa20250726131129?matt_word=wa20250726131129&matt_tool=88344921&forceInApp=true&ref=BLfv9re2Ce3IHOCRy4UG4qLQv%2BSOYYLae7KgXRAiUimgJkdno1Fl8FFMzefGf7NzfIm1olr%2FifeGjSXKHfyUuWXQC6bi%2FsvbZpcRTAunalDzj5tlqfQ31eSWpuwfvdDYogV06Fswii3bbWEWMryswDwMkCFuYG3eIK%2BvamVGv6fmYraVnz04HSASnpJ48K937aez%2FQ%3D%3D',
+          expected: 'https://www.mercadolivre.com.br/social/wa20250726131129?matt_word=wa20250726131129&matt_tool=88344921&ref=BLfv9re2Ce3IHOCRy4UG4qLQv%2BSOYYLae7KgXRAiUimgJkdno1Fl8FFMzefGf7NzfIm1olr%2FifeGjSXKHfyUuWXQC6bi%2FsvbZpcRTAunalDzj5tlqfQ31eSWpuwfvdDYogV06Fswii3bbWEWMryswDwMkCFuYG3eIK%2BvamVGv6fmYraVnz04HSASnpJ48K937aez%2FQ%3D%3D',
+          description: 'Deve remover forceInApp mas PRESERVAR as tags wa* e o ? no lugar correto'
+        },
+        {
+          name: 'Caso Real 2: Link /social/ com & em vez de ?',
+          input: 'https://www.mercadolivre.com.br/social/wa20250726131129&matt_word=wa20250726131129&matt_tool=88344921&ref=ABC123',
+          expected: 'https://www.mercadolivre.com.br/social/wa20250726131129?matt_word=wa20250726131129&matt_tool=88344921&ref=ABC123',
+          description: 'Deve corrigir & para ? após wa20250726131129'
+        },
+        {
+          name: 'Caso 3: Link /social/ sem tags',
+          input: 'https://www.mercadolivre.com.br/social/abc123',
+          expected: 'https://www.mercadolivre.com.br/social/abc123?matt_word=wa20250726131129&matt_tool=88344921',
+          description: 'Deve adicionar nossas tags'
+        },
+        {
+          name: 'Caso 4: Link /social/ com MLB visível',
+          input: 'https://www.mercadolivre.com.br/social/test?item_id=MLB1234567890',
+          expected: 'https://www.mercadolivre.com.br/MLB-1234567890?matt_word=wa20250726131129&matt_tool=88344921',
+          description: 'Deve converter para /MLB-ID com nossas tags'
+        },
+        {
+          name: 'Caso 5: Link /social/ com tags de outro afiliado (não wa*)',
+          input: 'https://www.mercadolivre.com.br/social/test123?matt_word=outro_afiliado&matt_tool=99999',
+          expected: 'https://www.mercadolivre.com.br/social/test123?matt_word=wa20250726131129&matt_tool=88344921',
+          description: 'Deve substituir tags de terceiro pelas nossas'
+        },
+        {
+          name: 'Caso 6: Link MLB normal (não /social/)',
+          input: 'https://www.mercadolivre.com.br/MLB-1234567890',
+          expected: 'https://www.mercadolivre.com.br/MLB-1234567890?matt_word=wa20250726131129&matt_tool=88344921',
+          description: 'Deve adicionar nossas tags'
+        }
+      ];
+
+      let successCount = 0;
+      let failureCount = 0;
+
+      for (const test of tests) {
+        try {
+          console.log(`\n🧪 Teste: ${test.name}`);
+          console.log('📥 Input:', test.input);
+
+          const result = await linkEnhancerV2.enhanceLink(test.input, 'mercadolivre');
+
+          console.log('📤 Result:', result);
+          console.log('✅ Expected:', test.expected);
+
+          const passed = result === test.expected;
+
+          if (passed) {
+            successCount++;
+          } else {
+            failureCount++;
+          }
+
+          resultsDiv.innerHTML += `
+            <div class="test-case">
+              <h3 style="color: ${passed ? '#00ff00' : '#ff0000'}">${passed ? '✅' : '❌'} ${test.name}</h3>
+              <p>${test.description}</p>
+
+              <div class="label">📥 INPUT:</div>
+              <div class="url">${test.input}</div>
+
+              <div class="label">📤 RESULTADO:</div>
+              <div class="url ${passed ? 'result' : 'error'}">${result}</div>
+
+              <div class="label">✅ ESPERADO:</div>
+              <div class="url expected">${test.expected}</div>
+
+              ${!passed ? `
+                <div class="label">🔍 DIFERENÇA:</div>
+                <div class="url error">${findDifference(result, test.expected)}</div>
+              ` : ''}
+
+              <p class="${passed ? 'success' : 'failure'}">${passed ? '✅ PASSOU' : '❌ FALHOU'}</p>
+            </div>
+          `;
+
+        } catch (error) {
+          failureCount++;
+          console.error('❌ Erro:', error);
+          resultsDiv.innerHTML += `
+            <div class="test-case">
+              <h3 style="color: #ff0000">❌ ${test.name}</h3>
+              <p>${test.description}</p>
+              <div class="label">❌ ERRO:</div>
+              <div class="url error">${error.message}</div>
+              <p class="failure">❌ ERRO NA EXECUÇÃO</p>
+            </div>
+          `;
+        }
+      }
+
+      // Atualizar estatísticas
+      document.getElementById('stats').style.display = 'block';
+      document.getElementById('total').textContent = tests.length;
+      document.getElementById('success').textContent = successCount;
+      document.getElementById('failures').textContent = failureCount;
+
+      console.log('\n📊 Estatísticas:');
+      console.log(`Total: ${tests.length}`);
+      console.log(`✅ Sucessos: ${successCount}`);
+      console.log(`❌ Falhas: ${failureCount}`);
+    };
+
+    window.clearResults = function() {
+      document.getElementById('results').innerHTML = '';
+      document.getElementById('stats').style.display = 'none';
+      console.clear();
+    };
+
+    function findDifference(str1, str2) {
+      const maxLen = Math.max(str1.length, str2.length);
+      for (let i = 0; i < maxLen; i++) {
+        if (str1[i] !== str2[i]) {
+          const context = 20;
+          const start = Math.max(0, i - context);
+          const end = Math.min(maxLen, i + context);
+          return `Diferença na posição ${i}:\nResultado: ...${str1.substring(start, end)}...\nEsperado:  ...${str2.substring(start, end)}...`;
+        }
+      }
+      return 'Comprimentos diferentes';
+    }
+  </script>
+</body>
+</html>

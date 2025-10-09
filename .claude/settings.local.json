@@ -60,7 +60,9 @@
       "Bash(git reset:*)",
       "Bash(git rev-list:*)",
       "Bash(git fetch:*)",
-      "Bash(firebase firestore:query:*)"
+      "Bash(firebase firestore:query:*)",
+      "Bash(firebase auth:export:*)",
+      "Bash(npx react-scripts build:*)"
     ],
     "deny": [],
     "ask": []

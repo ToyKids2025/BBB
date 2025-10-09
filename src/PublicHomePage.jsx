@@ -37,16 +37,16 @@ const PublicHomePage = () => {
   const INSTAGRAM_URL = 'https://www.instagram.com/buscabuscabr/';
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="public-homepage">
       {/* Navbar */}
-      <nav style={styles.navbar}>
-        <div style={styles.navContent}>
+      <nav style={styles.navbar} className="navbar">
+        <div style={styles.navContent} className="nav-content">
           <div style={styles.logo}>
             <span style={styles.logoIcon}>🔍</span>
             <span style={styles.logoText}>BuscaBuscaBrasil</span>
           </div>
 
-          <div style={styles.navActions}>
+          <div style={styles.navActions} className="nav-actions">
             <button
               onClick={() => navigate('/sobre')}
               style={styles.sobreBtn}
@@ -68,8 +68,9 @@ const PublicHomePage = () => {
               onClick={() => navigate('/admin')}
               style={styles.adminBtn}
               title="Acesso Restrito"
+              aria-label="Acesso Restrito à Área Administrativa"
             >
-              <FiLock size={16} />
+              <FiLock size={20} />
             </button>
           </div>
         </div>
@@ -78,14 +79,14 @@ const PublicHomePage = () => {
       {/* Hero Section */}
       <section style={styles.hero}>
         <div style={styles.heroContent}>
-          <h1 style={styles.heroTitle}>
+          <h1 style={styles.heroTitle} className="hero-title">
             Encontre as <span style={styles.highlight}>Melhores Ofertas</span> da Amazon
           </h1>
-          <p style={styles.heroSubtitle}>
+          <p style={styles.heroSubtitle} className="hero-subtitle">
             Produtos selecionados diariamente pela nossa equipe com os maiores descontos
           </p>
 
-          <div style={styles.heroButtons}>
+          <div style={styles.heroButtons} className="hero-buttons">
             <a
               href={INSTAGRAM_URL}
               target="_blank"
@@ -213,7 +214,8 @@ const styles = {
   navActions: {
     display: 'flex',
     alignItems: 'center',
-    gap: '15px',
+    gap: '12px',
+    flexWrap: 'wrap',
   },
   sobreBtn: {
     padding: '10px 20px',
@@ -226,6 +228,7 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     textShadow: '0 0 10px var(--neon-cyan)',
+    minHeight: '44px',
   },
   instagramBtn: {
     display: 'flex',
@@ -242,19 +245,23 @@ const styles = {
     cursor: 'pointer',
     transition: 'transform 0.2s ease',
     boxShadow: 'var(--shadow-neon)',
+    minHeight: '44px',
   },
   adminBtn: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '40px',
-    height: '40px',
-    background: '#f0f0f0',
-    border: 'none',
+    minWidth: '48px',
+    minHeight: '48px',
+    width: '48px',
+    height: '48px',
+    background: 'rgba(176, 38, 255, 0.1)',
+    border: '2px solid var(--neon-cyan)',
     borderRadius: '50%',
     cursor: 'pointer',
-    color: '#666',
+    color: 'var(--neon-cyan)',
     transition: 'all 0.2s ease',
+    fontSize: '20px',
   },
 
   // Hero Section
@@ -533,6 +540,103 @@ const styles = {
     color: 'rgba(255,255,255,0.6)',
     margin: 0,
   },
+
+  // Media Queries Mobile - iPhone Fix
+  '@media (max-width: 768px)': {
+    navContent: {
+      flexDirection: 'column',
+      gap: '15px',
+      padding: '15px',
+    },
+    navActions: {
+      width: '100%',
+      justifyContent: 'center',
+      gap: '10px',
+    },
+    sobreBtn: {
+      fontSize: '13px',
+      padding: '8px 16px',
+    },
+    instagramBtn: {
+      fontSize: '13px',
+      padding: '8px 16px',
+    },
+    heroTitle: {
+      fontSize: '32px',
+    },
+    heroSubtitle: {
+      fontSize: '16px',
+    },
+    heroButtons: {
+      flexDirection: 'column',
+      width: '100%',
+    },
+    ctaButton: {
+      width: '100%',
+      justifyContent: 'center',
+    },
+    secondaryButton: {
+      width: '100%',
+      justifyContent: 'center',
+    },
+  },
 };
+
+// Injetar estilos de media query no head (necessário para estilos inline)
+if (typeof window !== 'undefined') {
+  const mediaQueryStyles = `
+    @media (max-width: 768px) {
+      .public-homepage .nav-content {
+        flex-direction: column !important;
+        gap: 15px !important;
+        padding: 15px !important;
+      }
+      .public-homepage .nav-actions {
+        width: 100% !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+      }
+      .public-homepage .hero-title {
+        font-size: 32px !important;
+        line-height: 1.3 !important;
+      }
+      .public-homepage .hero-subtitle {
+        font-size: 16px !important;
+      }
+      .public-homepage .hero-buttons {
+        flex-direction: column !important;
+        width: 100% !important;
+      }
+      .public-homepage .hero-buttons > * {
+        width: 100% !important;
+      }
+      .public-homepage .navbar {
+        position: sticky !important;
+      }
+      /* Prevenir overflow horizontal */
+      .public-homepage {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+      }
+      .public-homepage * {
+        max-width: 100% !important;
+      }
+      /* Safe area para iPhone */
+      @supports (padding: env(safe-area-inset-top)) {
+        .public-homepage .navbar {
+          padding-top: max(20px, env(safe-area-inset-top)) !important;
+        }
+      }
+    }
+  `;
+
+  // Verificar se o estilo já foi injetado
+  if (!document.getElementById('public-homepage-mobile-styles')) {
+    const styleTag = document.createElement('style');
+    styleTag.id = 'public-homepage-mobile-styles';
+    styleTag.textContent = mediaQueryStyles;
+    document.head.appendChild(styleTag);
+  }
+}
 
 export default PublicHomePage;

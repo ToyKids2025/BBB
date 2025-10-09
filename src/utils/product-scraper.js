@@ -40,14 +40,14 @@ export async function fetchProductTitle(url, platform) {
 }
 
 /**
- * Scraping do título via CORS proxy
- * Tenta múltiplas APIs de proxy em cascata
+ * Scraping DESABILITADO - muito lento (10-30 segundos)
+ * Usa fallback rápido com ASIN/MLB ID
  */
 async function scrapeProductTitle(url, platform) {
-  // ⚡ SOLUÇÃO SIMPLIFICADA: Usar apenas extração da URL
-  // Proxies CORS públicos são instáveis, lentos e causam problemas
-  console.log('⚡ [Scraper] Modo rápido: extraindo título da URL diretamente');
-  return null; // Retorna null para forçar uso do fallback (extractTitleFromUrl)
+  // ⚡ DESABILITADO: Scraping é muito lento e bloqueia a UX
+  // Usuário pode editar o nome manualmente após gerar o link
+  console.log('⚡ [Scraper] Scraping desabilitado, usando fallback rápido');
+  return null;
 }
 
 /**
@@ -97,6 +97,14 @@ function extractTitleFromUrl(url, platform) {
 
         console.log(`✅ [Fallback] Título Amazon do path: "${title}"`);
         return title || 'Produto Amazon';
+      }
+
+      // 🔥 NOVO: Extrair ASIN e usar como identificador
+      const asinMatch = url.match(/\/dp\/([A-Z0-9]{10})/i);
+      if (asinMatch && asinMatch[1]) {
+        const asin = asinMatch[1];
+        console.log(`⚠️ [Fallback] URL sem nome, usando ASIN: ${asin}`);
+        return `Produto Amazon (ASIN: ${asin})`;
       }
 
       console.warn('⚠️ [Fallback] Não conseguiu extrair título da URL Amazon');
@@ -150,16 +158,24 @@ function extractTitleFromUrl(url, platform) {
         const itemIdMatch = url.match(/[?&]item_id=MLB-?(\d{8,12})/i);
         if (itemIdMatch && itemIdMatch[1]) {
           console.log(`✅ [Fallback] MLB encontrado em item_id: MLB${itemIdMatch[1]}`);
-          return `Produto MLB${itemIdMatch[1]}`;
+          return `Produto Mercado Livre (MLB${itemIdMatch[1]})`;
         }
 
         // Se não tem item_id, é um link /social/ sem MLB visível
         console.warn('⚠️ [Fallback] Link /social/ sem MLB nos parâmetros');
-        return 'Link Social Mercado Livre';
+        return 'Produto Mercado Livre (link social)';
+      }
+
+      // 🔥 NOVO: Tentar extrair MLB ID direto da URL
+      const mlbDirectMatch = url.match(/\/MLB-?(\d{8,12})/i);
+      if (mlbDirectMatch && mlbDirectMatch[1]) {
+        const mlbId = mlbDirectMatch[1];
+        console.log(`⚠️ [Fallback] URL sem nome, usando MLB ID: ${mlbId}`);
+        return `Produto Mercado Livre (MLB${mlbId})`;
       }
 
       console.warn('⚠️ [Fallback] Não conseguiu extrair título da URL ML');
-      return 'Link Mercado Livre (expandir para ver título)';
+      return 'Produto Mercado Livre';
     }
 
     // Outras plataformas - tentar genérico

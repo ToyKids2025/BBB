@@ -97,38 +97,61 @@ const LinkList = () => {
               <tr>
                 <th>Link</th>
                 <th>Plataforma</th>
+                <th>📅 Criado em</th>
                 <th>Cliques</th>
                 <th>Ações</th>
               </tr>
             </thead>
             <tbody>
-              {links.map(link => (
-                <tr key={link.id}>
-                  <td>
-                    <span className="link-title">{link.title || 'Sem título'}</span>
-                    <span className="link-url">{`${window.location.origin}/r/${link.id}`}</span>
-                  </td>
-                  <td>
-                    <span className={`platform-badge ${link.platform}`}>
-                      {link.platform || 'Outro'}
-                    </span>
-                  </td>
-                  <td>{link.clicks || 0}</td>
-                  <td>
-                    <div className="actions">
-                      <button onClick={() => handleCopy(link.id)} className="action-btn" title="Copiar Link">
-                        {copiedId === link.id ? <span className="copied-feedback">✓</span> : <FiClipboard />}
-                      </button>
-                      <button onClick={() => handleEdit(link)} className="action-btn" title="Editar Link">
-                        <FiEdit />
-                      </button>
-                      <button onClick={() => handleDelete(link.id)} className="action-btn delete" title="Deletar Link">
-                        <FiTrash2 />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {links.map(link => {
+                // Formatar data/hora de criação
+                let formattedDate = 'N/A';
+                if (link.createdAt) {
+                  try {
+                    const date = new Date(link.createdAt);
+                    formattedDate = date.toLocaleString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+                  } catch (error) {
+                    console.error('Erro ao formatar data:', error);
+                  }
+                }
+
+                return (
+                  <tr key={link.id}>
+                    <td>
+                      <span className="link-title">{link.title || 'Sem título'}</span>
+                      <span className="link-url">{`${window.location.origin}/r/${link.id}`}</span>
+                    </td>
+                    <td>
+                      <span className={`platform-badge ${link.platform}`}>
+                        {link.platform || 'Outro'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="date-badge">{formattedDate}</span>
+                    </td>
+                    <td>{link.clicks || 0}</td>
+                    <td>
+                      <div className="actions">
+                        <button onClick={() => handleCopy(link.id)} className="action-btn" title="Copiar Link">
+                          {copiedId === link.id ? <span className="copied-feedback">✓</span> : <FiClipboard />}
+                        </button>
+                        <button onClick={() => handleEdit(link)} className="action-btn" title="Editar Link">
+                          <FiEdit />
+                        </button>
+                        <button onClick={() => handleDelete(link.id)} className="action-btn delete" title="Deletar Link">
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

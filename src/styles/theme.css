@@ -920,6 +920,18 @@ code {
   color: white;
 }
 
+.date-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: rgba(0, 245, 255, 0.1);
+  color: var(--neon-cyan);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  white-space: nowrap;
+}
+
 .actions {
   display: flex;
   gap: 10px;

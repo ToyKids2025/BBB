@@ -73,5 +73,42 @@ service cloud.firestore {
       allow read: if true;
       allow write: if true;
     }
+
+    // ==================== INSTAGRAM AUTOMATION ====================
+
+    // Instagram Products: Produtos extraídos dos links
+    match /instagram_products/{document=**} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Instagram Posts: Posts criados (drafts, scheduled, published)
+    match /instagram_posts/{document=**} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Instagram Settings: Configurações do usuário (tokens, templates, etc)
+    match /instagram_settings/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Instagram Analytics Daily: Métricas diárias (apenas dono lê, Cloud Functions escrevem)
+    match /instagram_analytics_daily/{document=**} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+    }
+
+    // Product Cache: Cache de scraping (24h TTL)
+    match /product_cache/{document=**} {
+      allow read: if true; // Cache público (otimização)
+      allow write: if true; // Qualquer um pode escrever no cache
+    }
   }
 }

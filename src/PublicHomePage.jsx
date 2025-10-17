@@ -1,29 +1,29 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiInstagram, FiLock } from 'react-icons/fi';
+import { FiInstagram, FiLock, FiAlertCircle } from 'react-icons/fi';
 import { FaAmazon } from 'react-icons/fa';
 import { SiMercadopago } from 'react-icons/si';
 import Footer from './components/Footer';
 
 /**
  * 🏠 HOMEPAGE PÚBLICA - BuscaBuscaBrasil
- * Landing page profissional com Instagram + Produtos Amazon
+ * Catálogo de Ofertas Amazon e Mercado Livre
  */
 const PublicHomePage = () => {
   const navigate = useNavigate();
 
   // SEO - Atualizar meta tags
   React.useEffect(() => {
-    document.title = 'BuscaBuscaBrasil - Melhores Ofertas da Amazon e Mercado Livre';
+    document.title = 'BuscaBuscaBrasil - Melhores Ofertas Amazon e Mercado Livre';
 
     // Meta description
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
-      metaDesc.setAttribute('content', 'Encontre as melhores ofertas da Amazon e Mercado Livre com descontos de até 45%. Produtos selecionados diariamente pela nossa equipe.');
+      metaDesc.setAttribute('content', 'Encontre as melhores ofertas da Amazon e Mercado Livre. Produtos selecionados com os melhores preços. Acompanhe ofertas exclusivas no Instagram @buscabuscabr');
     } else {
       const meta = document.createElement('meta');
       meta.name = 'description';
-      meta.content = 'Encontre as melhores ofertas da Amazon e Mercado Livre com descontos de até 45%. Produtos selecionados diariamente pela nossa equipe.';
+      meta.content = 'Encontre as melhores ofertas da Amazon e Mercado Livre. Produtos selecionados com os melhores preços. Acompanhe ofertas exclusivas no Instagram @buscabuscabr';
       document.head.appendChild(meta);
     }
 
@@ -54,6 +54,13 @@ const PublicHomePage = () => {
               Sobre
             </button>
 
+            <button
+              onClick={() => navigate('/faq')}
+              style={styles.faqBtn}
+            >
+              FAQ
+            </button>
+
             <a
               href={INSTAGRAM_URL}
               target="_blank"
@@ -61,7 +68,7 @@ const PublicHomePage = () => {
               style={styles.instagramBtn}
             >
               <FiInstagram size={20} />
-              <span>Siga no Instagram</span>
+              <span>Instagram</span>
             </a>
 
             <button
@@ -80,10 +87,10 @@ const PublicHomePage = () => {
       <section style={styles.hero}>
         <div style={styles.heroContent}>
           <h1 style={styles.heroTitle} className="hero-title">
-            Encontre as <span style={styles.highlight}>Melhores Ofertas</span> da Amazon
+            Encontre as <span style={styles.highlight}>Melhores Ofertas</span>
           </h1>
           <p style={styles.heroSubtitle} className="hero-subtitle">
-            Produtos selecionados diariamente pela nossa equipe com os maiores descontos
+            Produtos selecionados da Amazon e Mercado Livre com os melhores preços e descontos
           </p>
 
           <div style={styles.heroButtons} className="hero-buttons">
@@ -94,7 +101,7 @@ const PublicHomePage = () => {
               style={styles.ctaButton}
             >
               <FiInstagram size={20} />
-              Siga no Instagram
+              Ver Ofertas no Instagram
             </a>
 
             <a
@@ -104,7 +111,7 @@ const PublicHomePage = () => {
               style={styles.secondaryButton}
             >
               <FaAmazon size={20} />
-              Ver Amazon
+              Ir para Amazon
             </a>
 
             <a
@@ -114,52 +121,148 @@ const PublicHomePage = () => {
               style={styles.secondaryButton}
             >
               <SiMercadopago size={20} />
-              Ver Mercado Livre
+              Ir para Mercado Livre
             </a>
           </div>
         </div>
       </section>
 
-      {/* Coming Soon Section */}
-      <section style={styles.productsSection}>
-        <div style={styles.comingSoonBox}>
-          <div style={styles.comingSoonIcon}>🚀</div>
-          <h2 style={styles.comingSoonTitle}>Ofertas em Breve</h2>
-          <p style={styles.comingSoonText}>
-            Estamos preparando as melhores ofertas da Amazon e Mercado Livre para você.
-            <br />
-            Acompanhe no Instagram para não perder nenhuma promoção!
+      {/* Banner: Site em Desenvolvimento */}
+      <section style={styles.developmentBanner}>
+        <div style={styles.developmentContent}>
+          <div style={styles.developmentIcon}>
+            <FiAlertCircle size={40} />
+          </div>
+          <div style={styles.developmentText}>
+            <h2 style={styles.developmentTitle}>🚧 Site em Desenvolvimento</h2>
+            <p style={styles.developmentDescription}>
+              Nosso catálogo completo de produtos está sendo preparado.
+              Estamos aguardando a <strong>liberação da API oficial da Amazon (Product Advertising API)</strong> para
+              exibir produtos com informações atualizadas, preços em tempo real e avaliações oficiais.
+            </p>
+            <p style={styles.developmentDescription}>
+              <strong>Por que aguardamos a API oficial?</strong><br />
+              Optamos por não utilizar métodos inadequados (como scraping ou dados não oficiais) para
+              garantir que todas as informações apresentadas sejam precisas, atualizadas e estejam em
+              conformidade com as políticas da Amazon.
+            </p>
+            <div style={styles.developmentCta}>
+              <p style={styles.developmentCtaText}>
+                📱 <strong>Enquanto isso, acompanhe nossas ofertas diárias no Instagram:</strong>
+              </p>
+              <a
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={styles.developmentButton}
+              >
+                <FiInstagram size={20} style={{ marginRight: '8px' }} />
+                Seguir @buscabuscabr
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* O Que Oferecemos (Futuro) */}
+      <section style={styles.featuresSection}>
+        <div style={styles.featuresContent}>
+          <h2 style={styles.featuresTitle}>O Que Você Vai Encontrar</h2>
+          <p style={styles.featuresSubtitle}>
+            Após a liberação da API, nosso catálogo incluirá:
+          </p>
+
+          <div style={styles.featuresGrid}>
+            <div style={styles.featureCard}>
+              <div style={styles.featureIcon}>🏷️</div>
+              <h3 style={styles.featureCardTitle}>Ofertas do Dia</h3>
+              <p style={styles.featureCardText}>
+                Produtos selecionados com os melhores descontos atualizados diariamente
+              </p>
+            </div>
+
+            <div style={styles.featureCard}>
+              <div style={styles.featureIcon}>⭐</div>
+              <h3 style={styles.featureCardTitle}>Produtos Avaliados</h3>
+              <p style={styles.featureCardText}>
+                Avaliações e reviews oficiais da Amazon para ajudar na sua escolha
+              </p>
+            </div>
+
+            <div style={styles.featureCard}>
+              <div style={styles.featureIcon}>💰</div>
+              <h3 style={styles.featureCardTitle}>Melhores Preços</h3>
+              <p style={styles.featureCardText}>
+                Comparação de preços e histórico para você encontrar as melhores ofertas
+              </p>
+            </div>
+
+            <div style={styles.featureCard}>
+              <div style={styles.featureIcon}>🎯</div>
+              <h3 style={styles.featureCardTitle}>Categorias Diversas</h3>
+              <p style={styles.featureCardText}>
+                Eletrônicos, casa, moda, livros e muito mais em um só lugar
+              </p>
+            </div>
+
+            <div style={styles.featureCard}>
+              <div style={styles.featureIcon}>🔔</div>
+              <h3 style={styles.featureCardTitle}>Alertas de Ofertas</h3>
+              <p style={styles.featureCardText}>
+                Acompanhe pelo Instagram ofertas especiais e relâmpago
+              </p>
+            </div>
+
+            <div style={styles.featureCard}>
+              <div style={styles.featureIcon}>✅</div>
+              <h3 style={styles.featureCardTitle}>Informações Oficiais</h3>
+              <p style={styles.featureCardText}>
+                Todos os dados vindos diretamente da API oficial da Amazon
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Instagram Feed Section */}
+      <section style={styles.instagramSection}>
+        <div style={styles.instagramContent}>
+          <h2 style={styles.instagramTitle}>
+            📱 Siga no Instagram para Ofertas Diárias
+          </h2>
+          <p style={styles.instagramText}>
+            Enquanto nosso catálogo está em desenvolvimento, publicamos diariamente
+            ofertas selecionadas da Amazon e Mercado Livre no Instagram.
+          </p>
+          <p style={styles.instagramText}>
+            <strong>@buscabuscabr</strong> - Ofertas, dicas e lançamentos
           </p>
           <a
             href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            style={styles.comingSoonButton}
+            style={styles.instagramButton}
           >
-            <FiInstagram size={20} style={{ marginRight: '8px' }} />
-            Seguir @buscabuscabr
+            <FiInstagram size={24} />
+            Seguir Agora
           </a>
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA Final Section */}
       <section style={styles.ctaSection}>
         <div style={styles.ctaContent}>
           <h2 style={styles.ctaTitle}>
-            📱 Receba ofertas exclusivas no Instagram
+            🛍️ Compre com Confiança
           </h2>
           <p style={styles.ctaText}>
-            Siga @buscabuscabrasil e fique por dentro das melhores promoções em tempo real
+            Todos os links direcionam para as plataformas oficiais Amazon e Mercado Livre.
+            Sua compra é 100% segura e você conta com todas as garantias e políticas de devolução das lojas oficiais.
           </p>
-          <a
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={styles.ctaButton}
-          >
-            <FiInstagram size={20} />
-            Seguir Agora
-          </a>
+          <p style={styles.ctaText}>
+            <strong>NÃO somos loja física.</strong> Somos um site de divulgação de ofertas.
+            Não vendemos produtos diretamente.
+          </p>
         </div>
       </section>
 
@@ -230,6 +333,19 @@ const styles = {
     textShadow: '0 0 10px var(--neon-cyan)',
     minHeight: '44px',
   },
+  faqBtn: {
+    padding: '10px 20px',
+    background: 'transparent',
+    color: 'var(--neon-cyan)',
+    border: '2px solid var(--neon-cyan)',
+    borderRadius: '25px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    textShadow: '0 0 10px var(--neon-cyan)',
+    minHeight: '44px',
+  },
   instagramBtn: {
     display: 'flex',
     alignItems: 'center',
@@ -266,7 +382,7 @@ const styles = {
 
   // Hero Section
   hero: {
-    padding: '80px 20px',
+    padding: '80px 20px 60px',
     textAlign: 'center',
   },
   heroContent: {
@@ -291,6 +407,7 @@ const styles = {
     fontSize: '20px',
     color: 'var(--text-secondary)',
     marginBottom: '40px',
+    lineHeight: '1.6',
   },
   heroButtons: {
     display: 'flex',
@@ -331,254 +448,179 @@ const styles = {
     textShadow: '0 0 10px var(--neon-cyan)',
   },
 
-  // Products Section
-  productsSection: {
-    maxWidth: '1200px',
+  // Development Banner
+  developmentBanner: {
+    background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.1) 100%)',
+    borderTop: '3px solid #FFC107',
+    borderBottom: '3px solid #FFC107',
+    padding: '40px 20px',
+    margin: '40px 0',
+  },
+  developmentContent: {
+    maxWidth: '900px',
     margin: '0 auto',
-    padding: '60px 20px',
+    display: 'flex',
+    gap: '30px',
+    alignItems: 'flex-start',
   },
-  comingSoonBox: {
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border-color)',
-    borderRadius: '24px',
-    padding: '80px 40px',
-    textAlign: 'center',
-    boxShadow: 'var(--shadow-neon)',
+  developmentIcon: {
+    color: '#FFC107',
+    flexShrink: 0,
+    marginTop: '5px',
   },
-  comingSoonIcon: {
-    fontSize: '80px',
-    marginBottom: '20px',
+  developmentText: {
+    flex: 1,
   },
-  comingSoonTitle: {
-    fontSize: '36px',
+  developmentTitle: {
+    fontSize: '28px',
     fontWeight: '700',
-    background: 'var(--accent-gradient)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
-    marginBottom: '20px',
+    color: 'var(--text-primary)',
+    marginBottom: '15px',
+    marginTop: 0,
   },
-  comingSoonText: {
-    fontSize: '18px',
+  developmentDescription: {
+    fontSize: '16px',
     color: 'var(--text-secondary)',
-    lineHeight: '1.6',
-    marginBottom: '30px',
-    maxWidth: '600px',
-    margin: '0 auto 30px',
+    lineHeight: '1.8',
+    marginBottom: '15px',
   },
-  comingSoonButton: {
+  developmentCta: {
+    marginTop: '25px',
+    padding: '20px',
+    background: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: '12px',
+    border: '2px dashed #FFC107',
+  },
+  developmentCtaText: {
+    fontSize: '16px',
+    color: 'var(--text-primary)',
+    marginBottom: '15px',
+  },
+  developmentButton: {
     display: 'inline-flex',
     alignItems: 'center',
-    padding: '16px 32px',
+    padding: '12px 24px',
     background: 'var(--accent-gradient)',
     color: 'white',
     textDecoration: 'none',
-    borderRadius: '50px',
+    borderRadius: '30px',
     fontSize: '16px',
     fontWeight: '600',
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    transition: 'transform 0.3s ease',
     boxShadow: 'var(--shadow-neon)',
   },
-  sectionHeader: {
-    textAlign: 'center',
-    marginBottom: '50px',
+
+  // Features Section
+  featuresSection: {
+    padding: '60px 20px',
+    background: 'var(--bg-card)',
   },
-  sectionTitle: {
+  featuresContent: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+  },
+  featuresTitle: {
     fontSize: '36px',
     fontWeight: '700',
-    color: '#2d3748',
-    marginBottom: '10px',
-  },
-  sectionSubtitle: {
-    fontSize: '16px',
-    color: '#718096',
-  },
-  productGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '30px',
-  },
-  productCard: {
-    background: 'white',
-    borderRadius: '16px',
-    overflow: 'hidden',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-    cursor: 'pointer',
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-  },
-  productImageWrapper: {
-    position: 'relative',
-    paddingTop: '100%',
-    background: '#f9f9f9',
-    overflow: 'hidden',
-  },
-  productImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain',
-    padding: '20px',
-  },
-  discountBadge: {
-    position: 'absolute',
-    top: '15px',
-    right: '15px',
-    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    color: 'white',
-    padding: '8px 15px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '700',
-  },
-  productInfo: {
-    padding: '20px',
-  },
-  productCategory: {
-    fontSize: '12px',
-    color: '#667eea',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-    marginBottom: '8px',
-  },
-  productTitle: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#2d3748',
-    marginBottom: '12px',
-    minHeight: '40px',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    display: '-webkit-box',
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical',
-  },
-  productPrice: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#4CAF50',
+    textAlign: 'center',
+    color: 'var(--text-primary)',
     marginBottom: '15px',
   },
-  productButton: {
-    width: '100%',
-    padding: '12px',
-    background: 'linear-gradient(135deg, #FF9900 0%, #FFB84D 100%)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
+  featuresSubtitle: {
+    fontSize: '18px',
+    textAlign: 'center',
+    color: 'var(--text-secondary)',
+    marginBottom: '50px',
+  },
+  featuresGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: '30px',
+  },
+  featureCard: {
+    background: 'var(--bg-primary)',
+    padding: '30px',
+    borderRadius: '16px',
+    border: '1px solid var(--border-color)',
+    textAlign: 'center',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+  },
+  featureIcon: {
+    fontSize: '48px',
+    marginBottom: '15px',
+  },
+  featureCardTitle: {
+    fontSize: '20px',
     fontWeight: '600',
-    cursor: 'pointer',
-    display: 'flex',
+    color: 'var(--text-primary)',
+    marginBottom: '10px',
+  },
+  featureCardText: {
+    fontSize: '15px',
+    color: 'var(--text-secondary)',
+    lineHeight: '1.6',
+  },
+
+  // Instagram Section
+  instagramSection: {
+    background: 'var(--accent-gradient)',
+    padding: '60px 20px',
+    textAlign: 'center',
+  },
+  instagramContent: {
+    maxWidth: '700px',
+    margin: '0 auto',
+  },
+  instagramTitle: {
+    fontSize: '32px',
+    fontWeight: '700',
+    color: 'white',
+    marginBottom: '20px',
+  },
+  instagramText: {
+    fontSize: '18px',
+    color: 'rgba(255,255,255,0.95)',
+    marginBottom: '15px',
+    lineHeight: '1.6',
+  },
+  instagramButton: {
+    display: 'inline-flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'transform 0.2s ease',
+    gap: '10px',
+    padding: '16px 32px',
+    background: 'white',
+    color: '#667eea',
+    textDecoration: 'none',
+    borderRadius: '50px',
+    fontSize: '18px',
+    fontWeight: '600',
+    marginTop: '20px',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
   },
 
   // CTA Section
   ctaSection: {
-    background: 'var(--accent-gradient)',
     padding: '60px 20px',
-    textAlign: 'center',
-    boxShadow: 'var(--shadow-neon)',
+    background: 'var(--bg-card)',
+    borderTop: '1px solid var(--border-color)',
   },
   ctaContent: {
-    maxWidth: '600px',
+    maxWidth: '800px',
     margin: '0 auto',
+    textAlign: 'center',
   },
   ctaTitle: {
     fontSize: '32px',
     fontWeight: '700',
-    color: 'white',
-    marginBottom: '15px',
+    color: 'var(--text-primary)',
+    marginBottom: '20px',
   },
   ctaText: {
-    fontSize: '18px',
-    color: 'rgba(255,255,255,0.9)',
-    marginBottom: '30px',
-  },
-
-  // Footer
-  footer: {
-    background: '#2d3748',
-    color: 'white',
-    padding: '40px 20px',
-  },
-  footerContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    textAlign: 'center',
-  },
-  footerLogo: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    fontSize: '24px',
-    fontWeight: 'bold',
-    marginBottom: '20px',
-  },
-  footerLinks: {
-    display: 'flex',
-    gap: '20px',
-    justifyContent: 'center',
-    marginBottom: '20px',
-  },
-  footerLink: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    color: 'rgba(255,255,255,0.8)',
-    textDecoration: 'none',
-    fontSize: '14px',
-    transition: 'color 0.2s ease',
-  },
-  footerCopy: {
-    fontSize: '14px',
-    color: 'rgba(255,255,255,0.6)',
-    margin: 0,
-  },
-
-  // Media Queries Mobile - iPhone Fix
-  '@media (max-width: 768px)': {
-    navContent: {
-      flexDirection: 'column',
-      gap: '15px',
-      padding: '15px',
-    },
-    navActions: {
-      width: '100%',
-      justifyContent: 'center',
-      gap: '10px',
-    },
-    sobreBtn: {
-      fontSize: '13px',
-      padding: '8px 16px',
-    },
-    instagramBtn: {
-      fontSize: '13px',
-      padding: '8px 16px',
-    },
-    heroTitle: {
-      fontSize: '32px',
-    },
-    heroSubtitle: {
-      fontSize: '16px',
-    },
-    heroButtons: {
-      flexDirection: 'column',
-      width: '100%',
-    },
-    ctaButton: {
-      width: '100%',
-      justifyContent: 'center',
-    },
-    secondaryButton: {
-      width: '100%',
-      justifyContent: 'center',
-    },
+    fontSize: '16px',
+    color: 'var(--text-secondary)',
+    lineHeight: '1.8',
+    marginBottom: '15px',
   },
 };
 
@@ -609,6 +651,7 @@ if (typeof window !== 'undefined') {
       }
       .public-homepage .hero-buttons > * {
         width: 100% !important;
+        justify-content: center !important;
       }
       .public-homepage .navbar {
         position: sticky !important;

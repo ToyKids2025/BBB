@@ -62,7 +62,8 @@
       "Bash(git fetch:*)",
       "Bash(firebase firestore:query:*)",
       "Bash(firebase auth:export:*)",
-      "Bash(npx react-scripts build:*)"
+      "Bash(npx react-scripts build:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

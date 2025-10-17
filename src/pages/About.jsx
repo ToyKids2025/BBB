@@ -1,10 +1,10 @@
 import React from 'react';
-import { FiLink, FiShield, FiTarget, FiZap, FiAlertCircle } from 'react-icons/fi';
+import { FiShoppingCart, FiTag, FiAlertCircle, FiInstagram } from 'react-icons/fi';
 import Footer from '../components/Footer';
 
 /**
  * Página SOBRE NÓS
- * Explica claramente o que é o serviço e diferencia de outras empresas
+ * Explica o que é o BuscaBuscaBrasil (catálogo de ofertas)
  */
 const About = () => {
   return (
@@ -52,6 +52,22 @@ const About = () => {
         .warning-box h3 {
           margin: 0 0 0.5rem 0;
           font-size: 1.3rem;
+        }
+        .development-box {
+          background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.1) 100%);
+          border: 3px solid #FFC107;
+          color: var(--text-primary);
+          padding: 1.5rem;
+          borderRadius: 12px;
+          margin-bottom: 2rem;
+        }
+        .development-box h3 {
+          margin: 0 0 1rem 0;
+          color: #F57C00;
+          font-size: 1.3rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
         .feature-grid {
           display: grid;
@@ -123,7 +139,7 @@ const About = () => {
           <h3>⚠️ AVISO IMPORTANTE</h3>
           <p style={{ margin: 0 }}>
             <strong>NÃO SOMOS A LOJA FÍSICA "Busca Busca"</strong> localizada no Shopping Plaza Polo (Brás, São Paulo).
-            Somos um serviço de tecnologia independente especializado em links inteligentes de afiliados.
+            Somos um site de divulgação de ofertas de produtos Amazon e Mercado Livre, totalmente independente.
             Não temos relação com @buscabuscaoficial ou qualquer estabelecimento físico.
           </p>
         </div>
@@ -132,115 +148,145 @@ const About = () => {
       <div className="about-container">
         {/* CABEÇALHO */}
         <div className="about-header">
-          <h1>🚀 BuscaBusca Brasil</h1>
+          <h1>🔍 BuscaBuscaBrasil</h1>
           <p>
-            Plataforma Profissional de Gestão de Links de Afiliados para Marketing Digital
+            Seu guia para encontrar as melhores ofertas da Amazon e Mercado Livre
+          </p>
+        </div>
+
+        {/* SITE EM DESENVOLVIMENTO */}
+        <div className="development-box">
+          <h3>🚧 Site em Desenvolvimento</h3>
+          <p style={{ marginBottom: '1rem' }}>
+            Nosso catálogo completo de produtos está sendo preparado. Estamos aguardando a
+            <strong> liberação da API oficial da Amazon (Product Advertising API)</strong> para poder exibir:
+          </p>
+          <ul style={{ marginLeft: '1.5rem', marginBottom: '1rem' }}>
+            <li>Produtos com informações atualizadas em tempo real</li>
+            <li>Preços oficiais diretamente da Amazon</li>
+            <li>Avaliações e reviews de clientes</li>
+            <li>Especificações técnicas completas</li>
+            <li>Disponibilidade em estoque</li>
+          </ul>
+          <p style={{ margin: 0 }}>
+            <strong>Por que aguardamos a API oficial?</strong> Optamos por não utilizar métodos inadequados
+            (como scraping ou dados não oficiais) para garantir que todas as informações sejam precisas e
+            estejam em conformidade com as políticas da Amazon.
           </p>
         </div>
 
         {/* QUEM SOMOS */}
         <div className="info-section">
-          <h2><FiTarget /> Quem Somos</h2>
+          <h2><FiShoppingCart /> Quem Somos</h2>
           <p>
-            O <strong>BuscaBusca Brasil</strong> é uma plataforma tecnológica especializada em
-            otimização e gestão de links de afiliados. Desenvolvemos ferramentas para
-            profissionais de marketing digital, influenciadores e criadores de conteúdo
-            que trabalham com programas de afiliados da Amazon, Mercado Livre e outras plataformas.
+            O <strong>BuscaBuscaBrasil</strong> é um site de divulgação de ofertas e produtos
+            selecionados da Amazon e Mercado Livre. Nossa missão é ajudar consumidores brasileiros
+            a encontrar os melhores produtos com os melhores preços.
           </p>
         </div>
 
         {/* O QUE FAZEMOS */}
         <div className="info-section">
-          <h2><FiZap /> O Que Fazemos</h2>
+          <h2><FiTag /> O Que Fazemos</h2>
           <ul>
-            <li>Geramos links encurtados e rastreáveis para produtos de afiliados</li>
-            <li>Otimizamos URLs mantendo todos os parâmetros de comissão</li>
-            <li>Fornecemos analytics e monitoramento de cliques</li>
-            <li>Garantimos que suas tags de afiliado sejam preservadas</li>
-            <li>Oferecemos ferramentas profissionais para gestão de campanhas</li>
+            <li>Divulgamos ofertas e produtos selecionados da Amazon e Mercado Livre</li>
+            <li>Compartilhamos dicas de compras e guias de produtos</li>
+            <li>Mantemos você informado sobre promoções e descontos</li>
+            <li>Direcionamos você para as plataformas oficiais para compra segura</li>
+            <li>Publicamos ofertas diárias no Instagram @buscabuscabr</li>
           </ul>
         </div>
 
-        {/* NOSSOS SERVIÇOS */}
-        <div className="feature-grid">
-          <div className="feature-card">
-            <h3><FiLink size={24} /> Link Enhancer</h3>
-            <p>
-              Sistema avançado que preserva e otimiza seus parâmetros de afiliado,
-              garantindo que você receba suas comissões corretamente.
-            </p>
-          </div>
+        {/* O QUE VOCÊ VAI ENCONTRAR (FUTURO) */}
+        <div className="info-section">
+          <h2>🎯 O Que Você Vai Encontrar (Após Liberação da API)</h2>
+          <div className="feature-grid">
+            <div className="feature-card">
+              <h3><FiTag size={24} /> Ofertas do Dia</h3>
+              <p>
+                Produtos com os melhores descontos, atualizados diariamente com informações oficiais da Amazon.
+              </p>
+            </div>
 
-          <div className="feature-card">
-            <h3><FiShield size={24} /> Proteção de Comissão</h3>
-            <p>
-              Tecnologia que garante a atribuição correta das vendas,
-              protegendo suas comissões de afiliado.
-            </p>
-          </div>
+            <div className="feature-card">
+              <h3>⭐ Reviews e Avaliações</h3>
+              <p>
+                Avaliações reais de clientes da Amazon para ajudar você a tomar a melhor decisão de compra.
+              </p>
+            </div>
 
-          <div className="feature-card">
-            <h3><FiTarget size={24} /> Analytics Profissional</h3>
-            <p>
-              Dashboard completo com métricas de cliques, conversões
-              e performance de suas campanhas.
-            </p>
-          </div>
+            <div className="feature-card">
+              <h3>💰 Comparação de Preços</h3>
+              <p>
+                Compare preços e encontre as melhores ofertas entre Amazon e Mercado Livre.
+              </p>
+            </div>
 
-          <div className="feature-card">
-            <h3><FiZap size={24} /> Redirects Instantâneos</h3>
-            <p>
-              Sistema otimizado com redirects ultra-rápidos (100ms)
-              para melhor experiência do usuário.
-            </p>
+            <div className="feature-card">
+              <h3>📦 Categorias Diversas</h3>
+              <p>
+                Eletrônicos, casa e cozinha, moda, livros, games e muito mais em um só lugar.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* COMO FUNCIONA */}
         <div className="info-section">
-          <h2>🔧 Como Funciona</h2>
+          <h2>🛍️ Como Funciona</h2>
           <ol style={{ paddingLeft: '1.5rem' }}>
             <li style={{ marginBottom: '0.5rem' }}>
-              Você cola o link do produto (Amazon, Mercado Livre, etc.) com sua tag de afiliado
+              Você encontra produtos e ofertas em nosso site ou Instagram
             </li>
             <li style={{ marginBottom: '0.5rem' }}>
-              Nosso sistema otimiza e gera um link curto rastreável
+              Clica no link do produto que te interessa
             </li>
             <li style={{ marginBottom: '0.5rem' }}>
-              Você compartilha o link encurtado nas suas redes sociais
+              É direcionado para a Amazon ou Mercado Livre (plataformas oficiais)
             </li>
             <li style={{ marginBottom: '0.5rem' }}>
-              Quando alguém clica, é redirecionado para o produto com SUA tag de afiliado
+              Realiza sua compra diretamente na plataforma oficial
             </li>
             <li style={{ marginBottom: '0.5rem' }}>
-              Você recebe suas comissões normalmente através do programa de afiliados
+              Recebe todas as garantias e benefícios das lojas oficiais
             </li>
           </ol>
         </div>
 
-        {/* PÚBLICO-ALVO */}
+        {/* ENQUANTO O SITE ESTÁ EM DESENVOLVIMENTO */}
         <div className="info-section">
-          <h2>👥 Para Quem é Este Serviço</h2>
-          <ul>
-            <li>Afiliados da Amazon Associates</li>
-            <li>Parceiros do Mercado Livre</li>
-            <li>Influenciadores digitais</li>
-            <li>Criadores de conteúdo</li>
-            <li>Profissionais de marketing digital</li>
-            <li>Blogueiros e produtores de conteúdo</li>
-          </ul>
+          <h2><FiInstagram /> Acompanhe no Instagram</h2>
+          <p>
+            Enquanto nosso catálogo está em desenvolvimento, publicamos diariamente
+            ofertas selecionadas no Instagram:
+          </p>
+          <div style={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            padding: '1.5rem',
+            borderRadius: '12px',
+            textAlign: 'center',
+            marginTop: '1rem',
+            color: 'white'
+          }}>
+            <p style={{ margin: '0 0 1rem 0', fontSize: '1.1rem' }}>
+              <strong>@buscabuscabr</strong>
+            </p>
+            <p style={{ margin: 0 }}>
+              Ofertas diárias • Dicas de compras • Lançamentos • Promoções relâmpago
+            </p>
+          </div>
         </div>
 
         {/* DISCLAIMER LEGAL */}
         <div className="disclaimer">
           <strong>📋 Informações Legais:</strong><br/><br/>
-          • Este é um serviço de TECNOLOGIA para gestão de links de afiliados<br/>
+          • Este é um site de DIVULGAÇÃO de ofertas e produtos<br/>
           • NÃO vendemos produtos físicos ou digitais<br/>
           • NÃO temos lojas físicas<br/>
-          • NÃO somos marketplace<br/>
-          • Redirecionamos para plataformas oficiais (Amazon, Mercado Livre, etc.)<br/>
+          • NÃO somos marketplace ou e-commerce<br/>
+          • Todos os links direcionam para plataformas oficiais (Amazon, Mercado Livre)<br/>
           • Sua compra é realizada diretamente na plataforma oficial<br/>
-          • Suas comissões são pagas pelo programa de afiliados oficial
+          • Você conta com todas as garantias e políticas das lojas oficiais
         </div>
 
         {/* DIFERENCIAÇÃO */}
@@ -265,38 +311,39 @@ const About = () => {
               <strong>SOMOS:</strong>
             </p>
             <ul style={{ margin: 0 }}>
-              <li>Uma plataforma de TECNOLOGIA para afiliados</li>
-              <li>Um serviço de gestão e otimização de links</li>
-              <li>Uma ferramenta profissional para marketing digital</li>
+              <li>Um site de divulgação de ofertas</li>
+              <li>Um guia de produtos Amazon e Mercado Livre</li>
+              <li>Um serviço GRATUITO para consumidores</li>
             </ul>
           </div>
         </div>
 
-        {/* TECNOLOGIA */}
+        {/* SEGURANÇA */}
         <div className="info-section">
-          <h2>💻 Tecnologia</h2>
+          <h2>🔒 Segurança e Confiança</h2>
           <p>
-            Desenvolvido com as mais modernas tecnologias web:
+            <strong>Todos os nossos links direcionam para plataformas 100% seguras:</strong>
           </p>
           <ul>
-            <li>React.js para interface responsiva</li>
-            <li>Firebase para infraestrutura confiável</li>
-            <li>Vercel para deploy instantâneo</li>
-            <li>Sistema de cache avançado</li>
-            <li>Analytics em tempo real</li>
-            <li>Segurança SSL/HTTPS</li>
+            <li>Amazon.com.br - Loja oficial da Amazon no Brasil</li>
+            <li>MercadoLivre.com.br - Marketplace oficial do Mercado Livre</li>
           </ul>
+          <p>
+            Ao clicar em nossos links, você é direcionado para as lojas oficiais onde sua compra
+            é processada com total segurança. Não armazenamos dados de pagamento nem processamos transações.
+          </p>
         </div>
 
         {/* CONTATO */}
         <div className="contact-box">
           <h2 style={{ marginTop: 0 }}>📧 Contato</h2>
           <p>
-            Este é um projeto de tecnologia para gestão de links de afiliados.
+            Site de divulgação de ofertas e produtos Amazon e Mercado Livre
           </p>
           <p style={{ marginBottom: 0 }}>
             <strong>Email:</strong> contato@buscabuscabrasil.com.br<br/>
-            <strong>Site:</strong> https://www.buscabuscabrasil.com.br
+            <strong>Site:</strong> https://www.buscabuscabrasil.com.br<br/>
+            <strong>Instagram:</strong> @buscabuscabr
           </p>
         </div>
       </div>

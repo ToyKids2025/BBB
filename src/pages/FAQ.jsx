@@ -4,7 +4,7 @@ import Footer from '../components/Footer';
 
 /**
  * Página FAQ - Perguntas Frequentes
- * Responde dúvidas comuns e diferencia de lojas físicas
+ * Respondendo dúvidas de consumidores sobre o site de ofertas
  */
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(null);
@@ -15,68 +15,100 @@ const FAQ = () => {
 
   const faqs = [
     {
-      question: "O que é o BuscaBusca Brasil?",
-      answer: "O BuscaBusca Brasil é uma PLATAFORMA DE TECNOLOGIA para gestão e otimização de links de afiliados. Somos um serviço de software (SaaS) para profissionais de marketing digital, influenciadores e criadores de conteúdo que trabalham com programas de afiliados da Amazon, Mercado Livre e outras plataformas."
-    },
-    {
-      question: "Vocês são a loja física 'Busca Busca' do Shopping Plaza Polo (Brás)?",
-      answer: "NÃO! Não temos nenhuma relação com a loja física 'Busca Busca' localizada no Shopping Plaza Polo no Brás, São Paulo. Somos uma empresa de tecnologia totalmente diferente e independente. Não temos lojas físicas em nenhum lugar do Brasil."
+      question: "O que é o BuscaBuscaBrasil?",
+      answer: "O BuscaBuscaBrasil é um site de divulgação de ofertas e produtos selecionados da Amazon e Mercado Livre. Ajudamos consumidores brasileiros a encontrar os melhores produtos com os melhores preços, direcionando para as plataformas oficiais."
     },
     {
       question: "Vocês vendem produtos?",
-      answer: "NÃO vendemos produtos. Somos uma plataforma de TECNOLOGIA que gera links otimizados para afiliados. Quando você clica em um link gerado por nós, é redirecionado para a plataforma oficial (Amazon, Mercado Livre, etc.) onde a compra é realizada."
+      answer: "NÃO vendemos produtos. Somos um site de divulgação de ofertas. Quando você clica em um link de produto, é direcionado para a Amazon ou Mercado Livre (plataformas oficiais) onde a compra é realizada de forma 100% segura."
+    },
+    {
+      question: "Por que o site está 'em desenvolvimento'?",
+      answer: "Nosso catálogo completo está sendo preparado. Estamos aguardando a liberação da API oficial da Amazon (Product Advertising API) para exibir produtos com informações atualizadas em tempo real, preços oficiais e avaliações de clientes. Optamos por não usar métodos inadequados (como scraping) para garantir conformidade com as políticas da Amazon."
+    },
+    {
+      question: "Como acompanhar as ofertas enquanto o site está em desenvolvimento?",
+      answer: "Publicamos diariamente ofertas selecionadas no Instagram @buscabuscabr. Lá você encontra produtos, dicas de compras, lançamentos e promoções relâmpago."
+    },
+    {
+      question: "Vocês são a loja física 'Busca Busca' do Shopping Plaza Polo (Brás)?",
+      answer: "NÃO! Não temos nenhuma relação com a loja física 'Busca Busca' localizada no Shopping Plaza Polo no Brás, São Paulo. Somos um site de divulgação de ofertas, totalmente diferente e independente. Não temos lojas físicas em nenhum lugar do Brasil."
     },
     {
       question: "Vocês são um marketplace ou e-commerce?",
-      answer: "NÃO. Não somos marketplace nem e-commerce. Somos uma FERRAMENTA DE SOFTWARE para gestão de links de afiliados. Não vendemos nada, não processamos pagamentos e não entregamos produtos."
+      answer: "NÃO. Não somos marketplace nem e-commerce. Somos um site de divulgação de ofertas. Não vendemos nada, não processamos pagamentos e não entregamos produtos. Apenas direcionamos você para as plataformas oficiais onde a compra é realizada."
     },
     {
-      question: "Como funciona o serviço?",
-      answer: "1) Você cola o link de um produto (Amazon, Mercado Livre, etc.) com sua tag de afiliado. 2) Nosso sistema otimiza e gera um link curto rastreável. 3) Você compartilha esse link nas suas redes sociais. 4) Quando alguém clica, é redirecionado para o produto com SUA tag de afiliado preservada. 5) Você recebe suas comissões normalmente através do programa de afiliados oficial."
+      question: "Como funciona o processo de compra?",
+      answer: "1) Você encontra um produto em nosso site ou Instagram. 2) Clica no link do produto. 3) É direcionado para a Amazon ou Mercado Livre (loja oficial). 4) Realiza sua compra diretamente na plataforma oficial. 5) Recebe todas as garantias e benefícios das lojas oficiais."
     },
     {
-      question: "Para quem é este serviço?",
-      answer: "Para afiliados da Amazon Associates, parceiros do Mercado Livre, influenciadores digitais, criadores de conteúdo, profissionais de marketing digital e blogueiros que trabalham com links de afiliados."
+      question: "É seguro comprar através dos links do BuscaBuscaBrasil?",
+      answer: "SIM! Todos os nossos links direcionam para plataformas 100% seguras: Amazon.com.br e MercadoLivre.com.br. Sua compra é processada diretamente nas lojas oficiais. Não armazenamos dados de pagamento nem processamos transações."
     },
     {
-      question: "O serviço é gratuito?",
-      answer: "Sim, atualmente o serviço básico de gestão de links de afiliados é gratuito."
+      question: "Preciso pagar algo para usar o BuscaBuscaBrasil?",
+      answer: "NÃO! Nosso serviço é 100% GRATUITO para consumidores. Você não paga nada para acessar nossas ofertas e links."
     },
     {
       question: "Vocês têm relação com @buscabuscaoficial no Instagram?",
-      answer: "NÃO. Não temos relação com esse perfil ou qualquer outro perfil de loja física. Nosso Instagram oficial é @buscabuscabr, focado em tecnologia e ferramentas para afiliados."
+      answer: "NÃO. Não temos relação com esse perfil ou qualquer outro perfil de loja física. Nosso Instagram oficial é @buscabuscabr, focado em divulgação de ofertas e produtos da Amazon e Mercado Livre."
     },
     {
-      question: "Como vocês ganham dinheiro se não vendem produtos?",
-      answer: "Somos uma plataforma de tecnologia. Nosso modelo de negócio é baseado em serviços de software (SaaS) para afiliados profissionais. Não ganhamos dinheiro vendendo produtos físicos."
+      question: "O que vou encontrar no site após o catálogo ficar pronto?",
+      answer: "Após a liberação da API da Amazon, você encontrará: ofertas do dia com os melhores descontos, produtos com avaliações e reviews oficiais, comparação de preços entre Amazon e Mercado Livre, categorias diversas (eletrônicos, casa, moda, livros, etc.), informações atualizadas em tempo real e especificações técnicas completas."
     },
     {
-      question: "Posso confiar nos links gerados?",
-      answer: "Sim! Todos os links redirecionam para plataformas oficiais (Amazon.com.br, MercadoLivre.com.br, etc.). Preservamos suas tags de afiliado e parâmetros de comissão. Você pode verificar o destino final antes de compartilhar."
+      question: "Como vocês selecionam os produtos?",
+      answer: "Selecionamos produtos com base em popularidade, avaliações positivas, custo-benefício e descontos interessantes. Priorizamos produtos com boas avaliações na Amazon e Mercado Livre."
     },
     {
-      question: "Vocês roubam comissões de afiliados?",
-      answer: "JAMAIS! Nossa tecnologia foi desenvolvida especificamente para PROTEGER suas comissões. Preservamos todas as suas tags de afiliado e parâmetros. O Link Enhancer V2 garante que suas comissões sejam mantidas."
+      question: "Posso confiar nos preços mostrados?",
+      answer: "Quando nosso catálogo estiver ativo (após liberação da API), todos os preços virão diretamente da API oficial da Amazon em tempo real. Atualmente, no Instagram, sempre direcionamos para a página oficial do produto onde você verifica o preço atualizado."
+    },
+    {
+      question: "Vocês garantem o preço ou a disponibilidade dos produtos?",
+      answer: "NÃO. Os preços e disponibilidade são de responsabilidade da Amazon e Mercado Livre. Sempre verifique o preço final e disponibilidade na página oficial do produto antes de finalizar a compra."
+    },
+    {
+      question: "Se eu tiver um problema com minha compra, quem devo contatar?",
+      answer: "Você deve contatar diretamente a plataforma onde realizou a compra (Amazon ou Mercado Livre). Todas as políticas de devolução, garantia e atendimento ao cliente são de responsabilidade das lojas oficiais."
     },
     {
       question: "Como posso ter certeza que vocês não são uma loja física?",
-      answer: "Verifique nosso site (www.buscabuscabrasil.com.br), nossa página Sobre (/sobre), nosso robots.txt, sitemap.xml e humans.txt. Todos os nossos canais oficiais deixam claro que somos uma PLATAFORMA DE TECNOLOGIA, não uma loja. Além disso, não temos CNPJ de comércio varejista."
+      answer: "Verifique nosso site (www.buscabuscabrasil.com.br), nossa página Sobre (/sobre) e nosso FAQ (/faq). Todos os nossos canais oficiais deixam claro que somos um SITE DE DIVULGAÇÃO DE OFERTAS, não uma loja física ou marketplace."
     },
     {
       question: "Qual a diferença entre vocês e a loja 'Busca Busca' do Brás?",
-      answer: "São empresas COMPLETAMENTE DIFERENTES: 1) Eles: Loja física de varejo / Nós: Plataforma de tecnologia web. 2) Eles: Vendem produtos / Nós: Fornecemos software. 3) Eles: @buscabuscaoficial / Nós: @buscabuscabr. 4) Eles: Shopping Plaza Polo (Brás, SP) / Nós: Serviço online sem loja física."
+      answer: "São empresas COMPLETAMENTE DIFERENTES: 1) Eles: Loja física de varejo / Nós: Site de divulgação de ofertas. 2) Eles: Vendem produtos / Nós: Direcionamos para Amazon/ML. 3) Eles: @buscabuscaoficial / Nós: @buscabuscabr. 4) Eles: Shopping Plaza Polo (Brás, SP) / Nós: Serviço online sem loja física."
     },
     {
-      question: "Como faço para usar o serviço?",
-      answer: "Acesse www.buscabuscabrasil.com.br/admin, faça login com Google, cole o link do produto com sua tag de afiliado, e nosso sistema gera automaticamente um link otimizado para você compartilhar."
+      question: "Vocês têm aplicativo mobile?",
+      answer: "Atualmente não temos aplicativo. Você pode acessar nosso site pelo navegador do celular ou acompanhar nossas ofertas no Instagram @buscabuscabr."
     },
     {
-      question: "Preciso de conhecimento técnico para usar?",
-      answer: "Não! Nossa plataforma foi desenvolvida para ser simples e intuitiva. Basta colar o link, e o sistema faz todo o trabalho de otimização automaticamente."
+      question: "Posso sugerir produtos para serem divulgados?",
+      answer: "Sim! Entre em contato através do email contato@buscabuscabrasil.com.br com suas sugestões de produtos ou categorias que você gostaria de ver em nossas ofertas."
     },
     {
-      question: "Vocês oferecem suporte?",
-      answer: "Sim! Entre em contato através do email contato@buscabuscabrasil.com.br para dúvidas sobre a plataforma de tecnologia e gestão de links."
+      question: "Como faço para não perder nenhuma oferta?",
+      answer: "Siga nosso Instagram @buscabuscabr onde publicamos ofertas diariamente. Também recomendamos ativar as notificações de posts para receber alertas em tempo real."
+    },
+    {
+      question: "Vocês trabalham com outras plataformas além de Amazon e Mercado Livre?",
+      answer: "Atualmente focamos em Amazon e Mercado Livre, as maiores plataformas de e-commerce do Brasil. No futuro, podemos expandir para outras plataformas confiáveis."
+    },
+    {
+      question: "Por que devo usar o BuscaBuscaBrasil ao invés de ir direto para a Amazon?",
+      answer: "Fazemos a curadoria de produtos e ofertas para você economizar tempo. Ao invés de procurar entre milhões de produtos, apresentamos uma seleção com os melhores descontos e produtos bem avaliados."
+    },
+    {
+      question: "Quando o catálogo completo estará disponível?",
+      answer: "O catálogo estará disponível assim que recebermos a liberação da API oficial da Amazon (Product Advertising API). Estamos aguardando a aprovação da terceira compra para acesso completo à API. Enquanto isso, acompanhe nossas ofertas no Instagram @buscabuscabr."
+    },
+    {
+      question: "Vocês oferecem cupons de desconto?",
+      answer: "Divulgamos ofertas e produtos com descontos já aplicados. Quando houver cupons promocionais disponibilizados pela Amazon ou Mercado Livre, compartilhamos em nossas redes sociais."
     }
   ];
 
@@ -178,8 +210,8 @@ const FAQ = () => {
           <div>
             <h3>⚠️ LEIA ANTES DE PROSSEGUIR</h3>
             <p style={{ margin: 0 }}>
-              <strong>NÃO SOMOS UMA LOJA!</strong> Somos uma plataforma de tecnologia para afiliados.
-              Não vendemos produtos e não temos lojas físicas.
+              <strong>NÃO SOMOS UMA LOJA!</strong> Somos um site de divulgação de ofertas.
+              Não vendemos produtos e não temos lojas físicas. Direcionamos para Amazon e Mercado Livre oficiais.
             </p>
           </div>
         </div>
@@ -187,7 +219,7 @@ const FAQ = () => {
         {/* HEADER */}
         <div className="faq-header">
           <h1>❓ Perguntas Frequentes</h1>
-          <p>Tire suas dúvidas sobre o BuscaBusca Brasil</p>
+          <p>Tire suas dúvidas sobre o BuscaBuscaBrasil</p>
         </div>
 
         {/* LISTA DE FAQs */}
@@ -220,8 +252,11 @@ const FAQ = () => {
         }}>
           <h2 style={{ marginTop: 0 }}>Ainda tem dúvidas?</h2>
           <p>Entre em contato conosco através do email:</p>
-          <p style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: 0 }}>
+          <p style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
             contato@buscabuscabrasil.com.br
+          </p>
+          <p style={{ fontSize: '0.95rem', marginBottom: 0 }}>
+            Ou acompanhe nossas ofertas no Instagram <strong>@buscabuscabr</strong>
           </p>
         </div>
       </div>

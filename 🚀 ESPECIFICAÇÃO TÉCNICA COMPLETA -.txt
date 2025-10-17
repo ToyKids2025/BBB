@@ -1,0 +1,1278 @@
+🚀 ESPECIFICAÇÃO TÉCNICA COMPLETA - Sistema de Automação Instagram para BuscaBuscaBrasil
+📋 DOCUMENTO PARA CLAUDE CODE
+
+🎯 OBJETIVO DO PROJETO
+Desenvolver um sistema integrado ao site buscabuscabrasil.com.br que automatize o processo de:
+
+Receber links de produtos (Mercado Livre/Amazon)
+Extrair dados via scraping
+Gerar links rastreados no domínio próprio
+Criar posts visuais automáticos para Instagram
+Agendar e publicar automaticamente
+Tracking completo de performance
+
+
+🔍 FASE 1: ANÁLISE DO SITE ATUAL
+Tarefa Inicial - INVESTIGAÇÃO PROFUNDA:
+bash# Claude Code deve:
+
+1. ACESSAR E MAPEAR O SITE:
+   - Tecnologias usadas (framework, linguagem, banco de dados)
+   - Estrutura de arquivos e pastas
+   - Sistema de autenticação existente
+   - Padrões de código
+   - APIs já integradas
+   - Sistema de routing
+   - Estado global (se houver)
+   - Componentes reutilizáveis
+
+2. IDENTIFICAR ÁREA RESTRITA:
+   - Como funciona o login/auth atual?
+   - Onde fica o painel administrativo?
+   - Estrutura de permissões
+   - Layout/design pattern usado
+   - Componentes de UI existentes
+
+3. AVALIAR INFRAESTRUTURA:
+   - Vercel config (vercel.json)
+   - Variáveis de ambiente
+   - Banco de dados atual (se existe)
+   - APIs externas já configuradas
+   - Sistema de storage de arquivos
+   - Cron jobs configurados
+
+4. DOCUMENTAR DESCOBERTAS:
+   - Criar arquivo ANALISE.md com todas as descobertas
+   - Sugerir melhorias na arquitetura existente
+   - Identificar possíveis conflitos
+   - Propor melhor abordagem de integração
+
+🏗️ ARQUITETURA PROPOSTA
+Stack Tecnológico Recomendado:
+javascript// Frontend
+- Next.js 14+ (App Router preferido)
+- React 18+
+- TypeScript
+- TailwindCSS ou styled-components
+- Shadcn/ui ou Material-UI para componentes
+
+// Backend
+- Next.js API Routes / Server Actions
+- Vercel Serverless Functions
+- Edge Functions (para tasks rápidas)
+
+// Database
+- Vercel Postgres OU
+- Supabase OU
+- PlanetScale OU
+- MongoDB Atlas
+// Escolher baseado no que já existe
+
+// Storage de Imagens
+- Vercel Blob Storage OU
+- Cloudinary OU
+- AWS S3
+// Escolher o mais econômico
+
+// Scraping & Automação
+- Puppeteer (headless browser)
+- Cheerio (parsing HTML)
+- Axios (requisições)
+
+// Geração de Imagens
+- Sharp (processamento)
+- Canvas API / node-canvas
+- Fabric.js (templates)
+
+// Integrações
+- Instagram Graph API
+- OpenAI API (opcional - legendas)
+- Mercado Livre Scraper
+- Amazon Scraper
+
+// Cron Jobs
+- Vercel Cron
+- node-cron (backup)
+
+// Analytics
+- Vercel Analytics
+- Custom tracking DB
+
+📊 ESTRUTURA DE BANCO DE DADOS
+Schema Proposto:
+sql-- Tabela: products
+CREATE TABLE products (
+  id SERIAL PRIMARY KEY,
+  original_url TEXT NOT NULL,
+  short_code VARCHAR(10) UNIQUE NOT NULL,
+  titulo TEXT NOT NULL,
+  preco DECIMAL(10,2),
+  preco_original DECIMAL(10,2),
+  descricao TEXT,
+  imagens JSONB, -- Array de URLs
+  plataforma VARCHAR(20), -- 'mercadolivre', 'amazon'
+  categoria VARCHAR(50),
+  avaliacoes JSONB, -- {nota: 4.5, total: 230}
+  status VARCHAR(20) DEFAULT 'active', -- active, inactive, out_of_stock
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  user_id INTEGER REFERENCES users(id)
+);
+
+-- Tabela: instagram_posts
+CREATE TABLE instagram_posts (
+  id SERIAL PRIMARY KEY,
+  product_id INTEGER REFERENCES products(id),
+  instagram_post_id VARCHAR(100), -- ID retornado pelo Instagram
+  caption TEXT,
+  hashtags TEXT[],
+  image_url TEXT,
+  scheduled_time TIMESTAMP,
+  published_time TIMESTAMP,
+  status VARCHAR(20), -- draft, scheduled, published, failed
+  engagement JSONB, -- {likes: 0, comments: 0, saves: 0, shares: 0}
+  created_at TIMESTAMP DEFAULT NOW(),
+  user_id INTEGER REFERENCES users(id)
+);
+
+-- Tabela: link_clicks
+CREATE TABLE link_clicks (
+  id SERIAL PRIMARY KEY,
+  product_id INTEGER REFERENCES products(id),
+  short_code VARCHAR(10),
+  clicked_at TIMESTAMP DEFAULT NOW(),
+  ip_address VARCHAR(45),
+  user_agent TEXT,
+  referrer TEXT,
+  country VARCHAR(2),
+  device_type VARCHAR(20), -- mobile, desktop, tablet
+  converted BOOLEAN DEFAULT FALSE -- se gerou venda (tracking futuro)
+);
+
+-- Tabela: automation_settings
+CREATE TABLE automation_settings (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) UNIQUE,
+  posts_per_day INTEGER DEFAULT 5,
+  posting_hours JSONB, -- [9, 12, 15, 18, 21]
+  auto_publish BOOLEAN DEFAULT FALSE,
+  hashtag_sets JSONB, -- Conjuntos de hashtags por categoria
+  caption_templates JSONB, -- Templates de legenda
+  design_template VARCHAR(50) DEFAULT 'default',
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Tabela: analytics_daily
+CREATE TABLE analytics_daily (
+  id SERIAL PRIMARY KEY,
+  date DATE NOT NULL,
+  posts_published INTEGER DEFAULT 0,
+  total_clicks INTEGER DEFAULT 0,
+  total_engagement INTEGER DEFAULT 0,
+  new_followers INTEGER DEFAULT 0,
+  revenue_estimated DECIMAL(10,2) DEFAULT 0,
+  user_id INTEGER REFERENCES users(id),
+  UNIQUE(date, user_id)
+);
+
+-- Índices para performance
+CREATE INDEX idx_products_short_code ON products(short_code);
+CREATE INDEX idx_products_status ON products(status);
+CREATE INDEX idx_posts_status ON instagram_posts(status);
+CREATE INDEX idx_posts_scheduled ON instagram_posts(scheduled_time);
+CREATE INDEX idx_clicks_product ON link_clicks(product_id);
+CREATE INDEX idx_clicks_date ON link_clicks(clicked_at);
+
+🎨 ESTRUTURA DE ARQUIVOS PROPOSTA
+buscabuscabrasil.com.br/
+├── app/                          # Next.js App Router
+│   ├── (auth)/                   # Grupo de rotas autenticadas
+│   │   ├── login/
+│   │   └── register/
+│   ├── (dashboard)/              # Área administrativa
+│   │   ├── layout.tsx            # Layout do dashboard
+│   │   ├── page.tsx              # Dashboard principal
+│   │   ├── automacao/            # 🆕 NOVA FUNCIONALIDADE
+│   │   │   ├── page.tsx          # Página principal automação
+│   │   │   ├── components/
+│   │   │   │   ├── ProductForm.tsx
+│   │   │   │   ├── ProductPreview.tsx
+│   │   │   │   ├── PostQueue.tsx
+│   │   │   │   ├── PostEditor.tsx
+│   │   │   │   ├── Analytics.tsx
+│   │   │   │   └── Settings.tsx
+│   │   │   └── hooks/
+│   │   │       ├── useProductExtractor.ts
+│   │   │       ├── usePostGenerator.ts
+│   │   │       └── useInstagramPublisher.ts
+│   │   ├── produtos/             # Gestão de produtos
+│   │   ├── links/                # Gestão de links
+│   │   └── analytics/            # Analytics geral
+│   ├── api/                      # API Routes
+│   │   ├── products/
+│   │   │   ├── extract/route.ts  # 🆕 Extração de dados
+│   │   │   ├── create/route.ts
+│   │   │   ├── [id]/route.ts
+│   │   │   └── list/route.ts
+│   │   ├── instagram/
+│   │   │   ├── auth/route.ts     # 🆕 OAuth Instagram
+│   │   │   ├── publish/route.ts  # 🆕 Publicação
+│   │   │   ├── schedule/route.ts # 🆕 Agendamento
+│   │   │   └── webhook/route.ts  # 🆕 Webhooks do IG
+│   │   ├── links/
+│   │   │   ├── shorten/route.ts  # 🆕 Encurtador
+│   │   │   ├── track/route.ts    # 🆕 Tracking
+│   │   │   └── [code]/route.ts   # 🆕 Redirect
+│   │   ├── scraper/
+│   │   │   ├── mercadolivre/route.ts # 🆕
+│   │   │   └── amazon/route.ts       # 🆕
+│   │   ├── images/
+│   │   │   ├── generate/route.ts # 🆕 Gera post visual
+│   │   │   └── upload/route.ts   # 🆕 Upload temporário
+│   │   └── cron/
+│   │       ├── auto-publish/route.ts # 🆕 Cron job
+│   │       └── sync-analytics/route.ts
+│   └── p/                        # Redirecionamento de links
+│       └── [code]/
+│           └── route.ts          # 🆕 Redirect handler
+├── components/
+│   ├── ui/                       # Componentes de UI base
+│   ├── shared/                   # Componentes compartilhados
+│   └── instagram/                # 🆕 Componentes Instagram
+│       ├── PostCard.tsx
+│       ├── ImageEditor.tsx
+│       ├── CaptionGenerator.tsx
+│       └── ScheduleCalendar.tsx
+├── lib/
+│   ├── db/                       # Database utilities
+│   │   ├── prisma.ts / postgres.ts
+│   │   └── queries/
+│   │       ├── products.ts       # 🆕
+│   │       ├── posts.ts          # 🆕
+│   │       └── analytics.ts      # 🆕
+│   ├── scrapers/                 # 🆕 Scrapers
+│   │   ├── base.ts
+│   │   ├── mercadolivre.ts
+│   │   └── amazon.ts
+│   ├── instagram/                # 🆕 Instagram API
+│   │   ├── client.ts
+│   │   ├── auth.ts
+│   │   ├── publisher.ts
+│   │   └── analytics.ts
+│   ├── image-generator/          # 🆕 Geração de imagens
+│   │   ├── templates.ts
+│   │   ├── canvas.ts
+│   │   └── styles.ts
+│   ├── link-shortener/           # 🆕 Encurtador
+│   │   ├── generator.ts
+│   │   └── tracker.ts
+│   ├── ai/                       # 🆕 IA (opcional)
+│   │   ├── caption-generator.ts
+│   │   └── hashtag-optimizer.ts
+│   └── utils/
+│       ├── date.ts
+│       ├── format.ts
+│       └── validation.ts
+├── prisma/                       # Se usar Prisma
+│   └── schema.prisma
+├── public/
+│   └── templates/                # 🆕 Templates de post
+│       ├── template1.png
+│       ├── template2.png
+│       └── fonts/
+├── types/
+│   ├── product.ts                # 🆕
+│   ├── instagram.ts              # 🆕
+│   └── database.ts
+└── vercel.json                   # Config Vercel + Cron
+
+🔧 FUNCIONALIDADES DETALHADAS
+1. EXTRAÇÃO DE PRODUTOS
+typescript// lib/scrapers/mercadolivre.ts
+
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+import puppeteer from 'puppeteer';
+
+interface ProductData {
+  titulo: string;
+  preco: number;
+  precoOriginal?: number;
+  descricao: string;
+  imagens: string[];
+  avaliacoes: {
+    nota: number;
+    total: number;
+  };
+  plataforma: 'mercadolivre' | 'amazon';
+  categoria?: string;
+}
+
+export class MercadoLivreScaper {
+  
+  /**
+   * Extrai dados de um produto do Mercado Livre
+   * Tenta primeiro com Axios (mais rápido), depois Puppeteer se necessário
+   */
+  async extract(url: string): Promise<ProductData> {
+    try {
+      // Validação da URL
+      if (!this.isValidURL(url)) {
+        throw new Error('URL inválida do Mercado Livre');
+      }
+
+      // Tenta primeiro com Axios (mais rápido e barato)
+      try {
+        return await this.extractWithAxios(url);
+      } catch (axiosError) {
+        console.log('Axios falhou, tentando com Puppeteer...');
+        return await this.extractWithPuppeteer(url);
+      }
+      
+    } catch (error) {
+      console.error('Erro ao extrair produto:', error);
+      throw error;
+    }
+  }
+
+  private async extractWithAxios(url: string): Promise<ProductData> {
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'pt-BR,pt;q=0.9',
+      },
+      timeout: 10000,
+    });
+
+    const $ = cheerio.load(response.data);
+
+    // Extração dos dados
+    const titulo = $('h1.ui-pdp-title').text().trim();
+    const precoTexto = $('.andes-money-amount__fraction').first().text().trim();
+    const preco = parseFloat(precoTexto.replace(/\./g, '').replace(',', '.'));
+
+    // Preço original (se houver desconto)
+    const precoOriginalTexto = $('.andes-money-amount--previous .andes-money-amount__fraction').text().trim();
+    const precoOriginal = precoOriginalTexto 
+      ? parseFloat(precoOriginalTexto.replace(/\./g, '').replace(',', '.'))
+      : undefined;
+
+    // Imagens
+    const imagens: string[] = [];
+    $('.ui-pdp-gallery__figure img').each((i, el) => {
+      const src = $(el).attr('src') || $(el).attr('data-src');
+      if (src && !src.includes('placeholder')) {
+        // Substitui para versão em alta qualidade
+        const highQualitySrc = src.replace(/\-[A-Z]\./, '-O.');
+        imagens.push(highQualitySrc);
+      }
+    });
+
+    // Avaliações
+    const notaTexto = $('.ui-pdp-review__rating').text().trim();
+    const nota = parseFloat(notaTexto) || 0;
+    const totalTexto = $('.ui-pdp-review__amount').text().trim();
+    const total = parseInt(totalTexto.replace(/\D/g, '')) || 0;
+
+    // Descrição
+    let descricao = $('.ui-pdp-description').text().trim();
+    if (!descricao) {
+      // Fallback: pega das características
+      descricao = $('.ui-pdp-features').text().trim().substring(0, 500);
+    }
+
+    // Categoria (tenta extrair da breadcrumb)
+    const categoria = $('.andes-breadcrumb__item').last().text().trim() || undefined;
+
+    return {
+      titulo,
+      preco,
+      precoOriginal,
+      descricao,
+      imagens: imagens.slice(0, 5), // Máximo 5 imagens
+      avaliacoes: { nota, total },
+      plataforma: 'mercadolivre',
+      categoria,
+    };
+  }
+
+  private async extractWithPuppeteer(url: string): Promise<ProductData> {
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    try {
+      const page = await browser.newPage();
+      
+      // Simula dispositivo móvel para conteúdo mais leve
+      await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)');
+      await page.setViewport({ width: 375, height: 667 });
+
+      await page.goto(url, { 
+        waitUntil: 'domcontentloaded',
+        timeout: 30000 
+      });
+
+      // Aguarda elementos importantes
+      await page.waitForSelector('h1.ui-pdp-title', { timeout: 10000 });
+
+      // Extrai dados
+      const data = await page.evaluate(() => {
+        const titulo = document.querySelector('h1.ui-pdp-title')?.textContent?.trim() || '';
+        
+        const precoEl = document.querySelector('.andes-money-amount__fraction');
+        const precoTexto = precoEl?.textContent?.trim() || '0';
+        const preco = parseFloat(precoTexto.replace(/\./g, '').replace(',', '.'));
+
+        const precoOriginalEl = document.querySelector('.andes-money-amount--previous .andes-money-amount__fraction');
+        const precoOriginalTexto = precoOriginalEl?.textContent?.trim();
+        const precoOriginal = precoOriginalTexto 
+          ? parseFloat(precoOriginalTexto.replace(/\./g, '').replace(',', '.'))
+          : undefined;
+
+        const imagens: string[] = [];
+        document.querySelectorAll('.ui-pdp-gallery__figure img').forEach(img => {
+          const src = img.getAttribute('src') || img.getAttribute('data-src');
+          if (src && !src.includes('placeholder')) {
+            imagens.push(src.replace(/\-[A-Z]\./, '-O.'));
+          }
+        });
+
+        const notaEl = document.querySelector('.ui-pdp-review__rating');
+        const nota = parseFloat(notaEl?.textContent?.trim() || '0');
+        
+        const totalEl = document.querySelector('.ui-pdp-review__amount');
+        const total = parseInt((totalEl?.textContent?.trim() || '0').replace(/\D/g, '')) || 0;
+
+        const descricao = document.querySelector('.ui-pdp-description')?.textContent?.trim() || '';
+
+        return {
+          titulo,
+          preco,
+          precoOriginal,
+          imagens: imagens.slice(0, 5),
+          avaliacoes: { nota, total },
+          descricao: descricao.substring(0, 500),
+        };
+      });
+
+      return {
+        ...data,
+        plataforma: 'mercadolivre' as const,
+      };
+
+    } finally {
+      await browser.close();
+    }
+  }
+
+  private isValidURL(url: string): boolean {
+    return url.includes('mercadolivre.com.br') || url.includes('mercadolibre.com');
+  }
+}
+
+// Exporta instância
+export const mercadoLivreScraper = new MercadoLivreScaper();
+
+2. GERADOR DE LINKS ENCURTADOS
+typescript// lib/link-shortener/generator.ts
+
+import { customAlphabet } from 'nanoid';
+import { db } from '@/lib/db/postgres';
+
+const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 8);
+
+export class LinkShortener {
+  
+  /**
+   * Cria um link encurtado rastreável
+   */
+  async createShortLink(productId: number): Promise<string> {
+    const shortCode = nanoid();
+    
+    // Salva no banco
+    await db.query(`
+      UPDATE products 
+      SET short_code = $1 
+      WHERE id = $2
+    `, [shortCode, productId]);
+
+    return `https://buscabuscabrasil.com.br/p/${shortCode}`;
+  }
+
+  /**
+   * Redireciona e rastreia clique
+   */
+  async handleRedirect(shortCode: string, request: Request): Promise<string> {
+    // Busca produto
+    const result = await db.query(`
+      SELECT original_url, id 
+      FROM products 
+      WHERE short_code = $1 AND status = 'active'
+    `, [shortCode]);
+
+    if (result.rows.length === 0) {
+      throw new Error('Link não encontrado');
+    }
+
+    const { original_url, id: productId } = result.rows[0];
+
+    // Rastreia clique (não bloqueia o redirect)
+    this.trackClick(productId, shortCode, request).catch(console.error);
+
+    return original_url;
+  }
+
+  private async trackClick(productId: number, shortCode: string, request: Request) {
+    const userAgent = request.headers.get('user-agent') || '';
+    const referrer = request.headers.get('referer') || '';
+    const ip = request.headers.get('x-forwarded-for') || 
+               request.headers.get('x-real-ip') || 
+               'unknown';
+
+    // Detecta tipo de dispositivo
+    const deviceType = this.detectDevice(userAgent);
+
+    await db.query(`
+      INSERT INTO link_clicks (product_id, short_code, ip_address, user_agent, referrer, device_type)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `, [productId, shortCode, ip, userAgent, referrer, deviceType]);
+  }
+
+  private detectDevice(userAgent: string): string {
+    if (/mobile/i.test(userAgent)) return 'mobile';
+    if (/tablet|ipad/i.test(userAgent)) return 'tablet';
+    return 'desktop';
+  }
+}
+
+export const linkShortener = new LinkShortener();
+
+3. GERADOR DE POSTS VISUAIS
+typescript// lib/image-generator/canvas.ts
+
+import sharp from 'sharp';
+import { createCanvas, loadImage, registerFont } from 'canvas';
+
+interface PostConfig {
+  titulo: string;
+  preco: number;
+  precoOriginal?: number;
+  imagemProduto: string;
+  template: 'moderno' | 'minimalista' | 'colorido';
+}
+
+export class PostImageGenerator {
+  
+  constructor() {
+    // Registra fontes personalizadas
+    try {
+      registerFont('./public/fonts/Inter-Bold.ttf', { family: 'Inter', weight: 'bold' });
+      registerFont('./public/fonts/Inter-Regular.ttf', { family: 'Inter', weight: 'normal' });
+    } catch (error) {
+      console.warn('Fontes personalizadas não encontradas, usando padrão');
+    }
+  }
+
+  /**
+   * Gera imagem do post para Instagram
+   * Formato: 1080x1080 (quadrado) ou 1080x1350 (vertical)
+   */
+  async generatePost(config: PostConfig, formato: 'quadrado' | 'vertical' = 'quadrado'): Promise<Buffer> {
+    const width = 1080;
+    const height = formato === 'quadrado' ? 1080 : 1350;
+
+    // Cria canvas
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    
+    switch (config.template) {
+      case 'moderno':
+        gradient.addColorStop(0, '#667eea');
+        gradient.addColorStop(1, '#764ba2');
+        break;
+      case 'minimalista':
+        gradient.addColorStop(0, '#ffffff');
+        gradient.addColorStop(1, '#f7f7f7');
+        break;
+      case 'colorido':
+        gradient.addColorStop(0, '#ff6b6b');
+        gradient.addColorStop(1, '#feca57');
+        break;
+    }
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+
+    // Carrega e posiciona imagem do produto
+    try {
+      const produtoImg = await loadImage(config.imagemProduto);
+      
+      // Dimensões da imagem do produto (70% da largura)
+      const imgWidth = width * 0.7;
+      const imgHeight = (produtoImg.height * imgWidth) / produtoImg.width;
+      
+      const imgX = (width - imgWidth) / 2;
+      const imgY = 150;
+
+      // Sombra
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+      ctx.shadowBlur = 30;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 10;
+
+      // Desenha imagem com bordas arredondadas
+      this.roundedImage(ctx, produtoImg, imgX, imgY, imgWidth, imgHeight, 20);
+      
+      ctx.shadowColor = 'transparent'; // Remove sombra
+
+    } catch (error) {
+      console.error('Erro ao carregar imagem do produto:', error);
+    }
+
+    // Título do produto (parte superior)
+    ctx.fillStyle = config.template === 'minimalista' ? '#333333' : '#ffffff';
+    ctx.font = 'bold 42px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    
+    const tituloLinhas = this.wrapText(ctx, config.titulo, width - 100, 45);
+    let yPosition = 80;
+    tituloLinhas.slice(0, 2).forEach(linha => { // Máximo 2 linhas
+      ctx.fillText(linha, width / 2, yPosition);
+      yPosition += 50;
+    });
+
+    // Preço (parte inferior)
+    yPosition = height - 200;
+
+    // Preço original (riscado)
+    if (config.precoOriginal && config.precoOriginal > config.preco) {
+      ctx.fillStyle = config.template === 'minimalista' ? '#999999' : 'rgba(255, 255, 255, 0.7)';
+      ctx.font = '32px Inter, sans-serif';
+      const precoOriginalTexto = `R$ ${config.precoOriginal.toFixed(2).replace('.', ',')}`;
+      ctx.fillText(precoOriginalTexto, width / 2, yPosition);
+      
+      // Linha no meio (riscado)
+      const textWidth = ctx.measureText(precoOriginalTexto).width;
+      ctx.strokeStyle = ctx.fillStyle;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo((width - textWidth) / 2, yPosition - 15);
+      ctx.lineTo((width + textWidth) / 2, yPosition - 15);
+      ctx.stroke();
+      
+      yPosition += 60;
+
+      // Badge de desconto
+      const desconto = Math.round(((config.precoOriginal - config.preco) / config.precoOriginal) * 100);
+      ctx.fillStyle = '#ff4757';
+      ctx.fillRect(width / 2 - 80, yPosition - 100, 160, 45);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px Inter, sans-serif';
+      ctx.fillText(`-${desconto}%`, width / 2, yPosition - 70);
+    }
+
+    // Preço atual (destaque)
+    ctx.fillStyle = config.template === 'minimalista' ? '#000000' : '#ffffff';
+    ctx.font = 'bold 72px Inter, sans-serif';
+    const precoTexto = `R$ ${config.preco.toFixed(2).replace('.', ',')}`;
+    ctx.fillText(precoTexto, width / 2, yPosition);
+
+    // CTA
+    yPosition += 80;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(width / 2 - 200, yPosition - 40, 400, 70);
+    ctx.fillStyle = '#333333';
+    ctx.font = 'bold 32px Inter, sans-serif';
+    ctx.fillText('LINK NA BIO 👆', width / 2, yPosition);
+
+    // Watermark
+    ctx.fillStyle = config.template === 'minimalista' ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.5)';
+    ctx.font = '20px Inter, sans-serif';
+    ctx.fillText('@buscabuscabr', width / 2, height - 30);
+
+    // Converte para buffer
+    const buffer = canvas.toBuffer('image/png');
+    
+    // Otimiza com sharp
+    return await sharp(buffer)
+      .jpeg({ quality: 90, progressive: true })
+      .toBuffer();
+  }
+
+  /**
+   * Desenha imagem com bordas arredondadas
+   */
+  private roundedImage(ctx: any, image: any, x: number, y: number, width: number, height: number, radius: number) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(image, x, y, width, height);
+    ctx.restore();
+  }
+
+  /**
+   * Quebra texto em múltiplas linhas
+   */
+  private wrapText(ctx: any, text: string, maxWidth: number, lineHeight: number): string[] {
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+
+    words.forEach(word => {
+      const testLine = currentLine + word + ' ';
+      const metrics = ctx.measureText(testLine);
+      
+      if (metrics.width > maxWidth && currentLine !== '') {
+        lines.push(currentLine.trim());
+        currentLine = word + ' ';
+      } else {
+        currentLine = testLine;
+      }
+    });
+    
+    lines.push(currentLine.trim());
+    return lines;
+  }
+}
+
+export const postImageGenerator = new PostImageGenerator();
+
+4. GERADOR DE LEGENDAS
+typescript// lib/ai/caption-generator.ts
+
+interface CaptionConfig {
+  titulo: string;
+  preco: number;
+  precoOriginal?: number;
+  categoria?: string;
+  tom: 'entusiasta' | 'urgencia' | 'informativo' | 'casual';
+}
+
+export class CaptionGenerator {
+  
+  /**
+   * Gera legenda persuasiva para o post
+   * Pode usar IA (OpenAI) ou templates prontos
+   */
+  async generate(config: CaptionConfig, useAI: boolean = false): Promise<string> {
+    if (useAI && process.env.OPENAI_API_KEY) {
+      return await this.generateWithAI(config);
+    }
+    
+    return this.generateWithTemplate(config);
+  }
+
+  private async generateWithAI(config: CaptionConfig): Promise<string> {
+    const OpenAI = require('openai');
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const desconto = config.precoOriginal 
+      ? Math.round(((config.precoOriginal - config.preco) / config.precoOriginal) * 100)
+      : 0;
+
+    const prompt = `
+Crie uma legenda curta e persuasiva para Instagram (máximo 150 caracteres) para o produto:
+- Nome: ${config.titulo}
+- Preço: R$ ${config.preco}
+${config.precoOriginal ? `- Desconto: ${desconto}%` : ''}
+- Tom: ${config.tom}
+- Categoria: ${config.categoria || 'geral'}
+
+A legenda deve:
+- Ser chamativa e direta
+- Incluir emoji relevante
+- Criar senso de urgência (se aplicável)
+- Terminar com "Link na bio 👆" ou "Corre! Link na bio ⬆️"
+- NÃO usar hashtags (vão separadas)
+
+Legenda:`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 100,
+      temperature: 0.8,
+    });
+
+    return completion.choices[0].message.content?.trim() || this.generateWithTemplate(config);
+  }
+
+  private generateWithTemplate(config: CaptionConfig): Promise<string> {
+    const templates = {
+      entusiasta: [
+        `🔥 ${config.titulo}\n\nNão acredito que encontrei por esse preço! 😱\n\n💰 De R$ ${config.precoOriginal?.toFixed(2)} por apenas R$ ${config.preco.toFixed(2)}\n\nCorre! Link na bio 👆`,
+        `⚡ IMPERDÍVEL! ${config.titulo}\n\nQuem mais tá precisando disso? 🙋‍♀️\n\nPreço INCRÍVEL: R$ ${config.preco.toFixed(2)}\n\nLink na bio ⬆️ Corre antes que acabe!`,
+        `🎯 Achei a OFERTA perfeita!\n\n${config.titulo}\n\nR$ ${config.preco.toFixed(2)} 💸\n\nTá esperando o quê? Link na bio 👆`,
+      ],
+      urgencia: [
+        `⏰ ÚLTIMAS UNIDADES!\n\n${config.titulo}\n\n${config.precoOriginal ? `❌ R$ ${config.precoOriginal.toFixed(2)}\n✅ R$ ${config.preco.toFixed(2)}\n\n` : `Por apenas R$ ${config.preco.toFixed(2)}\n\n`}Corre! Não vai durar muito 🏃‍♂️\n\nLink na bio 👆`,
+        `🚨 ALERTA DE OFERTA!\n\n${config.titulo}\n\nPreço IMPERDÍVEL: R$ ${config.preco.toFixed(2)}\n\n⚡ Promoção por tempo limitado\n\nGaranta o seu! Link na bio ⬆️`,
+      ],
+      informativo: [
+        `📦 ${config.titulo}\n\n✨ Produto de qualidade\n⭐ Bem avaliado\n💰 Preço justo: R$ ${config.preco.toFixed(2)}\n\nConfira! Link na bio 👆`,
+        `🛍️ ${config.titulo}\n\nValor: R$ ${config.preco.toFixed(2)}\n\n${config.precoOriginal ? `Economia de R$ ${(config.precoOriginal - config.preco).toFixed(2)}\n\n` : ''}Mais informações no link da bio ⬆️`,
+      ],
+      casual: [
+        `Olha só o que achei! 👀\n\n${config.titulo}\n\nR$ ${config.preco.toFixed(2)}\n\nVale muito! Link na bio 👆`,
+        `Gente, preciso compartilhar isso! 💙\n\n${config.titulo}\n\nPreço tá ótimo: R$ ${config.preco.toFixed(2)}\n\nDá uma olhada! Link na bio ⬆️`,
+      ],
+    };
+
+    const templateArray = templates[config.tom];
+    const randomTemplate = templateArray[Math.floor(Math.random() * templateArray.length)];
+    
+    return Promise.resolve(randomTemplate.replace(/\s+/g, ' ').trim());
+  }
+
+  /**
+   * Gera hashtags otimizadas
+   */
+  generateHashtags(categoria?: string): string[] {
+    const hashtagsBase = [
+      '#ofertas',
+      '#promoção',
+      '#compras',
+      '#desconto',
+      '#brasil',
+      '#ofertasdodia',
+      '#preçobaixo',
+      '#economize',
+    ];
+
+    const hashtagsPorCategoria: Record<string, string[]> = {
+      eletronicos: ['#eletronicos', '#tecnologia', '#gadgets', '#tech', '#eletrônicos'],
+      casa: ['#casa', '#decoração', '#lar', '#homedecor', '#cozinha'],
+      moda: ['#moda', '#fashion', '#style', '#lookdodia', '#roupas'],
+      beleza: ['#beleza', '#makeup', '#skincare', '#cosmeticos', '#beauty'],
+      esportes: ['#esportes', '#fitness', '#treino', '#academia', '#saude'],
+    };
+
+    let hashtags = [...hashtagsBase];
+
+    if (categoria) {
+      const categoriaNormalizada = categoria.toLowerCase();
+      const hashtagsCategoria = Object.entries(hashtagsPorCategoria).find(([key]) => 
+        categoriaNormalizada.includes(key)
+      )?.[1] || [];
+      
+      hashtags = [...hashtags, ...hashtagsCategoria];
+    }
+
+    // Shuffle e pega 15-20 hashtags
+    return hashtags
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 15 + Math.floor(Math.random() * 6));
+  }
+}
+
+export const captionGenerator = new CaptionGenerator();
+
+5. INTEGRAÇÃO INSTAGRAM API
+typescript// lib/instagram/publisher.ts
+
+import axios from 'axios';
+
+interface InstagramConfig {
+  accessToken: string;
+  instagramAccountId: string;
+}
+
+interface PublishResult {
+  postId: string;
+  permalink: string;
+  timestamp: string;
+}
+
+export class InstagramPublisher {
+  private config: InstagramConfig;
+  private baseURL = 'https://graph.facebook.com/v18.0';
+
+  constructor(config: InstagramConfig) {
+    this.config = config;
+  }
+
+  /**
+   * Publica imagem no feed do Instagram
+   */
+  async publishFeedPost(
+    imageUrl: string,
+    caption: string
+  ): Promise<PublishResult> {
+    try {
+      // Passo 1: Criar container de mídia
+      const containerResponse = await axios.post(
+        `${this.baseURL}/${this.config.instagramAccountId}/media`,
+        {
+          image_url: imageUrl,
+          caption: caption,
+          access_token: this.config.accessToken,
+        }
+      );
+
+      const creationId = containerResponse.data.id;
+
+      // Passo 2: Aguardar processamento (pode demorar alguns segundos)
+      await this.waitForProcessing(creationId);
+
+      // Passo 3: Publicar
+      const publishResponse = await axios.post(
+        `${this.baseURL}/${this.config.instagramAccountId}/media_publish`,
+        {
+          creation_id: creationId,
+          access_token: this.config.accessToken,
+        }
+      );
+
+      const postId = publishResponse.data.id;
+
+      // Passo 4: Buscar permalink
+      const postDetails = await this.getPostDetails(postId);
+
+      return {
+        postId,
+        permalink: postDetails.permalink,
+        timestamp: postDetails.timestamp,
+      };
+
+    } catch (error: any) {
+      console.error('Erro ao publicar no Instagram:', error.response?.data || error);
+      throw new Error(`Falha na publicação: ${error.response?.data?.error?.message || error.message}`);
+    }
+  }
+
+  /**
+   * Publica carrossel (múltiplas imagens)
+   */
+  async publishCarousel(
+    imageUrls: string[],
+    caption: string
+  ): Promise<PublishResult> {
+    try {
+      // Passo 1: Criar containers para cada imagem
+      const containerIds = await Promise.all(
+        imageUrls.map(async (imageUrl) => {
+          const response = await axios.post(
+            `${this.baseURL}/${this.config.instagramAccountId}/media`,
+            {
+              image_url: imageUrl,
+              is_carousel_item: true,
+              access_token: this.config.accessToken,
+            }
+          );
+          return response.data.id;
+        })
+      );
+
+      // Passo 2: Criar container do carrossel
+      const carouselResponse = await axios.post(
+        `${this.baseURL}/${this.config.instagramAccountId}/media`,
+        {
+          media_type: 'CAROUSEL',
+          children: containerIds.join(','),
+          caption: caption,
+          access_token: this.config.accessToken,
+        }
+      );
+
+      const creationId = carouselResponse.data.id;
+
+      // Passo 3: Aguardar processamento
+      await this.waitForProcessing(creationId);
+
+      // Passo 4: Publicar
+      const publishResponse = await axios.post(
+        `${this.baseURL}/${this.config.instagramAccountId}/media_publish`,
+        {
+          creation_id: creationId,
+          access_token: this.config.accessToken,
+        }
+      );
+
+      const postId = publishResponse.data.id;
+      const postDetails = await this.getPostDetails(postId);
+
+      return {
+        postId,
+        permalink: postDetails.permalink,
+        timestamp: postDetails.timestamp,
+      };
+
+    } catch (error: any) {
+      console.error('Erro ao publicar carrossel:', error.response?.data || error);
+      throw new Error(`Falha na publicação do carrossel: ${error.response?.data?.error?.message || error.message}`);
+    }
+  }
+
+  /**
+   * Aguarda processamento da mídia
+   */
+  private async waitForProcessing(creationId: string, maxAttempts: number = 10): Promise<void> {
+    for (let i = 0; i < maxAttempts; i++) {
+      const response = await axios.get(
+        `${this.baseURL}/${creationId}`,
+        {
+          params: {
+            fields: 'status_code',
+            access_token: this.config.accessToken,
+          },
+        }
+      );
+
+      const statusCode = response.data.status_code;
+
+      if (statusCode === 'FINISHED') {
+        return;
+      } else if (statusCode === 'ERROR') {
+        throw new Error('Erro no processamento da mídia pelo Instagram');
+      }
+
+      // Aguarda 2 segundos antes de tentar novamente
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    throw new Error('Timeout: mídia não foi processada a tempo');
+  }
+
+  /**
+   * Busca detalhes do post publicado
+   */
+  private async getPostDetails(postId: string): Promise<any> {
+    const response = await axios.get(
+      `${this.baseURL}/${postId}`,
+      {
+        params: {
+          fields: 'id,permalink,timestamp,media_type,like_count,comments_count',
+          access_token: this.config.accessToken,
+        },
+      }
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Busca métricas de um post
+   */
+  async getPostInsights(postId: string): Promise<any> {
+    try {
+      const response = await axios.get(
+        `${this.baseURL}/${postId}/insights`,
+        {
+          params: {
+            metric: 'engagement,impressions,reach,saved',
+            access_token: this.config.accessToken,
+          },
+        }
+      );
+
+      return response.data.data.reduce((acc: any, metric: any) => {
+        acc[metric.name] = metric.values[0].value;
+        return acc;
+      }, {});
+
+    } catch (error) {
+      console.error('Erro ao buscar insights:', error);
+      return {};
+    }
+  }
+}
+
+🎨 COMPONENTE REACT - INTERFACE PRINCIPAL
+typescript// app/(dashboard)/automacao/page.tsx
+
+'use client';
+
+import { useState } from 'react';
+import { ProductForm } from './components/ProductForm';
+import { ProductPreview } from './components/ProductPreview';
+import { PostQueue } from './components/PostQueue';
+import { Analytics } from './components/Analytics';
+import { Settings } from './components/Settings';
+
+export default function AutomacaoPage() {
+  const [activeTab, setActiveTab] = useState<'novo' | 'fila' | 'analytics' | 'config'>('novo');
+  const [productData, setProductData] = useState<any>(null);
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            🚀 Automação Instagram
+          </h1>
+          <p className="text-gray-600">
+            Transforme links em posts automáticos e aumente suas vendas
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow-sm mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="flex space-x-8 px-6" aria-label="Tabs">
+              <button
+                onClick={() => setActiveTab('novo')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'novo'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                ➕ Novo Produto
+              </button>
+              <button
+                onClick={() => setActiveTab('fila')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'fila'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                📋 Fila de Posts
+              </button>
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'analytics'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                📊 Analytics
+              </button>
+              <button
+                onClick={() => setActiveTab('config')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'config'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                ⚙️ Configurações
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="space-y-6">
+          {activeTab === 'novo' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ProductForm onDataExtracted={setProductData} />
+              {productData && <ProductPreview data={productData} />}
+            </div>
+          )}
+          
+          {activeTab === 'fila' && <PostQueue />}
+          {activeTab === 'analytics' && <Analytics />}
+          {activeTab === 'config' && <Settings />}
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+⚙️ CONFIGURAÇÃO VERCEL
+json// vercel.json
+
+{
+  "crons": [
+    {
+      "path": "/api/cron/auto-publish",
+      "schedule": "0 9,12,15,18,21 * * *"
+    },
+    {
+      "path": "/api/cron/sync-analytics",
+      "schedule": "0 */6 * * *"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "INSTAGRAM_ACCESS_TOKEN": "@instagram_access_token",
+    "INSTAGRAM_ACCOUNT_ID": "@instagram_account_id",
+    "OPENAI_API_KEY": "@openai_api_key"
+  },
+  "functions": {
+    "app/api/scraper/**": {
+      "maxDuration": 60
+    },
+    "app/api/images/generate/**": {
+      "maxDuration": 30
+    }
+  }
+}
+
+📝 INSTRUÇÕES FINAIS PARA CLAUDE CODE
+Claude Code, ao desenvolver este sistema:
+1. ANÁLISE INICIAL (OBRIGATÓRIO)
+
+✅ Acesse o repositório GitHub atual
+✅ Mapeie TODA a estrutura existente
+✅ Identifique tecnologias e padrões
+✅ Documente em ANALISE_ATUAL.md
+✅ PERGUNTE ao desenvolvedor antes de prosseguir
+
+2. SUGESTÕES DE MELHORIA
+
+Você tem TOTAL LIBERDADE para sugerir:
+
+Mudanças na arquitetura
+Bibliotecas melhores
+Otimizações de performance
+Melhorias de segurança
+Padrões de código mais eficientes
+
+
+SEMPRE explique o PORQUÊ de cada sugestão
+
+3. DESENVOLVIMENTO ITERATIVO
+
+Desenvolva em MÓDULOS PEQUENOS
+Teste cada módulo antes de avançar
+Documente cada função criada
+Crie testes quando possível
+Peça feedback frequente
+
+4. PRIORIDADES
+
+Segurança: Validações, sanitização, rate limiting
+Performance: Caching, lazy loading, otimização de queries
+UX: Interface intuitiva e responsiva
+Manutenibilidade: Código limpo e bem documentado
+
+5. COMUNICAÇÃO
+
+❓ Quando algo não estiver claro, PERGUNTE
+💡 Sempre que tiver uma ideia melhor, SUGIRA
+⚠️ Se identificar riscos, ALERTE
+🎯 Quando precisar de decisões de negócio, CONSULTE
+
+6. ENTREGÁVEIS
+Ao finalizar cada módulo, entregue:
+
+✅ Código funcional e testado
+✅ Documentação README.md
+✅ Variáveis de ambiente necessárias (.env.example)
+✅ Instruções de setup
+✅ Lista de próximos passos
+
+
+🚀 CLAUDE CODE: Você está autorizado a começar! Boa sorte no desenvolvimento!Tentar novamenteO Claude pode cometer erros. Confira sempre as respostas. Sonnet 4.5
